@@ -12,12 +12,13 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=8">
-  <link rel="stylesheet" href="css/base.css?v=8">
-  <link rel="stylesheet" href="css/site.css?v=8">
+  <link rel="stylesheet" href="css/tokens.css?v=9">
+  <link rel="stylesheet" href="css/base.css?v=9">
+  <link rel="stylesheet" href="css/site.css?v=9">
   <!-- Intro: entscheidet vor dem ersten Bild, ob es läuft -->
   <script>
     (function (d) {
+      d.classList.add("js");
       try {
         if (sessionStorage.getItem("fof-intro") || matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("no-intro");
       } catch (e) { d.classList.add("no-intro"); }
@@ -185,6 +186,16 @@
       <div class="wall grid">
         <figure class="poster js-poster">
           <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img poster__img--line" src="assets/img/fof-000-brust-schwarz-1024.webp" width="985" height="830" loading="lazy"
+               alt="Motiv 000: Schriftzug „Fuck Off Fashion“ in drei Zeilen, Schablonenschrift, für die Brust">
+          <div class="poster__dls">
+            <a class="poster__dl" href="assets/img/fof-000-brust-schwarz.png" download>↓ Schwarz <span class="visually-hidden">: Fuck Off Fashion, für helle Textilien, 48 kB</span></a>
+            <a class="poster__dl poster__dl--alt" href="assets/img/fof-000-brust-weiss.png" download>↓ Weiß <span class="visually-hidden">: Fuck Off Fashion, für dunkle Textilien, 48 kB</span></a>
+          </div>
+          <figcaption class="poster__meta"><span class="poster__title">Fuck Off Fashion</span><span class="poster__no">Nr. 000 · PNG</span></figcaption>
+        </figure>
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
           <img class="poster__img" src="assets/img/punk-bleibt-punk-1024.webp" width="1024" height="1024" loading="lazy"
                alt="Motiv 001: Anarchie-A, „fuck off fashion“, „Punk bleibt Punk“">
           <a class="poster__dl" href="assets/img/punk-bleibt-punk.png" download="fof-001-punk-bleibt-punk.png">↓ PNG laden <span class="visually-hidden">: Punk bleibt Punk, 1,7 MB</span></a>
@@ -211,6 +222,36 @@
           <a class="poster__dl" href="assets/img/fof-004-fast-fashion-kills.png" download="fof-004-fast-fashion-kills.png">↓ PNG laden <span class="visually-hidden">: Fast Fashion kills, 1,6 MB</span></a>
           <figcaption class="poster__meta"><span class="poster__title">Fast Fashion kills</span><span class="poster__no">Nr. 004 · PNG</span></figcaption>
         </figure>
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img poster__img--line" src="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" width="788" height="974" loading="lazy"
+               alt="Motiv 005: Anarchie-A mit Armen und Beinen an einem Mischpult">
+          <div class="poster__dls">
+            <a class="poster__dl" href="assets/img/fof-005-anarchy-dj-schwarz.png" download>↓ Schwarz <span class="visually-hidden">: Anarchy DJ, für helle Textilien, 42 kB</span></a>
+            <a class="poster__dl poster__dl--alt" href="assets/img/fof-005-anarchy-dj-weiss.png" download>↓ Weiß <span class="visually-hidden">: Anarchy DJ, für dunkle Textilien, 42 kB</span></a>
+          </div>
+          <figcaption class="poster__meta"><span class="poster__title">Anarchy DJ</span><span class="poster__no">Nr. 005 · PNG</span></figcaption>
+        </figure>
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img poster__img--line" src="assets/img/fof-006-skate-schwarz-1024.webp" width="1024" height="538" loading="lazy"
+               alt="Motiv 006: Schriftzug „Skate“, das A ist ein Anarchie-A auf einem Skateboard">
+          <div class="poster__dls">
+            <a class="poster__dl" href="assets/img/fof-006-skate-schwarz.png" download>↓ Schwarz <span class="visually-hidden">: Skate, für helle Textilien, 123 kB</span></a>
+            <a class="poster__dl poster__dl--alt" href="assets/img/fof-006-skate-weiss.png" download>↓ Weiß <span class="visually-hidden">: Skate, für dunkle Textilien, 122 kB</span></a>
+          </div>
+          <figcaption class="poster__meta"><span class="poster__title">Skate</span><span class="poster__no">Nr. 006 · PNG</span></figcaption>
+        </figure>
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img poster__img--line" src="assets/img/fof-007-skate-or-die-schwarz-1024.webp" width="848" height="981" loading="lazy"
+               alt="Motiv 007: Anarchie-A, darüber „Skate“, darunter „or die“">
+          <div class="poster__dls">
+            <a class="poster__dl" href="assets/img/fof-007-skate-or-die-schwarz.png" download>↓ Schwarz <span class="visually-hidden">: Skate or die, für helle Textilien, 40 kB</span></a>
+            <a class="poster__dl poster__dl--alt" href="assets/img/fof-007-skate-or-die-weiss.png" download>↓ Weiß <span class="visually-hidden">: Skate or die, für dunkle Textilien, 40 kB</span></a>
+          </div>
+          <figcaption class="poster__meta"><span class="poster__title">Skate or die</span><span class="poster__no">Nr. 007 · PNG</span></figcaption>
+        </figure>
       </div>
 
       <div class="license">
@@ -224,11 +265,101 @@
     </div>
   </section>
 
+  <!-- Tragen: Vorne/Hinten-Vorschau -------------------------------- -->
+  <section id="tragen" class="sec sec--paper torn" aria-labelledby="t-tragen">
+    <div class="wrap grid">
+      <div class="sec__intro">
+        <p class="label label--red">05 · Tragen</p>
+        <h2 id="t-tragen" class="shout shout--1 js-tape">Vorne.<br>Hinten.</h2>
+        <p class="prose">So mach ich's mit der Heißpresse: vorne mittig über die Brust der Schriftzug, hinten groß ein Motiv. Bau dir deins zusammen.</p>
+      </div>
+      <div class="sec__body tr">
+        <div class="tr__stage js-tr-stage" data-garment="hoodie" data-color="schwarz">
+          <figure class="tr__view">
+            <div class="tr__garment js-tr-view">
+              <svg viewBox="0 0 400 440" aria-hidden="true">
+                <g class="g-hoodie">
+            <path class="g-body g-dark" d="M132 80 C118 22 160 2 200 2 C240 2 282 22 268 80 Z"/>
+            <path class="g-body" d="M132 66 L268 66 L300 78 L346 120 L376 330 L340 342 L312 190 L312 424 L88 424 L88 190 L60 342 L24 330 L54 120 L100 78 Z"/>
+            <path class="g-hole" d="M158 72 C150 30 175 16 200 16 C225 16 250 30 242 72 C228 94 172 94 158 72 Z"/>
+            <path class="g-seam" d="M184 88 L181 150 M216 88 L219 150 M136 318 L264 318 L286 404 L114 404 Z M88 404 L312 404 M28 316 L62 326 M372 316 L338 326 M100 78 L88 190 M300 78 L312 190"/>
+                </g>
+                <g class="g-tee">
+            <path class="g-body" d="M150 30 C165 48 235 48 250 30 L292 44 L362 96 L332 158 L300 140 L302 424 L98 424 L100 140 L68 158 L38 96 L108 44 Z"/>
+            <path class="g-seam" d="M144 34 C162 62 238 62 256 34 M100 140 L112 48 M300 140 L288 48 M98 408 L302 408 M50 108 L80 152 M350 108 L320 152"/>
+                </g>
+              </svg>
+              <div class="tr__print tr__print--front"><img class="js-tr-front" src="assets/img/fof-000-brust-weiss-1024.webp" alt="" loading="lazy" decoding="async"></div>
+            </div>
+            <figcaption class="label">Vorne · Brust, mittig</figcaption>
+          </figure>
+          <figure class="tr__view">
+            <div class="tr__garment js-tr-view">
+              <svg viewBox="0 0 400 440" aria-hidden="true">
+                <g class="g-hoodie">
+            <path class="g-body" d="M132 66 L268 66 L300 78 L346 120 L376 330 L340 342 L312 190 L312 424 L88 424 L88 190 L60 342 L24 330 L54 120 L100 78 Z"/>
+            <path class="g-body g-dark" d="M130 94 C116 30 156 6 200 6 C244 6 284 30 270 94 C250 112 150 112 130 94 Z"/>
+            <path class="g-seam" d="M200 8 L200 106 M88 404 L312 404 M28 316 L62 326 M372 316 L338 326 M100 78 L88 190 M300 78 L312 190"/>
+                </g>
+                <g class="g-tee">
+            <path class="g-body" d="M150 30 C170 38 230 38 250 30 L292 44 L362 96 L332 158 L300 140 L302 424 L98 424 L100 140 L68 158 L38 96 L108 44 Z"/>
+            <path class="g-seam" d="M146 32 C168 46 232 46 254 32 M100 140 L112 48 M300 140 L288 48 M98 408 L302 408 M50 108 L80 152 M350 108 L320 152"/>
+                </g>
+              </svg>
+              <div class="tr__print tr__print--back"><img class="js-tr-back" src="assets/img/punk-bleibt-punk-1024.webp" alt="" loading="lazy" decoding="async"></div>
+            </div>
+            <figcaption class="label">Hinten · Rücken, groß</figcaption>
+          </figure>
+        </div>
+        <p class="visually-hidden js-tr-live" aria-live="polite"></p>
+
+        <form class="tr__controls js-tr-form" onsubmit="return false">
+          <fieldset class="tr__set">
+            <legend class="label">Teil</legend>
+            <label class="tr__pill"><input type="radio" name="teil" value="hoodie" checked><span>Hoodie</span></label>
+            <label class="tr__pill"><input type="radio" name="teil" value="tee"><span>T-Shirt</span></label>
+          </fieldset>
+          <fieldset class="tr__set">
+            <legend class="label">Farbe</legend>
+            <label class="tr__pill"><input type="radio" name="farbe" value="schwarz" checked><span><i class="tr__dot" style="--c:#1b1a1a"></i>Schwarz</span></label>
+            <label class="tr__pill"><input type="radio" name="farbe" value="grau"><span><i class="tr__dot" style="--c:#7d7a76"></i>Grau</span></label>
+            <label class="tr__pill"><input type="radio" name="farbe" value="natur"><span><i class="tr__dot" style="--c:#ece5d6"></i>Natur</span></label>
+          </fieldset>
+          <fieldset class="tr__set tr__set--motifs">
+            <legend class="label">Rückenmotiv</legend>
+            <div class="tr__thumbs">
+              <label class="tr__thumb"><input type="radio" name="motiv" value="001" data-title="Punk bleibt Punk" data-type="color" data-src="assets/img/punk-bleibt-punk-1024.webp" data-png="assets/img/punk-bleibt-punk.png" data-mask="false" checked>
+                <img src="assets/img/punk-bleibt-punk-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 001: Punk bleibt Punk</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="002" data-title="Kauf nix" data-type="color" data-src="assets/img/fof-002-kauf-nix-1024.webp" data-png="assets/img/fof-002-kauf-nix.png" data-mask="true">
+                <img src="assets/img/fof-002-kauf-nix-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 002: Kauf nix</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="003" data-title="Flicken statt Wegwerfen" data-type="color" data-src="assets/img/fof-003-flicken-1024.webp" data-png="assets/img/fof-003-flicken.png" data-mask="true">
+                <img src="assets/img/fof-003-flicken-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 003: Flicken statt Wegwerfen</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="004" data-title="Fast Fashion kills" data-type="color" data-src="assets/img/fof-004-fast-fashion-kills-1024.webp" data-png="assets/img/fof-004-fast-fashion-kills.png" data-mask="true">
+                <img src="assets/img/fof-004-fast-fashion-kills-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 004: Fast Fashion kills</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="005" data-title="Anarchy DJ" data-type="line" data-black="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" data-white="assets/img/fof-005-anarchy-dj-weiss-1024.webp" data-png-black="assets/img/fof-005-anarchy-dj-schwarz.png" data-png-white="assets/img/fof-005-anarchy-dj-weiss.png">
+                <img src="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 005: Anarchy DJ</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="006" data-title="Skate" data-type="line" data-black="assets/img/fof-006-skate-schwarz-1024.webp" data-white="assets/img/fof-006-skate-weiss-1024.webp" data-png-black="assets/img/fof-006-skate-schwarz.png" data-png-white="assets/img/fof-006-skate-weiss.png">
+                <img src="assets/img/fof-006-skate-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 006: Skate</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="007" data-title="Skate or die" data-type="line" data-black="assets/img/fof-007-skate-or-die-schwarz-1024.webp" data-white="assets/img/fof-007-skate-or-die-weiss-1024.webp" data-png-black="assets/img/fof-007-skate-or-die-schwarz.png" data-png-white="assets/img/fof-007-skate-or-die-weiss.png">
+                <img src="assets/img/fof-007-skate-or-die-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 007: Skate or die</span></label>
+            </div>
+          </fieldset>
+        </form>
+
+        <div class="tr__dl">
+          <a class="btn js-tr-dl-back" href="assets/img/punk-bleibt-punk.png" download>Rückenmotiv laden <span class="btn__icon" aria-hidden="true">↓</span></a>
+          <a class="btn btn--ghost js-tr-dl-front" href="assets/img/fof-000-brust-weiss.png" download>Brust-Schriftzug laden</a>
+          <p class="label js-tr-hint">Schriftzug in Weiß, für dunkle Textilien</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Selbermachen --------------------------------------------------- -->
   <section id="selbermachen" class="sec sec--ink diy torn js-diy" aria-labelledby="t-diy">
     <div class="wrap grid diy__head">
       <div class="diy__title">
-        <p class="label label--red">05 · Selbermachen</p>
+        <p class="label label--red">06 · Selbermachen</p>
         <h2 id="t-diy" class="shout shout--1 js-tape">Vier Schritte.<br>Null Euro*.</h2>
       </div>
       <p class="label diy__note">* plus Farbe. Und ein bisschen Mut.</p>
@@ -247,7 +378,7 @@
       <li class="diy__step">
         <span class="diy__no" aria-hidden="true">03</span>
         <div><h3 class="shout shout--3">Drucken</h3>
-          <p>Bügelfolie aus dem Copyshop, Siebdruck im Kollektiv um die Ecke oder eine Schablone aus Karton und Textilsprühfarbe.</p></div>
+          <p>Transferfolie und Heißpresse (oder fürs Erste das Bügeleisen), Siebdruck im Kollektiv um die Ecke oder eine Schablone aus Karton und Textilsprühfarbe.</p></div>
       </li>
       <li class="diy__step">
         <span class="diy__no" aria-hidden="true">04</span>
@@ -280,8 +411,9 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
-<script src="js/motion.js?v=8"></script>
-<script src="js/intro.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
+<script src="js/motion.js?v=9"></script>
+<script src="js/intro.js?v=9"></script>
+<script src="js/main.js?v=9"></script>
+<script src="js/tragen.js?v=9"></script>
 </body>
 </html>

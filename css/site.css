@@ -126,6 +126,65 @@
 .license__karma { font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; color: var(--blood-hot); }
 @media (max-width: 600px) { .license { grid-template-columns: 1fr; } }
 
+/* Tragen: Vorne/Hinten-Vorschau -------------------------- */
+.sec--paper .btn--ghost { --fg: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+.sec--paper .btn--ghost:hover { background: var(--ink); color: var(--paper); }
+.tr { display: grid; gap: var(--sp-4); }
+.tr__stage {
+  --g: #1b1a1a; --g-dark: #121111; --g-hole: #070606; --seam: rgba(255,255,255,.16);
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter);
+}
+.tr__stage[data-color="grau"]  { --g: #7d7a76; --g-dark: #6c6965; --g-hole: #3b3936; --seam: rgba(0,0,0,.22); }
+.tr__stage[data-color="natur"] { --g: #ece5d6; --g-dark: #ddd4c2; --g-hole: #b9ae98; --seam: rgba(0,0,0,.2); }
+.tr__view { margin: 0; display: grid; gap: var(--sp-2); justify-items: center; }
+.tr__garment { position: relative; width: 100%; aspect-ratio: 400 / 440; }
+.tr__garment svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 22px 26px rgba(11,10,10,.28)); }
+.tr__garment .g-body { fill: var(--g); stroke: var(--seam); stroke-width: 1.5; transition: fill var(--dur-base) var(--ease-out); }
+.tr__garment .g-dark { fill: var(--g-dark); }
+.tr__garment .g-hole { fill: var(--g-hole); transition: fill var(--dur-base) var(--ease-out); }
+.tr__garment .g-seam { fill: none; stroke: var(--seam); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.tr__stage[data-garment="hoodie"] .g-tee, .tr__stage[data-garment="tee"] .g-hoodie { display: none; }
+
+.tr__print { position: absolute; display: grid; }
+.tr__print img { width: 100%; height: 100%; object-fit: contain; object-position: top center; }
+.tr__stage[data-garment="hoodie"] .tr__print--front { left: 34%; width: 32%; top: 36%; height: 25%; }
+.tr__stage[data-garment="tee"]    .tr__print--front { left: 33%; width: 34%; top: 22%; height: 28%; }
+.tr__stage[data-garment="hoodie"] .tr__print--back  { left: 25%; width: 50%; top: 27%; height: 52%; }
+.tr__stage[data-garment="tee"]    .tr__print--back  { left: 24%; width: 52%; top: 18%; height: 56%; }
+/* Druck sitzt im Stoff: auf Natur multipliziert, auf Dunkel hellt er auf */
+.tr__stage[data-color="natur"] .tr__print img { mix-blend-mode: multiply; }
+.tr__stage:not([data-color="natur"]) .tr__print img.is-color { mix-blend-mode: screen; }
+.tr__print img.is-mask {
+  -webkit-mask: radial-gradient(closest-side, #000 72%, transparent 100%);
+          mask: radial-gradient(closest-side, #000 72%, transparent 100%);
+}
+
+.tr__controls { display: grid; gap: var(--sp-3); }
+.tr__set { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.tr__set legend { padding: 0; margin-bottom: .6rem; width: 100%; }
+.tr__pill { position: relative; cursor: pointer; }
+.tr__pill input, .tr__thumb input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.tr__pill span {
+  display: inline-flex; align-items: center; gap: .5em; padding: .6em 1em; border: 2px solid var(--ink);
+  font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-transform: uppercase;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.tr__pill input:checked + span { background: var(--ink); color: var(--paper); }
+.tr__pill input:focus-visible + span, .tr__thumb:has(input:focus-visible) { outline: 3px solid var(--blood); outline-offset: 3px; }
+.tr__dot { width: .9em; height: .9em; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px currentColor; }
+.tr__thumbs { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .5rem; width: 100%; }
+@media (max-width: 600px) { .tr__thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.tr__thumb { position: relative; display: block; aspect-ratio: 1; background: var(--ink); cursor: pointer; border: 3px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast); }
+.tr__thumb img { width: 100%; height: 100%; object-fit: contain; }
+.tr__thumb:has(input[data-type="line"]) { background: var(--paper-2); }
+.tr__thumb:has(input[data-type="line"]) img { padding: 12%; }
+.tr__thumb:hover { transform: rotate(-2deg) scale(1.04); }
+.tr__thumb:has(input:checked) { border-color: var(--blood); transform: rotate(-2deg); }
+.tr__dl { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.tr__dl .label { width: 100%; margin: 0; }
+html:not(.js) .tr__controls { display: none; }
+
 /* Selbermachen (horizontal gepinnt auf Desktop) ---------- */
 .diy { overflow: hidden; }
 .diy__head { margin-bottom: var(--sp-5); }
