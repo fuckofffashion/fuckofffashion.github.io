@@ -47,8 +47,9 @@
   function ransom(el) {
     const text = el.textContent;
     el.setAttribute("aria-label", text);
-    el.innerHTML = [...text].map(c => c === " " ? " " :
-      `<span class="ransom__c" aria-hidden="true">${c}</span>`).join("");
+    // Wörter zusammenhalten, damit nicht mitten im Wort umgebrochen wird
+    el.innerHTML = text.split(" ").map(word => `<span class="ransom__w" aria-hidden="true">` +
+      [...word].map(c => `<span class="ransom__c">${c}</span>`).join("") + `</span>`).join(" ");
     const chars = el.querySelectorAll(".ransom__c");
     if (reduced) return gsap.timeline();
     const looks = ["is-cut-a", "is-cut-b", "is-cut-c", "is-cut-d"];

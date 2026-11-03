@@ -25,6 +25,7 @@ body::after {
 
 .wrap { width: min(100% - 2 * var(--edge), var(--max)); margin-inline: auto; }
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: absolute; left: -999px; top: 0; z-index: 200; background: var(--blood); color: var(--paper); padding: .75rem 1rem; }
 .skip:focus { left: 1rem; top: 1rem; }
 
@@ -97,12 +98,12 @@ body::after {
 
 /* Ticker -------------------------------------------------- */
 .ticker {
-  overflow: hidden; background: var(--blood); color: var(--ink);
+  overflow: hidden; background: var(--blood); color: var(--paper);
   transform: rotate(-1.6deg); margin-inline: -2rem; padding-block: .6rem;
 }
 .ticker__in { display: inline-flex; white-space: nowrap; will-change: transform; }
 .ticker__in span {
-  font-family: var(--font-shout); font-size: clamp(1.4rem, 3vw, 2.4rem); text-transform: uppercase;
+  font-family: var(--font-shout); font-size: clamp(1.6rem, 3vw, 2.4rem); text-transform: uppercase;
   padding-inline: .6em;
 }
 .ticker__in span::after { content: "Ⓐ"; font-family: var(--font-body); font-weight: 800; padding-left: 1.2em; }
@@ -127,6 +128,7 @@ body::after {
 }
 
 /* Erpresserbrief-Schnipsel -------------------------------- */
+.ransom__w { display: inline-block; white-space: nowrap; }
 .ransom__c { display: inline-block; }
 .ransom__c.is-cut-a { background: var(--paper); color: var(--ink); font-family: var(--font-zine); transform: rotate(-6deg); }
 .ransom__c.is-cut-b { background: var(--blood); color: var(--paper); font-family: var(--font-body); font-weight: 800; transform: rotate(4deg); }
