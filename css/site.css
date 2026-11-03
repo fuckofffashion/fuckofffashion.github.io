@@ -46,6 +46,37 @@
 .sec__intro .shout { margin-top: .4rem; }
 @media (max-width: 900px) { .sec__intro, .sec__body { grid-column: 1 / -1; } .sec__intro { margin-bottom: var(--sp-4); } }
 
+/* Warum + Fake-Werbeplakat ------------------------------- */
+.why .grid { align-items: center; row-gap: var(--sp-6); }
+.why__text { grid-column: 1 / span 6; }
+.why__text .shout { margin: .4rem 0 var(--sp-4); }
+.why__copy { display: grid; gap: var(--sp-2); max-width: 46ch; }
+.why__copy p { margin: 0; }
+.why__copy strong { font-weight: 800; }
+.why__punch { font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; color: var(--blood-hot); margin-top: var(--sp-2) !important; }
+.why__board { grid-column: 8 / span 5; margin: 0; display: grid; gap: var(--sp-3); }
+@media (max-width: 900px) { .why__text, .why__board { grid-column: 1 / -1; } .why__board { padding-inline: 1rem; } }
+
+/* Absichtlich glatt und austauschbar: die Parodie einer Modekampagne */
+.billboard {
+  --rot: 2deg;
+  position: relative; aspect-ratio: 4 / 5; transform: rotate(var(--rot));
+  background: linear-gradient(160deg, #f7ece6 0%, #ead9d3 55%, #d9c6c4 100%);
+  box-shadow: 0 30px 60px -25px #000;
+}
+.billboard .tape:nth-of-type(1) { top: -.9rem; left: 12%; transform: rotate(-6deg); }
+.billboard .tape:nth-of-type(2) { bottom: -.9rem; right: 10%; transform: rotate(4deg); }
+.billboard__ad { position: absolute; inset: 0; padding: 9% 9% 10%; display: flex; flex-direction: column; color: #2b2626; }
+.billboard__brand { margin: 0; font: 800 .8rem/1 var(--font-body); letter-spacing: .5em; }
+.billboard__claim { margin: auto 0 1.2rem; font: 600 clamp(2.4rem, 4.6vw, 4.2rem)/.98 var(--font-body); letter-spacing: -.045em; text-transform: lowercase; }
+.billboard__claim sup, .billboard__brand sup { font-size: .35em; letter-spacing: 0; }
+.billboard__small { margin: 0 0 1.4rem; font: 400 .85rem/1.45 var(--font-body); color: #6e6363; }
+.billboard__cta { align-self: flex-start; background: #2b2626; color: #f7ece6; border-radius: 999px; padding: .7em 1.3em; font: 600 .8rem/1 var(--font-body); }
+.billboard__stamp {
+  position: absolute; left: 50%; top: 42%; translate: -50% -50%; z-index: 3; white-space: nowrap;
+  font-size: clamp(3rem, 7vw, 6rem); border-width: 7px; padding: .15em .35em .05em; mix-blend-mode: multiply;
+}
+
 /* Manifest ----------------------------------------------- */
 .manifest { list-style: none; margin: 0; padding: 0; counter-reset: m; border-top: 2px solid currentColor; }
 .manifest li { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--gutter); padding-block: 1.6rem;

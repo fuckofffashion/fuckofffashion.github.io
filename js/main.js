@@ -53,6 +53,15 @@
       ScrollTrigger.create({ trigger: el, start: "top 85%", once: true, onEnter: () => tapeReveal(el) });
     });
 
+    /* Warum: das Werbeplakat treibt leicht gegen den Scroll, dann knallt der Stempel drauf */
+    if (!MOTION.reduced) {
+      const bbStamp = document.querySelector(".js-bb-stamp");
+      gsap.set(bbStamp, { opacity: 0 });
+      ScrollTrigger.create({ trigger: ".js-billboard", start: "top 55%", once: true, onEnter: () => stamp(bbStamp) });
+      gsap.fromTo(".js-billboard", { yPercent: 8 }, { yPercent: -8, ease: "none",
+        scrollTrigger: { trigger: ".why", start: "top bottom", end: "bottom top", scrub: true } });
+    }
+
     /* Manifest: "Kaufen" wird durchgestrichen, Zeilen klappen auf */
     if (!MOTION.reduced) {
       gsap.fromTo(".js-strike", { "--s": 0 }, { "--s": 1, duration: .45, ease: MOTION.ease.punch, delay: .55,
