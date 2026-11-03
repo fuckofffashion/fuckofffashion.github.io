@@ -1,0 +1,180 @@
+/* =========================================================
+   FUCK OFF FASHION – Basis und Komponenten
+   ========================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+html.lenis, html.lenis body { height: auto; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font: 400 var(--fs-body)/var(--lh-body) var(--font-body);
+  overflow-x: clip;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--blood-hot); outline-offset: 4px; }
+
+/* Kopierer-Körnung über allem – statisch, nicht flimmernd */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 100; pointer-events: none;
+  opacity: .16; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wrap { width: min(100% - 2 * var(--edge), var(--max)); margin-inline: auto; }
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+.skip { position: absolute; left: -999px; top: 0; z-index: 200; background: var(--blood); color: var(--paper); padding: .75rem 1rem; }
+.skip:focus { left: 1rem; top: 1rem; }
+
+/* Typo ---------------------------------------------------- */
+.shout {
+  font-family: var(--font-shout); font-weight: 400; text-transform: uppercase;
+  line-height: var(--lh-shout); letter-spacing: var(--track-shout); margin: 0;
+}
+.shout--mega { font-size: var(--fs-mega); }
+.shout--1 { font-size: var(--fs-1); }
+.shout--2 { font-size: var(--fs-2); }
+.shout--3 { font-size: var(--fs-3); line-height: var(--lh-tight); }
+.lead { font-size: var(--fs-lead); line-height: 1.45; max-width: 34ch; }
+.prose { max-width: var(--measure); }
+.label {
+  font-family: var(--font-zine); font-size: var(--fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ash);
+}
+.label--red { color: var(--blood-hot); }
+.red { color: var(--blood); }
+.strike { position: relative; white-space: nowrap; }
+.strike::after {
+  content: ""; position: absolute; left: -4%; right: -4%; top: 52%; height: .14em;
+  background: var(--blood); transform: rotate(-3deg) scaleX(var(--s, 1)); transform-origin: left;
+}
+
+.line { display: block; }
+.line__in { display: inline-block; }
+
+/* Buttons ------------------------------------------------- */
+.btn {
+  --bg: var(--blood); --fg: var(--paper);
+  display: inline-flex; align-items: center; gap: .75em;
+  padding: 1em 1.4em; border: 0; cursor: pointer; text-decoration: none;
+  font: 700 var(--fs-small)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
+  color: var(--fg); background: var(--bg);
+  clip-path: polygon(0 4%, 3% 0, 97% 3%, 100% 0, 99% 96%, 100% 100%, 2% 98%, 0 100%);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast);
+}
+.btn:hover { background: var(--paper); color: var(--ink); transform: rotate(-1.5deg) scale(1.03); }
+.btn:active { transform: rotate(0) scale(.98); }
+.btn__icon { font-size: 1.2em; line-height: 0; transition: transform var(--dur-fast) var(--ease-out); }
+.btn:hover .btn__icon { transform: translateY(3px); }
+.btn--ghost { --bg: transparent; --fg: var(--paper); box-shadow: inset 0 0 0 2px var(--paper); clip-path: none; }
+.btn--ghost:hover { background: var(--paper); color: var(--ink); }
+
+.scrawl { position: relative; text-decoration: none; font-weight: 600; }
+.scrawl::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -.2em; height: .35em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6 C20 2 30 9 50 5 S80 2 99 6' fill='none' stroke='%23d4161b' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%;
+  clip-path: inset(0 100% 0 0); transition: clip-path var(--dur-base) var(--ease-punch);
+}
+.scrawl:hover::after, .scrawl:focus-visible::after { clip-path: inset(0 0 0 0); }
+
+/* Klebeband ----------------------------------------------- */
+.tape {
+  position: absolute; width: 7.5rem; height: 1.9rem; background: var(--tape); z-index: 2;
+  clip-path: polygon(3% 8%, 0 30%, 4% 55%, 1% 85%, 6% 100%, 95% 92%, 100% 70%, 97% 45%, 100% 20%, 94% 0);
+  box-shadow: inset 0 0 12px rgba(120, 100, 60, .25);
+}
+
+/* Gerissene Kante (Sektionsübergang) ---------------------- */
+.torn { position: relative; }
+.torn::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -2.4rem; height: 2.5rem;
+  background: inherit;
+  -webkit-mask: url("../assets/img/torn.svg") no-repeat bottom/100% 100%;
+          mask: url("../assets/img/torn.svg") no-repeat bottom/100% 100%;
+}
+
+/* Ticker -------------------------------------------------- */
+.ticker {
+  overflow: hidden; background: var(--blood); color: var(--ink);
+  transform: rotate(-1.6deg); margin-inline: -2rem; padding-block: .6rem;
+}
+.ticker__in { display: inline-flex; white-space: nowrap; will-change: transform; }
+.ticker__in span {
+  font-family: var(--font-shout); font-size: clamp(1.4rem, 3vw, 2.4rem); text-transform: uppercase;
+  padding-inline: .6em;
+}
+.ticker__in span::after { content: "Ⓐ"; font-family: var(--font-body); font-weight: 800; padding-left: 1.2em; }
+
+/* Glitch – nur als kurzes Ereignis ------------------------ */
+.glitch { position: relative; display: inline-block; }
+.glitch::before, .glitch::after {
+  content: attr(data-text); position: absolute; inset: 0; opacity: 0; pointer-events: none;
+}
+.glitch.is-glitching::before { opacity: .9; color: var(--blood); animation: glitch-a .42s steps(6) both; }
+.glitch.is-glitching::after  { opacity: .9; color: #55e6ff; mix-blend-mode: screen; animation: glitch-b .42s steps(5) both; }
+@keyframes glitch-a {
+  0%   { clip-path: inset(10% 0 70% 0); transform: translate(-6px, 0); }
+  30%  { clip-path: inset(55% 0 20% 0); transform: translate(5px, 0); }
+  60%  { clip-path: inset(30% 0 45% 0); transform: translate(-3px, 0); }
+  100% { clip-path: inset(80% 0 5% 0);  transform: translate(0, 0); opacity: 0; }
+}
+@keyframes glitch-b {
+  0%   { clip-path: inset(60% 0 15% 0); transform: translate(6px, 0); }
+  40%  { clip-path: inset(5% 0 80% 0);  transform: translate(-5px, 0); }
+  100% { clip-path: inset(40% 0 40% 0); transform: translate(0, 0); opacity: 0; }
+}
+
+/* Erpresserbrief-Schnipsel -------------------------------- */
+.ransom__c { display: inline-block; }
+.ransom__c.is-cut-a { background: var(--paper); color: var(--ink); font-family: var(--font-zine); transform: rotate(-6deg); }
+.ransom__c.is-cut-b { background: var(--blood); color: var(--paper); font-family: var(--font-body); font-weight: 800; transform: rotate(4deg); }
+.ransom__c.is-cut-c { color: var(--paper); font-family: Georgia, serif; font-style: italic; transform: translateY(-.08em); }
+.ransom__c.is-cut-d { background: var(--ink); color: var(--blood-hot); outline: 2px solid var(--paper); transform: rotate(-2deg); }
+
+/* Plakat (Galerie-Wand) ----------------------------------- */
+.poster {
+  --rot: 0deg;
+  position: relative; display: block; margin: 0; text-decoration: none;
+  background: var(--paper); color: var(--ink); padding: .6rem .6rem 0;
+  transform: rotate(var(--rot));
+  box-shadow: 0 1px 0 rgba(0,0,0,.4), 0 18px 40px -18px rgba(0,0,0,.9);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+}
+.poster:hover, .poster:focus-within { transform: rotate(0deg) translateY(-6px) scale(1.015); box-shadow: 0 30px 60px -20px rgba(0,0,0,.95); }
+.poster .tape:nth-of-type(1) { top: -.9rem; left: -1.6rem; transform: rotate(-28deg); }
+.poster .tape:nth-of-type(2) { top: -.9rem; right: -1.6rem; transform: rotate(24deg); }
+.poster__img { aspect-ratio: 1; object-fit: cover; width: 100%; filter: contrast(1.05); }
+.poster__meta { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .8rem .2rem 1rem; }
+.poster__no { font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); }
+.poster__title { font: 400 1.35rem/1 var(--font-shout); text-transform: uppercase; }
+.poster__dl {
+  position: absolute; right: .9rem; top: .9rem; z-index: 3;
+  background: var(--blood); color: var(--paper); padding: .55em .8em;
+  font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-transform: uppercase; text-decoration: none;
+  transform: rotate(3deg); opacity: 0; transition: opacity var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+}
+.poster:hover .poster__dl, .poster__dl:focus-visible { opacity: 1; transform: rotate(-2deg) scale(1.05); }
+@media (hover: none) { .poster__dl { opacity: 1; } }
+
+.poster--empty .poster__img {
+  display: grid; place-items: center; background:
+    linear-gradient(to top right, transparent calc(50% - 1px), var(--ash) 50%, transparent calc(50% + 1px)),
+    linear-gradient(to top left,  transparent calc(50% - 1px), var(--ash) 50%, transparent calc(50% + 1px)),
+    var(--paper-2);
+  font: 700 var(--fs-small)/1.3 var(--font-zine); text-transform: uppercase; color: var(--ash-dark); text-align: center;
+}
+.poster--empty .poster__img span { background: var(--paper-2); padding: .5em .8em; }
+
+/* Stempel ------------------------------------------------- */
+.stamp {
+  --rot: -6deg;
+  display: inline-block; border: 4px solid var(--blood); color: var(--blood); padding: .3em .55em .2em;
+  font: 400 var(--fs-3)/1 var(--font-shout); text-transform: uppercase; letter-spacing: .02em;
+  transform: rotate(var(--rot));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+}

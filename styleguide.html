@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Styleguide · Fuck Off Fashion</title>
+  <meta name="robots" content="noindex">
+  <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    /* nur für die Styleguide-Seite */
+    .sg-head { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem var(--edge); mix-blend-mode: difference; }
+    .sg-head__mark { font: 400 1.25rem/1 var(--font-shout); text-transform: uppercase; text-decoration: none; letter-spacing: .02em; }
+    .sg-head nav { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
+    .sg-head nav a { font-family: var(--font-zine); font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: var(--track-label); }
+    @media (max-width: 700px) { .sg-head nav a:not(:last-child) { display: none; } }
+
+    .hero { min-height: 100svh; display: grid; align-content: end; padding-block: 7rem 4rem; overflow: hidden; }
+    .hero__grid { align-items: end; row-gap: var(--sp-4); }
+    .hero__title { grid-column: 1 / -1; grid-row: 1; align-self: end; position: relative; z-index: 2;
+      font-size: clamp(4rem, 11.5vw, 11rem); pointer-events: none; }
+    .hero__title .line:nth-child(2) { padding-left: 12vw; }
+    .hero__logo { grid-column: 8 / span 4; grid-row: 1; align-self: start; position: relative; z-index: 1; margin: 0 0 7rem; }
+    .hero__logo img { width: 100%; transform: rotate(4deg); box-shadow: 0 30px 80px -30px #000; }
+    .hero__logo .stamp { position: absolute; left: -2.5rem; bottom: 8%; z-index: 3; background: rgba(11,10,10,.5); }
+    .hero__foot { grid-column: 1 / span 6; display: grid; gap: var(--sp-3); }
+    .hero__actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .hero__note { grid-column: 9 / -1; align-self: end; }
+    @media (max-width: 900px) {
+      .hero__logo { grid-column: 4 / -1; margin: 0; }
+      .hero__title { grid-row: 2; }
+      .hero__foot, .hero__note { grid-column: 1 / -1; }
+      .hero__title .line:nth-child(2) { padding-left: 0; }
+    }
+
+    .sg { padding-block: var(--sp-7); }
+    .sg--paper { background: var(--paper); color: var(--ink); }
+    .sg--paper .label { color: var(--ash-dark); }
+    .sg--ink2 { background: var(--ink-2); }
+    .sg__intro { grid-column: 1 / span 4; }
+    .sg__body { grid-column: 5 / -1; }
+    @media (max-width: 900px) { .sg__intro, .sg__body { grid-column: 1 / -1; } .sg__intro { margin-bottom: var(--sp-4); } }
+    .sg__intro .shout { margin-top: .4rem; }
+
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr)); gap: 0; border-top: 2px solid var(--ink); }
+    .swatch { padding: 0 0 1rem; border-right: 1px solid rgba(11,10,10,.2); }
+    .swatch__chip { height: 8.5rem; margin-bottom: .8rem; }
+    .swatch b { display: block; font: 400 1.3rem/1 var(--font-shout); text-transform: uppercase; padding-inline: .7rem; }
+    .swatch span { display: block; font: 400 var(--fs-small)/1.45 var(--font-zine); padding-inline: .7rem; color: var(--ash-dark); }
+
+    .scale { border-top: 1px solid var(--ink-3); }
+    .scale__row { display: grid; grid-template-columns: 9rem 1fr; gap: var(--gutter); align-items: baseline;
+      padding-block: 1.2rem; border-bottom: 1px solid var(--ink-3); overflow: hidden; }
+    .scale__row p { margin: 0; }
+    @media (max-width: 600px) { .scale__row { grid-template-columns: 1fr; gap: .4rem; } }
+
+    .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem 2rem; align-items: center; }
+    .replay { margin-top: var(--sp-4); background: none; border: 0; color: var(--ash); cursor: pointer; padding: 0; }
+
+    .manifest { list-style: none; margin: 0; padding: 0; counter-reset: m; }
+    .manifest li { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--gutter); padding-block: 1.6rem;
+      border-bottom: 1px solid var(--ink-3); counter-increment: m; }
+    .manifest li::before { content: counter(m, decimal-leading-zero); font: 700 var(--fs-3)/1 var(--font-zine); color: var(--blood-hot); }
+    .manifest p { margin: 0; font-size: var(--fs-lead); line-height: 1.35; max-width: 32ch; }
+
+    .wall__head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--sp-3); margin-bottom: var(--sp-6); }
+    .wall__head .shout { max-width: 10ch; }
+    .wall { row-gap: var(--sp-6); align-items: start; }
+    .wall > :nth-child(1) { grid-column: 1 / span 6; --rot: -2.5deg; }
+    .wall > :nth-child(2) { grid-column: 8 / span 4; --rot: 3deg; margin-top: 6rem; }
+    .wall > :nth-child(3) { grid-column: 3 / span 4; --rot: 1.5deg; }
+    .wall > :nth-child(4) { grid-column: 8 / span 5; --rot: -3.5deg; margin-top: -4rem; }
+    @media (max-width: 800px) { .wall > * { grid-column: 1 / -1 !important; margin-top: 0 !important; } }
+    .license { grid-column: 1 / -1; margin-top: var(--sp-6); display: grid; grid-template-columns: auto 1fr; gap: var(--gutter); align-items: start;
+      border-top: 2px solid var(--paper); padding-top: var(--sp-3); }
+    .license p { margin: 0; max-width: var(--measure); }
+    @media (max-width: 600px) { .license { grid-template-columns: 1fr; } }
+
+    .motion-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ink-3); }
+    .motion-list li { display: grid; grid-template-columns: 11rem 1fr; gap: var(--gutter); padding-block: 1rem; border-bottom: 1px solid var(--ink-3); }
+    .motion-list code { font-family: var(--font-zine); color: var(--blood-hot); }
+    @media (max-width: 600px) { .motion-list li { grid-template-columns: 1fr; gap: .2rem; } }
+    .sg-foot { padding: var(--sp-5) var(--edge); }
+  </style>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<header class="sg-head">
+  <a class="sg-head__mark" href="#main">Fuck Off Fashion</a>
+  <nav aria-label="Hauptnavigation">
+    <a class="scrawl" href="#manifest">Manifest</a>
+    <a class="scrawl" href="#galerie">Galerie</a>
+    <a class="scrawl" href="#galerie">Download</a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- 1 · Beispiel-Hero ------------------------------------------------ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap grid hero__grid">
+      <figure class="hero__logo" style="margin:0">
+        <img src="assets/img/punk-bleibt-punk.png" width="1024" height="1024" alt="Logo: Anarchie-A mit roten Farbspritzern, darüber „fuck off fashion“, darunter „Punk bleibt Punk“">
+        <span class="stamp js-stamp" style="--rot:-8deg">Gratis</span>
+      </figure>
+      <h1 id="hero-title" class="shout shout--mega hero__title js-tape">Mode ist tot.<br><span class="red">Druck sie</span><br>selbst.</h1>
+      <div class="hero__foot js-fade">
+        <p class="lead">Kein Shop. Keine Saison. Kein Copyright. Nur Motive, die dir gehören, sobald du sie herunterlädst.</p>
+        <div class="hero__actions">
+          <a class="btn" href="#galerie">Motive holen <span class="btn__icon" aria-hidden="true">↓</span></a>
+          <a class="btn btn--ghost" href="#manifest">Manifest lesen</a>
+        </div>
+      </div>
+      <p class="label hero__note js-fade">Styleguide v0.1 · Stand 03.11.2026<br>Alles hier ist Vorschau.</p>
+    </div>
+  </section>
+
+  <div class="ticker js-ticker" aria-hidden="true">
+    <div class="ticker__in"><span>No Boss</span><span>No Brand</span><span>No Copyright</span><span>Druck es selbst</span><span>Punk bleibt Punk</span></div>
+  </div>
+
+  <!-- 2 · Farbe ------------------------------------------------------- -->
+  <section class="sg sg--paper torn" aria-labelledby="t-farbe">
+    <div class="wrap grid">
+      <div class="sg__intro">
+        <p class="label">01 · Farbe</p>
+        <h2 id="t-farbe" class="shout shout--2 js-tape">Schwarz.<br>Papier.<br>Blut.</h2>
+      </div>
+      <div class="sg__body">
+        <p class="prose" style="margin-top:0">Direkt aus dem Logo. Schwarz trägt die Seite, Papierweiß den Text, Rot kommt nur dort vor, wo es wehtun soll: Aktionen, Schlagworte, Stempel.</p>
+        <div class="swatches" style="margin-top:var(--sp-4)">
+          <div class="swatch"><div class="swatch__chip" style="background:var(--ink)"></div><b>Ink</b><span>#0B0A0A<br>Grundfläche</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--ink-2)"></div><b>Ink 2</b><span>#161414<br>dunkle Fläche</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--paper);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)"></div><b>Paper</b><span>#F1EDE4<br>Text auf Schwarz</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--paper-2)"></div><b>Paper 2</b><span>#DDD6C8<br>gealtertes Papier</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--blood)"></div><b>Blood</b><span>#D4161B<br>Flächen, große Schrift</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--blood-hot)"></div><b>Blood Hot</b><span>#FF3B3B<br>kleiner Text auf Schwarz</span></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--ash)"></div><b>Ash</b><span>#8A847C<br>Nebentext (5,3:1)</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · Schrift ----------------------------------------------------- -->
+  <section class="sg torn" style="background:var(--ink)" aria-labelledby="t-schrift">
+    <div class="wrap grid">
+      <div class="sg__intro">
+        <p class="label">02 · Schrift</p>
+        <h2 id="t-schrift" class="shout shout--2 js-tape">Laut.<br>Klar.<br>Getippt.</h2>
+        <p class="prose" style="color:var(--ash)">Anton schreit (nur in Versalien). Archivo erklärt. Courier Prime ist die Schreibmaschine fürs Fanzine: Labels, Nummern, Manifest.</p>
+      </div>
+      <div class="sg__body scale">
+        <div class="scale__row"><span class="label">Mega · Anton</span><p class="shout shout--mega glitch js-glitch" data-text="Anarchie" style="font-size:clamp(3.5rem, 10vw, 9.5rem)">Anarchie</p></div>
+        <div class="scale__row"><span class="label">H1 · Anton</span><p class="shout shout--1">Kauf nichts</p></div>
+        <div class="scale__row"><span class="label">H2 · Anton</span><p class="shout shout--2">Mach es selbst</p></div>
+        <div class="scale__row"><span class="label">H3 · Anton</span><p class="shout shout--3">Flicken statt Wegwerfen</p></div>
+        <div class="scale__row"><span class="label">Lead · Archivo</span><p class="lead" style="max-width:none">Mode verkauft dir Zugehörigkeit. Wir verschenken sie.</p></div>
+        <div class="scale__row"><span class="label">Text · Archivo</span><p class="prose">Jedes Motiv auf dieser Seite ist frei. Lad es runter, druck es auf ein altes Shirt, sprüh es an die Wand oder näh es auf die Jacke. Niemand verdient daran, und genau darum geht es.</p></div>
+        <div class="scale__row"><span class="label">Label · Courier</span><p class="label label--red">Nr. 001 · PNG · 1024 × 1024</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · Elemente & Bewegung ----------------------------------------- -->
+  <section class="sg sg--ink2 torn" aria-labelledby="t-elemente">
+    <div class="wrap grid">
+      <div class="sg__intro">
+        <p class="label">03 · Elemente &amp; Bewegung</p>
+        <h2 id="t-elemente" class="shout shout--2 js-tape">Kein Schnick&shy;schnack.</h2>
+      </div>
+      <div class="sg__body" style="display:grid;gap:var(--sp-6)">
+        <div>
+          <p class="label" style="margin-top:0">Buttons &amp; Links</p>
+          <div class="demo-row">
+            <a class="btn" href="#galerie">Motiv laden <span class="btn__icon" aria-hidden="true">↓</span></a>
+            <a class="btn btn--ghost" href="#manifest">Manifest</a>
+            <a class="scrawl" href="#manifest">Unterstrichen von Hand</a>
+          </div>
+        </div>
+        <div>
+          <p class="label">Erpresserbrief · nur für eine Headline pro Seite</p>
+          <p class="shout shout--1 js-ransom" style="margin:0">Punk bleibt Punk</p>
+          <button class="label replay js-replay" type="button">↻ nochmal abspielen</button>
+        </div>
+        <div>
+          <p class="label">Signaturen der Bewegung</p>
+          <ul class="motion-list">
+            <li><code>Klebeband</code><span>Zeilen werden von links aufgeklebt (Headlines). Hart rein, weich auslaufen.</span></li>
+            <li><code>Stempel</code><span>Fällt aufs Papier, ein Ruck beim Aufschlag (Hinweise wie „Gratis“).</span></li>
+            <li><code>Erpresserbrief</code><span>Buchstaben flackern durch Zeitungsschnipsel und rasten ein (einmal pro Seite).</span></li>
+            <li><code>Glitch</code><span>Kurzer RGB-Versatz beim Überfahren. Nie als Dauerschleife.</span></li>
+            <li><code>Ticker</code><span>Läuft mit der Scroll-Geschwindigkeit und dreht mit der Scroll-Richtung.</span></li>
+            <li><code>Gerissene Kante</code><span>Sektionen sind wie abgerissene Papierbögen übereinandergelegt.</span></li>
+          </ul>
+          <p class="label" style="margin-top:var(--sp-3)">Bei „Bewegung reduzieren“ im System: alles steht sofort, nichts flackert.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Beispiel-Sektion: Manifest ---------------------------------- -->
+  <section id="manifest" class="sg torn" style="background:var(--ink)" aria-labelledby="t-manifest">
+    <div class="wrap grid">
+      <div class="sg__intro">
+        <p class="label label--red">Beispiel-Sektion · Manifest</p>
+        <h2 id="t-manifest" class="shout shout--1 js-tape"><span class="strike js-strike">Kaufen</span><br>Machen.</h2>
+      </div>
+      <ol class="sg__body manifest js-list">
+        <li><p>Mode verkauft dir Zugehörigkeit. Wir verschenken sie.</p></li>
+        <li><p>Kein Motiv gehört uns. Druck es, sprüh es, näh es auf.</p></li>
+        <li><p>Kein Shop, kein Wachstum, keine Saison.</p></li>
+        <li><p>Second-Hand vor Neuware. Flicken vor Wegwerfen.</p></li>
+        <li><p>Punk bleibt Punk.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 6 · Beispiel-Sektion: Galerie & Download ------------------------ -->
+  <section id="galerie" class="sg sg--ink2 torn" aria-labelledby="t-galerie">
+    <div class="wrap grid">
+      <div class="wall__head">
+        <div>
+          <p class="label label--red">Beispiel-Sektion · Galerie &amp; Download</p>
+          <h2 id="t-galerie" class="shout shout--1 js-tape">Die Wand.</h2>
+        </div>
+        <p class="lead" style="max-width:28ch">Nimm dir, was du brauchst. Alle Motive in voller Auflösung, ohne Anmeldung.</p>
+      </div>
+
+      <div class="wall grid" style="grid-column:1/-1">
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img" src="assets/img/punk-bleibt-punk.png" width="1024" height="1024" loading="lazy" alt="Motiv 001: Anarchie-A, „fuck off fashion“, „Punk bleibt Punk“">
+          <a class="poster__dl" href="assets/img/punk-bleibt-punk.png" download="fof-001-punk-bleibt-punk.png">↓ PNG laden</a>
+          <figcaption class="poster__meta"><span class="poster__title">Punk bleibt Punk</span><span class="poster__no">Nr. 001</span></figcaption>
+        </figure>
+        <figure class="poster poster--empty js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <div class="poster__img"><span>Nr. 002<br>kommt</span></div>
+          <figcaption class="poster__meta"><span class="poster__title">In Arbeit</span><span class="poster__no">Nr. 002</span></figcaption>
+        </figure>
+        <figure class="poster poster--empty js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <div class="poster__img"><span>Nr. 003<br>kommt</span></div>
+          <figcaption class="poster__meta"><span class="poster__title">In Arbeit</span><span class="poster__no">Nr. 003</span></figcaption>
+        </figure>
+        <figure class="poster poster--empty js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <div class="poster__img"><span>Nr. 004<br>kommt</span></div>
+          <figcaption class="poster__meta"><span class="poster__title">In Arbeit</span><span class="poster__no">Nr. 004</span></figcaption>
+        </figure>
+      </div>
+
+      <div class="license">
+        <p class="label">Lizenz · Vorschlag</p>
+        <p>Frei kopieren, verändern, weitergeben. Nur nicht verkaufen. <span style="color:var(--ash)">(CC BY-NC-SA 4.0, noch offen)</span></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="sg-foot label">Fuck Off Fashion · Styleguide · keine Cookies, kein Tracking</footer>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/vendor/lenis.min.js"></script>
+<script src="js/motion.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+  const { MOTION, tapeReveal, stamp, ransom, glitch, ticker, smoothScroll } = FOF;
+  smoothScroll();
+
+  gsap.context(() => {
+    // Hero: Headline aufkleben, dann Stempel, dann Text
+    const hero = gsap.timeline({ delay: .15 });
+    hero.add(tapeReveal(document.querySelector(".hero__title")))
+        .add(stamp(document.querySelector(".js-stamp")), "-=.15")
+        .from(".hero .js-fade", { opacity: 0, y: 16, duration: MOTION.dur.base, ease: MOTION.ease.out, stagger: .1 }, "-=.2");
+    if (!MOTION.reduced) gsap.from(".hero__logo img", { clipPath: "inset(100% 0 0 0)", duration: MOTION.dur.slow, ease: MOTION.ease.out, delay: .1 });
+
+    // Sektions-Headlines
+    document.querySelectorAll(".sg .js-tape").forEach(el => {
+      const lines = FOF.splitLines(el);
+      gsap.set(lines, { clipPath: MOTION.reduced ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)" });
+      ScrollTrigger.create({ trigger: el, start: "top 85%", once: true, onEnter: () => tapeReveal(el) });
+    });
+
+    // Durchstreichen: "Kaufen" wird durchgestrichen
+    const strike = document.querySelector(".js-strike");
+    if (!MOTION.reduced) gsap.fromTo(strike, { "--s": 0 }, { "--s": 1, duration: .45, ease: MOTION.ease.punch,
+      scrollTrigger: { trigger: strike, start: "top 75%" }, delay: .5 });
+
+    // Manifest-Zeilen: Nummer zuerst, Satz hinterher
+    if (!MOTION.reduced) gsap.utils.toArray(".js-list li").forEach(li => {
+      gsap.from(li, { clipPath: "inset(0 0 100% 0)", duration: MOTION.dur.base, ease: MOTION.ease.out,
+        scrollTrigger: { trigger: li, start: "top 88%" } });
+    });
+
+    // Plakate werden an die Wand geklatscht
+    if (!MOTION.reduced) gsap.utils.toArray(".js-poster").forEach(p => {
+      gsap.from(p, { y: 80, scale: 1.12, opacity: 0, duration: .45, ease: MOTION.ease.stamp,
+        scrollTrigger: { trigger: p, start: "top 90%" },
+        onComplete: () => gsap.set(p, { clearProps: "transform,opacity" }) });
+    });
+
+    // Erpresserbrief, sobald sichtbar
+    const r = document.querySelector(".js-ransom");
+    ScrollTrigger.create({ trigger: r, start: "top 80%", once: true, onEnter: () => ransom(r) });
+    document.querySelector(".js-replay").addEventListener("click", () => {
+      r.textContent = r.getAttribute("aria-label"); ransom(r);
+    });
+
+    // Glitch beim Überfahren und einmal beim Erscheinen
+    document.querySelectorAll(".js-glitch").forEach(el => {
+      el.addEventListener("pointerenter", () => glitch(el));
+      ScrollTrigger.create({ trigger: el, start: "top 75%", once: true, onEnter: () => glitch(el) });
+    });
+
+    ticker(document.querySelector(".js-ticker"));
+  });
+</script>
+</body>
+</html>
