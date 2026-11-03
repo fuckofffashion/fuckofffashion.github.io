@@ -90,6 +90,9 @@
 .license { grid-column: 1 / -1; margin-top: var(--sp-6); display: grid; grid-template-columns: 14rem 1fr; gap: var(--gutter);
   border-top: 2px solid var(--paper); padding-top: var(--sp-3); }
 .license p { margin: 0; max-width: var(--measure); }
+.license__text { display: grid; gap: var(--sp-2); }
+.license__text strong { font-weight: 800; }
+.license__karma { font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; color: var(--blood-hot); }
 @media (max-width: 600px) { .license { grid-template-columns: 1fr; } }
 
 /* Selbermachen (horizontal gepinnt auf Desktop) ---------- */
