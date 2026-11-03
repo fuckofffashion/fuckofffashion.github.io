@@ -34,9 +34,10 @@
     front.src = (dark ? FRONT.white : FRONT.black) + "-1024.webp";
     dlFront.href = (dark ? FRONT.white : FRONT.black) + ".png";
 
-    const color = m.type === "color";
+    // "solid" (z. B. das rote A) deckt auf jeder Farbe, nur "color" wird auf Dunkel aufgehellt
+    const color = m.type !== "line";
     back.src = color ? m.src : (dark ? m.white : m.black);
-    back.classList.toggle("is-color", color);
+    back.classList.toggle("is-color", m.type === "color");
     back.classList.toggle("is-mask", m.mask === "true");
     dlBack.href = color ? m.png : (dark ? m.pngWhite : m.pngBlack);
 

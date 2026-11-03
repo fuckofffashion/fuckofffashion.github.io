@@ -1,0 +1,45 @@
+/* =========================================================
+   Verbreiten-Kit: Druckvorlagen für Sticker und Flyer.
+   Wird von tools/build-kit.py zu PDF gedruckt (A4, randlos).
+   ========================================================= */
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { width: 210mm; height: 297mm; overflow: hidden; background: #fff; color: var(--ink); font-family: var(--font-body); }
+img { display: block; max-width: 100%; }
+
+.cut { border: .3mm dashed #9a948a; border-radius: 3mm; }
+.zine { font-family: var(--font-zine); text-transform: uppercase; letter-spacing: .12em; }
+.shout { font-family: var(--font-shout); text-transform: uppercase; line-height: .9; letter-spacing: .01em; }
+
+/* Sticker-Bogen -------------------------------------------- */
+.sheet { height: 100%; padding: 9mm 9mm 7mm; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 5mm; }
+.stickers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: 4mm; }
+.st { display: grid; place-items: center; padding: 4mm; overflow: hidden; min-height: 0; }
+.st img { width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.st--wide { grid-column: span 2; }
+.st--ink { background: var(--ink); color: var(--paper); }
+.st--red { background: var(--blood); color: var(--paper); }
+.st--paper { background: var(--paper); }
+.st--text { text-align: center; align-content: center; gap: 2.5mm; }
+.st--text .shout { font-size: 15mm; }
+.st--text .shout--s { font-size: 9mm; }
+.st--text .zine { font-size: 2.6mm; }
+.sheet__foot { display: flex; justify-content: space-between; gap: 6mm; font-size: 2.5mm; line-height: 1.5; color: #5b5650; }
+
+/* Flyer A6, vier pro Bogen ------------------------------------ */
+.flyers { display: grid; grid-template-columns: 105mm 105mm; grid-template-rows: 148.5mm 148.5mm; }
+.fl { position: relative; padding: 9mm 9mm 8mm; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 4mm; background: var(--paper); overflow: hidden; }
+/* Schnittlinien zwischen den Flyern */
+.fl:nth-child(odd) { border-right: .25mm dashed #9a948a; }
+.fl:nth-child(-n+2) { border-bottom: .25mm dashed #9a948a; }
+.fl__top { display: flex; justify-content: space-between; font-size: 2.4mm; color: var(--blood); }
+.fl__name { font-size: 20mm; }
+.fl__tape { justify-self: start; white-space: nowrap; background: var(--blood); color: var(--paper); padding: 1.6mm 3mm 1.2mm; font-size: 6.2mm; transform: rotate(-2deg); }
+.fl__art { min-height: 0; overflow: hidden; display: grid; grid-template-columns: 1fr auto; gap: 4mm; }
+.fl__art img { height: 100%; width: auto; max-width: 44mm; object-fit: contain; object-position: right bottom; }
+.fl__art p { align-self: end; font-size: 3.1mm; line-height: 1.45; max-width: 38mm; }
+.fl__foot { display: grid; grid-template-columns: auto 1fr; gap: 3.5mm; align-items: center; border-top: .5mm solid var(--ink); padding-top: 3mm; }
+.fl__qr { width: 17mm; height: 17mm; }
+.fl__url { font-family: var(--font-shout); font-size: 6mm; text-transform: lowercase; letter-spacing: .02em; }
+.fl__fine { font-size: 2.2mm; color: #5b5650; margin-top: 1mm; }

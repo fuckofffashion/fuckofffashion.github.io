@@ -12,9 +12,9 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=9">
-  <link rel="stylesheet" href="css/base.css?v=9">
-  <link rel="stylesheet" href="css/site.css?v=9">
+  <link rel="stylesheet" href="css/tokens.css?v=10">
+  <link rel="stylesheet" href="css/base.css?v=10">
+  <link rel="stylesheet" href="css/site.css?v=10">
   <!-- Intro: entscheidet vor dem ersten Bild, ob es läuft -->
   <script>
     (function (d) {
@@ -62,7 +62,8 @@
   <nav aria-label="Hauptnavigation">
     <a class="scrawl" href="#anarchie">Anarchie</a>
     <a class="scrawl" href="#wand">Motive</a>
-    <a class="scrawl" href="#selbermachen">Selbermachen</a>
+    <a class="scrawl nav--wide" href="#selbermachen">Selbermachen</a>
+    <a class="scrawl" href="#mitmachen">Mitmachen</a>
   </nav>
 </header>
 
@@ -252,6 +253,15 @@
           </div>
           <figcaption class="poster__meta"><span class="poster__title">Skate or die</span><span class="poster__no">Nr. 007 · PNG</span></figcaption>
         </figure>
+        <figure class="poster js-poster">
+          <span class="tape"></span><span class="tape"></span>
+          <img class="poster__img poster__img--line" src="assets/img/fof-008-anarchie-1024.webp" width="1008" height="1024" loading="lazy"
+               alt="Motiv 008: Anarchie-Zeichen, A im Kreis, knallrot gesprüht mit Tropfnasen">
+          <div class="poster__dls">
+            <a class="poster__dl" href="assets/img/fof-008-anarchie.png" download>↓ PNG <span class="visually-hidden">: Anarchie, für helle und dunkle Textilien, 731 kB</span></a>
+          </div>
+          <figcaption class="poster__meta"><span class="poster__title">Anarchie</span><span class="poster__no">Nr. 008 · PNG</span></figcaption>
+        </figure>
       </div>
 
       <div class="license">
@@ -342,6 +352,8 @@
                 <img src="assets/img/fof-006-skate-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 006: Skate</span></label>
               <label class="tr__thumb"><input type="radio" name="motiv" value="007" data-title="Skate or die" data-type="line" data-black="assets/img/fof-007-skate-or-die-schwarz-1024.webp" data-white="assets/img/fof-007-skate-or-die-weiss-1024.webp" data-png-black="assets/img/fof-007-skate-or-die-schwarz.png" data-png-white="assets/img/fof-007-skate-or-die-weiss.png">
                 <img src="assets/img/fof-007-skate-or-die-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 007: Skate or die</span></label>
+              <label class="tr__thumb"><input type="radio" name="motiv" value="008" data-title="Anarchie" data-type="solid" data-src="assets/img/fof-008-anarchie-1024.webp" data-png="assets/img/fof-008-anarchie.png" data-mask="false">
+                <img src="assets/img/fof-008-anarchie-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 008: Anarchie</span></label>
             </div>
           </fieldset>
         </form>
@@ -388,6 +400,55 @@
     </ol>
   </section>
 
+  <!-- Mitmachen ------------------------------------------------------ -->
+  <section id="mitmachen" class="sec sec--paper join torn" aria-labelledby="t-join">
+    <div class="wrap grid join__head">
+      <div class="join__title">
+        <p class="label label--red">07 · Mitmachen</p>
+        <h2 id="t-join" class="shout shout--1 js-tape">Werde Teil<br>der Bewegung.</h2>
+      </div>
+      <p class="lead join__lead">Kein Mitgliedsausweis, kein Beitrag, kein Account. Du bist dabei, sobald du druckst.</p>
+    </div>
+
+    <div class="wrap grid join__ways">
+      <article class="join__way join__way--mail">
+        <p class="label label--red">A · Zeig deinen Druck</p>
+        <h3 class="shout shout--2">Schick uns<br>ein Foto.</h3>
+        <p>Shirt, Hoodie, Jutebeutel, die Jacke vom Flohmarkt: Fotografier, was du bedruckt hast, und schick es per Mail. Dein Gesicht muss nicht drauf.</p>
+        <p>An die Wand kommt nur, was du freigibst. Ob es dann hängt, entscheiden wir nach Gefühl. Keine Jury, keine Kriterien. Anarchie eben.</p>
+        <div><a class="btn" href="mailto:hallo@fuckofffashion.example?subject=Mein%20Druck&body=Hi%2C%0A%0Ahier%20ist%20mein%20Druck%2C%20das%20Foto%20h%C3%A4ngt%20an.%0A%0AMotiv%3A%0AGedruckt%20auf%3A%0A%0ADarf%20an%20die%20Wand%3A%20ja%20/%20nein%0AName%20dazu%20%28leer%20%3D%20anonym%29%3A%0A">Foto schicken <span class="btn__icon" aria-hidden="true">→</span></a></div>
+        <p class="label">Öffnet dein Mailprogramm. Kein Formular, kein fremder Server.</p>
+      </article>
+
+      <article class="join__way join__way--kit">
+        <p class="label label--red">B · Verbreiten-Kit</p>
+        <h3 class="shout shout--2">Kleb es.<br>Verteil es.</h3>
+        <p>Ein Bogen Sticker und vier Flyer pro A4-Seite, fertig für den Drucker zu Hause oder im Copyshop.</p>
+        <ul class="join__kit" role="list">
+          <li><a class="join__file js-poster" href="assets/kit/fof-sticker-bogen-a4.pdf" download>
+            <span class="tape" aria-hidden="true"></span>
+            <img src="assets/kit/fof-sticker-bogen-a4-vorschau.webp" width="909" height="1286" alt="" loading="lazy" decoding="async">
+            <span class="join__fname"><span class="shout shout--3">Sticker-Bogen</span><span class="label">A4 · PDF · 4,7 MB</span></span></a></li>
+          <li><a class="join__file js-poster" href="assets/kit/fof-flyer-a6.pdf" download>
+            <span class="tape" aria-hidden="true"></span>
+            <img src="assets/kit/fof-flyer-a6-vorschau.webp" width="909" height="1286" alt="" loading="lazy" decoding="async">
+            <span class="join__fname"><span class="shout shout--3">Flyer</span><span class="label">4 × A6 auf A4 · PDF · 0,8 MB</span></span></a></li>
+        </ul>
+        <p class="label">Kleb nur, wo es dir gehört. Laternen und fremde Wände sind tabu.</p>
+      </article>
+    </div>
+
+    <div class="wrap join__wall">
+      <p class="label">Von euch</p>
+      <ul class="join__slots" role="list">
+        <li class="join__slot"><span class="scrawl">Dein Druck hier</span></li>
+        <li class="join__slot"><span class="scrawl">Platz frei</span></li>
+        <li class="join__slot"><span class="scrawl">Na los</span></li>
+        <li class="join__slot"><span class="scrawl">Du?</span></li>
+      </ul>
+    </div>
+  </section>
+
   <!-- Schluss -------------------------------------------------------- -->
   <section class="sec sec--ink2 outro torn" aria-labelledby="t-outro">
     <div class="wrap grid">
@@ -411,9 +472,9 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
-<script src="js/motion.js?v=9"></script>
-<script src="js/intro.js?v=9"></script>
-<script src="js/main.js?v=9"></script>
-<script src="js/tragen.js?v=9"></script>
+<script src="js/motion.js?v=10"></script>
+<script src="js/intro.js?v=10"></script>
+<script src="js/main.js?v=10"></script>
+<script src="js/tragen.js?v=10"></script>
 </body>
 </html>

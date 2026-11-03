@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Flyer · Fuck Off Fashion</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="kit.css">
+</head>
+<body>
+<template id="flyer">
+  <section class="fl">
+    <p class="fl__top zine"><span>Freie Motive</span><span>Kein Shop · CC0</span></p>
+    <h1 class="fl__name shout">Fuck Off<br>Fashion</h1>
+    <p class="fl__tape shout">Mode ist tot.</p>
+    <div class="fl__art">
+      <p>Lad dir ein Motiv. Druck es auf das Shirt, das du schon hast. Gib es weiter. Kostet nichts, gehört allen.</p>
+      <img src="../assets/img/punk-bleibt-punk-1024.webp" alt="">
+    </div>
+    <div class="fl__foot">
+      <img class="fl__qr" src="qr.svg" alt="">
+      <div><p class="fl__url js-url"></p><p class="fl__fine zine">Druck sie selbst.</p></div>
+    </div>
+  </section>
+</template>
+<div class="flyers"></div>
+<script>
+  // Vier gleiche A6-Flyer auf einen A4-Bogen; Adresse kommt aus ?url= (tools/build-kit.py)
+  const url = new URLSearchParams(location.search).get("url") || "fuckofffashion.example";
+  const tpl = document.getElementById("flyer");
+  const box = document.querySelector(".flyers");
+  for (let i = 0; i < 4; i++) box.append(tpl.content.cloneNode(true));
+  document.querySelectorAll(".js-url").forEach(el => el.textContent = url);
+</script>
+</body>
+</html>

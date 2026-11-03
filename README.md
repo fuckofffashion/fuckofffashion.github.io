@@ -12,6 +12,8 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 | `js/motion.js` | Motion-Tokens für GSAP + wiederverwendbare Effekte (`tapeReveal`, `stamp`, `ransom`, `glitch`, `ticker`, `smoothScroll`) |
 | `js/intro.js` | Intro (einmal pro Session, überspringbar, bei Reduced Motion aus) |
 | `js/main.js` | Was wann auf der Startseite passiert |
+| `js/tragen.js` | Vorne/Hinten-Vorschau (Sektion Tragen) |
+| `kit/` | Druckvorlagen für Sticker-Bogen und Flyer, `tools/build-kit.py` macht daraus die PDFs in `assets/kit/` |
 | `styleguide.html` | Vorschau des Design-Systems (nicht verlinkt, `noindex`) |
 
 ## Neues Motiv an die Wand hängen
@@ -25,3 +27,20 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 ## Nach Änderungen an CSS/JS
 
 Den Versionsparameter in allen HTML-Dateien hochzählen (`?v=3` → `?v=4`), sonst zeigen Browser die alte Datei aus dem Cache.
+
+## Verbreiten-Kit neu drucken
+
+Nach Änderungen an `kit/sticker.html`, `kit/flyer.html` oder `kit/kit.css`:
+`python tools/build-kit.py deine-domain.de`
+Die Domain landet als Text und QR-Code auf dem Flyer. Braucht Chrome, PyMuPDF, segno und Pillow.
+Danach Dateigrößen in `index.html` (Sektion Mitmachen) prüfen.
+
+## Platzhalter, die noch raus müssen
+
+- Domain `fuckofffashion.example` auf dem Flyer: Kit mit echter Domain neu drucken (siehe oben).
+- Mail-Adresse `hallo@fuckofffashion.example` im Knopf „Foto schicken“ (`index.html`, Sektion Mitmachen).
+- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]`.
+
+## Eingeschickten Druck an die Wand „Von euch“ hängen
+
+Nur mit Freigabe aus der Mail. Foto verkleinern (`-1024.webp`, siehe oben), in `index.html` ein `<li class="join__slot">` durch ein Bild ersetzen.
