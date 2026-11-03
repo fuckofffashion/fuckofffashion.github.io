@@ -61,6 +61,17 @@
         clipPath: "inset(0 0 100% 0)", duration: MOTION.dur.base, ease: MOTION.ease.out,
         scrollTrigger: { trigger: li, start: "top 90%" } }));
 
+      /* Anarchie: Leitsätze schneiden sich ein, das Zitat liest sich beim Scrollen hell */
+      gsap.utils.toArray(".js-points > div").forEach((d, i) => {
+        const tl = gsap.timeline({ scrollTrigger: { trigger: d, start: "top 88%" } });
+        tl.from(d.querySelector("dt"), { clipPath: "inset(0 100% 0 0)", duration: MOTION.dur.base, ease: MOTION.ease.punch, delay: (i % 2) * .12 })
+          .from(d.querySelector("dd"), { opacity: 0, y: 12, duration: MOTION.dur.base, ease: MOTION.ease.out }, "-=.2");
+      });
+      const quote = document.querySelector(".js-quote p");
+      quote.innerHTML = quote.textContent.split(" ").map(w => `<span class="q-w">${w}</span>`).join(" ");
+      gsap.fromTo(".q-w", { opacity: .15 }, { opacity: 1, ease: "none", stagger: .1,
+        scrollTrigger: { trigger: ".js-quote", start: "top 80%", end: "bottom 45%", scrub: true } });
+
       /* Plakate werden an die Wand geklatscht */
       gsap.utils.toArray(".js-poster").forEach(p => gsap.from(p, {
         y: 80, scale: 1.12, opacity: 0, duration: .45, ease: MOTION.ease.stamp,
@@ -85,6 +96,12 @@
     const mark = document.querySelector(".head__mark span");
     mark.classList.add("glitch"); mark.dataset.text = mark.textContent;
     head.querySelector(".head__mark").addEventListener("pointerenter", () => glitch(mark));
+
+    /* "Herde." zuckt einmal, wenn die Headline aufgeklebt ist, und beim Überfahren */
+    document.querySelectorAll(".js-glitch").forEach(el => {
+      el.addEventListener("pointerenter", () => glitch(el));
+      ScrollTrigger.create({ trigger: el, start: "top 80%", once: true, onEnter: () => gsap.delayedCall(.9, () => glitch(el)) });
+    });
 
     ticker(document.querySelector(".js-ticker"));
   });
