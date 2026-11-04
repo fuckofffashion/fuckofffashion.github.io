@@ -54,7 +54,12 @@ function schraeg(id) {
   return `${grad}deg`;
 }
 
-export function renderTermin(t) {
+// Heute, morgen und das laufende Jahr – einmal je Rendervorgang ausrechnen, nicht je Termin
+export function kalenderTage(jetzt = new Date()) {
+  return { heute: tagText(jetzt), morgen: tagText(plusTage(jetzt, 1)), jahr: jetzt.getFullYear() };
+}
+
+export function renderTermin(t, tage = kalenderTage()) {
   const li = element("li", "kz-termin");
   li.id = `termin-${t.id}`;
   li.dataset.id = t.id;
@@ -62,8 +67,7 @@ export function renderTermin(t) {
   // Wann
   const [j, m, d] = String(t.datum).split("-").map(Number);
   const datum = new Date(j, m - 1, d);
-  const h = heute();
-  const morgen = tagText(plusTage(new Date(), 1));
+  const { heute: h, morgen, jahr } = tage;
   const wann = element("p", "kz-termin__wann");
   const zeit = element("time");
   zeit.dateTime = t.datum;
@@ -72,7 +76,7 @@ export function renderTermin(t) {
     element("span", `kz-termin__tag${t.datum === h ? " is-heute" : ""}`, tagWort),
     element("span", "kz-termin__datum", `${zwei(d)}.${zwei(m)}.`),
   );
-  if (j !== new Date().getFullYear()) zeit.append(element("span", "kz-termin__jahr", String(j)));
+  if (j !== jahr) zeit.append(element("span", "kz-termin__jahr", String(j)));
   wann.append(zeit);
   if (t.zeit) wann.append(element("span", "kz-termin__zeit", sauber(t.zeit)));
 

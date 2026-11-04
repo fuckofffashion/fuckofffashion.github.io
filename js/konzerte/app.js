@@ -6,7 +6,7 @@ import { filtern, sortieren } from "./filter.js?v=13";
 import { STUFEN } from "./einheiten.js?v=13";
 import { SPRUECHE, spruch } from "./leer.js?v=13";
 import { ortsfeld } from "./ortsfeld.js?v=13";
-import { renderTermin, element, link, heute, plusTage, tagText } from "./termin.js?v=13";
+import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=13";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
@@ -158,7 +158,8 @@ function start(wurzel) {
   function zeigeMehr() {
     const bis = Math.min(treffer.length, gezeigt + SEITE);
     const stapel = document.createDocumentFragment();
-    for (let i = gezeigt; i < bis; i++) stapel.append(renderTermin(treffer[i]));
+    const tage = kalenderTage();
+    for (let i = gezeigt; i < bis; i++) stapel.append(renderTermin(treffer[i], tage));
     el.liste.append(stapel);
     gezeigt = bis;
     const rest = treffer.length - gezeigt;
@@ -217,7 +218,13 @@ function start(wurzel) {
   // Ereignisse -------------------------------------------------------------
   el.form.addEventListener("submit", (e) => e.preventDefault());
 
+  // Jede Ortsentscheidung (Geolocation, gewählter Ort, „Vergessen“) zählt hoch.
+  // Eine Geolocation-Antwort gilt nur, wenn seitdem nichts anderes entschieden wurde.
+  let ortsAnfrage = 0;
+  let ort = null; // Feld „PLZ / Ort“, siehe unten
+
   el.wo.addEventListener("click", () => {
+    const nr = ++ortsAnfrage;
     if (!("geolocation" in navigator)) {
       melde(TEXT_KEIN_STANDORT);
       return;
@@ -228,8 +235,9 @@ function start(wurzel) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         fertig();
+        if (nr !== ortsAnfrage) return; // zu spät: inzwischen anders entschieden
         melde("");
-        el.ort.value = "";
+        ort.leere();
         setzeMitte({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
@@ -240,23 +248,29 @@ function start(wurzel) {
       },
       () => {
         fertig();
+        if (nr !== ortsAnfrage) return;
         melde(TEXT_KEIN_STANDORT);
       },
       { timeout: 10000, maximumAge: 300000 },
     );
   });
 
-  ortsfeld({
+  ort = ortsfeld({
     input: el.ort,
     liste: el.ortListe,
     url: ORTE_URL,
     melde,
-    onWahl: ({ lat, lon, name }) => setzeMitte({ lat, lon, name, um: name, art: "ort" }),
+    onWahl: ({ lat, lon, name }) => {
+      ortsAnfrage += 1;
+      setzeMitte({ lat, lon, name, um: name, art: "ort" });
+    },
   });
 
   el.mitteWeg.addEventListener("click", () => {
+    ortsAnfrage += 1;
     z.mitte = null;
-    el.ort.value = "";
+    melde("");
+    ort.leere();
     zeigeMitte();
     aktualisiere();
     el.ort.focus(); // der Knopf verschwindet, der Fokus soll nicht ins Leere fallen
@@ -324,7 +338,8 @@ function start(wurzel) {
     el.mehrfilter.open = !schmal.matches;
   };
   passeMehrfilterAn();
-  schmal.addEventListener("change", passeMehrfilterAn);
+  if (schmal.addEventListener) schmal.addEventListener("change", passeMehrfilterAn);
+  else if (schmal.addListener) schmal.addListener(passeMehrfilterAn); // ältere Safari
 
   // Anfangszustand ---------------------------------------------------------
   zeigeStufe();
@@ -344,6 +359,9 @@ function start(wurzel) {
     })
     .then((d) => {
       if (!d || !Array.isArray(d.termine)) throw new Error("Format");
+      return d;
+    })
+    .then((d) => {
       daten = d;
 
       // Genres aus den Daten, „allgemein“ ans Ende
@@ -371,15 +389,19 @@ function start(wurzel) {
         el.stand.textContent = `Stand: ${stand.toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" })}`;
         el.stand.hidden = false;
       }
-
-      aktualisiere();
-    })
-    .catch(() => {
+      return true;
+    }, (fehler) => {
+      // Nur Lade- und Formatfehler landen hier; Fehler beim Rendern bleiben sichtbar (Konsole)
+      console.error("Konzerttermine nicht geladen:", fehler);
       daten = null;
       el.zahl.textContent = TEXT_DATEN_FEHLEN;
       el.liste.replaceChildren();
       el.mehr.hidden = true;
       el.leer.hidden = true;
+      return false;
+    })
+    .then((geladen) => {
+      if (geladen) aktualisiere();
     });
 }
 

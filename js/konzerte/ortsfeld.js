@@ -10,6 +10,7 @@ const TEXT_TABELLE_FEHLT = "Ortsliste gerade nicht da. Drück „Wo bin ich?“ 
 
 // input: <input role=combobox>, liste: <ul role=listbox>
 // melde(text): Hinweis anzeigen ("" löscht), onWahl({lat, lon, name}): Ort gewählt
+// Rückgabe: { leere() } leert das Feld samt alten Vorschlägen (für „Vergessen“ und Geolocation)
 export function ortsfeld({ input, liste, url, melde, onWahl }) {
   let tabelle = null;
   let laden = null;
@@ -110,6 +111,8 @@ export function ortsfeld({ input, liste, url, melde, onWahl }) {
       melde(TEXT_TABELLE_FEHLT);
       return [];
     }
+    // Kam die Tabelle erst, nachdem das Feld den Fokus verloren hat: keine Liste aufklappen
+    if (document.activeElement !== input) return [];
     // Während des Ladens kann weitergetippt worden sein: immer den aktuellen Wert nehmen
     const ergebnis = sucheOrt(tabelle, input.value);
     zeige(ergebnis);
@@ -156,4 +159,14 @@ export function ortsfeld({ input, liste, url, melde, onWahl }) {
   });
 
   input.addEventListener("blur", () => schliesse());
+
+  return {
+    leere() {
+      clearTimeout(timer);
+      input.value = "";
+      treffer = [];
+      liste.replaceChildren();
+      schliesse();
+    },
+  };
 }
