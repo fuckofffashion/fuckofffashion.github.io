@@ -10,11 +10,11 @@
   <meta property="og:description" content="Mode ist tot. Druck sie selbst. Freie Motive, kein Shop, kein Copyright.">
   <meta property="og:image" content="assets/img/og.jpg">
   <meta property="og:type" content="website">
-  <link rel="icon" href="assets/img/favicon.svg?v=16" type="image/svg+xml">
+  <link rel="icon" href="assets/img/favicon.svg?v=17" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=16">
-  <link rel="stylesheet" href="css/base.css?v=16">
-  <link rel="stylesheet" href="css/site.css?v=16">
+  <link rel="stylesheet" href="css/tokens.css?v=17">
+  <link rel="stylesheet" href="css/base.css?v=17">
+  <link rel="stylesheet" href="css/site.css?v=17">
   <!-- Intro: entscheidet vor dem ersten Bild, ob es läuft -->
   <script>
     (function (d) {
@@ -113,15 +113,15 @@
         </div>
       </div>
       <figure class="why__board">
-        <div class="billboard js-billboard" role="img" aria-label="Parodie auf ein Werbeplakat: „Sei einzigartig. Die neue Kollektion in 5 Größen und 3 Farben, ab 89,99 Euro“, darüber ein roter Stempel „Fuck Off“">
+        <div class="billboard js-billboard">
           <span class="tape" aria-hidden="true"></span><span class="tape" aria-hidden="true"></span>
-          <div class="billboard__ad" aria-hidden="true">
+          <div class="billboard__ad">
             <p class="billboard__brand">MARKE<sup>®</sup></p>
             <p class="billboard__claim">Sei einzig&shy;artig.<sup>™</sup></p>
             <p class="billboard__small">Die neue Kollektion. In 5 Größen und 3 Farben.<br>Ab 89,99 €</p>
-            <span class="billboard__cta">Jetzt shoppen →</span>
+            <button type="button" class="billboard__cta js-kasse-auf" aria-haspopup="dialog">Jetzt shoppen →</button>
           </div>
-          <span class="stamp billboard__stamp js-bb-stamp" style="--rot:-14deg" aria-hidden="true">Fuck Off</span>
+          <span class="stamp billboard__stamp js-bb-stamp" style="--rot:-14deg">Fuck Off</span>
         </div>
         <figcaption class="label">Abb. 1: unechter Werbedreck</figcaption>
       </figure>
@@ -512,14 +512,52 @@
   </nav>
 </footer>
 
+<!-- Fake-Kasse zum Plakat „Jetzt shoppen“ (js/kasse.js) -->
+<dialog class="kasse js-kasse" aria-labelledby="kasse-titel">
+  <div class="kasse__innen js-kasse-innen">
+    <div class="kasse__kopf">
+      <p class="kasse__marke">MARKE<sup>®</sup></p>
+      <button type="button" class="kasse__zu js-kasse-zu" aria-label="Warenkorb schließen">×</button>
+    </div>
+    <h2 id="kasse-titel" class="kasse__titel">Dein Warenkorb (1)</h2>
+    <div class="kasse__artikel">
+      <div class="kasse__bild" aria-hidden="true"></div>
+      <div>
+        <p class="kasse__name">Sei einzigartig.<sup>™</sup> T-Shirt</p>
+        <p class="kasse__meta">Größe M · Farbe: wie alle anderen · Menge: 1 von 2.000.000</p>
+      </div>
+      <p class="kasse__preis">89,99 €</p>
+    </div>
+    <dl class="kasse__summe">
+      <div><dt>Zwischensumme</dt><dd>89,99 €</dd></div>
+      <div><dt>Versand</dt><dd>4,99 €</dd></div>
+      <div><dt>Zugehörigkeitsgefühl</dt><dd>inklusive*</dd></div>
+      <div class="kasse__gesamt"><dt>Gesamt</dt><dd><s class="js-kasse-alt">94,98 €</s> <span class="kasse__null js-kasse-null" hidden>0,00 €</span></dd></div>
+    </dl>
+    <div class="kasse__laden js-kasse-laden" tabindex="-1" hidden>
+      <div class="kasse__balken" role="progressbar" aria-label="Bestellung" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="js-kasse-balken"></span></div>
+      <p class="kasse__status js-kasse-status">Individualität wird verpackt …</p>
+    </div>
+    <button type="button" class="kasse__los js-kasse-los">Zur Kasse →</button>
+    <div class="kasse__ende js-kasse-ende" hidden>
+      <p class="kasse__spruch">Spar dir das.<br>Mach selbst.</p>
+      <a class="btn js-kasse-motive" href="#wand">Zu den Motiven <span class="btn__icon" aria-hidden="true">↓</span></a>
+    </div>
+    <p class="kasse__fuss">* nur solange der Trend hält</p>
+    <span class="stamp kasse__stempel js-kasse-stempel" style="--rot:-12deg" aria-hidden="true">Fuck Off</span>
+  </div>
+  <p class="visually-hidden" aria-live="polite"><span class="js-kasse-ansage"></span></p>
+</dialog>
+
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
-<script src="js/motion.js?v=16"></script>
-<script src="js/intro.js?v=16"></script>
-<script src="js/main.js?v=16"></script>
-<script src="js/tragen.js?v=16"></script>
-<script type="module" src="js/faden.js?v=16"></script>
-<script type="module" src="js/motive.js?v=16"></script>
+<script src="js/motion.js?v=17"></script>
+<script src="js/intro.js?v=17"></script>
+<script src="js/main.js?v=17"></script>
+<script src="js/tragen.js?v=17"></script>
+<script type="module" src="js/faden.js?v=17"></script>
+<script type="module" src="js/motive.js?v=17"></script>
+<script src="js/kasse.js?v=17"></script>
 </body>
 </html>

@@ -85,8 +85,15 @@
 .billboard__claim { margin: auto 0 1.2rem; font: 600 clamp(2.4rem, 4.6vw, 4.2rem)/.98 var(--font-body); letter-spacing: -.045em; text-transform: lowercase; }
 .billboard__claim sup, .billboard__brand sup { font-size: .35em; letter-spacing: 0; }
 .billboard__small { margin: 0 0 1.4rem; font: 400 .85rem/1.45 var(--font-body); color: #6e6363; }
-.billboard__cta { align-self: flex-start; background: #2b2626; color: #f7ece6; border-radius: 999px; padding: .7em 1.3em; font: 600 .8rem/1 var(--font-body); }
+.billboard__cta {
+  align-self: flex-start; position: relative; z-index: 4; border: 0; cursor: pointer;
+  background: #2b2626; color: #f7ece6; border-radius: 999px; padding: .7em 1.3em; font: 600 .8rem/1 var(--font-body);
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast);
+}
+.billboard__cta:hover { background: #000; transform: translateY(-2px); }
+.billboard__cta:focus-visible { outline: 3px solid var(--blood); outline-offset: 3px; }
 .billboard__stamp {
+  pointer-events: none;
   position: absolute; left: 50%; top: 42%; translate: -50% -50%; z-index: 3; white-space: nowrap;
   font-size: clamp(3rem, 7vw, 6rem); border-width: 7px; padding: .15em .35em .05em; mix-blend-mode: multiply;
 }
@@ -328,3 +335,64 @@ html:not(.js) .tr__controls { display: none; }
 .page h2 { font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; margin: var(--sp-5) 0 var(--sp-2); }
 .page p, .page li { max-width: var(--measure); }
 .todo { background: var(--blood); color: var(--paper); padding: 0 .3em; font-family: var(--font-zine); }
+
+/* Fake-Kasse: derselbe glatte Shop-Look wie das Plakat, bis der Stempel kommt */
+html:has(.kasse[open]) { overflow: hidden; }
+.kasse {
+  width: min(26rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto;
+  padding: 1.4rem 1.5rem 1.2rem; border: 0; border-radius: 14px;
+  background: #fbf6f2; color: #2b2626; font: 400 .9rem/1.45 var(--font-body);
+  box-shadow: 0 40px 80px -30px #000;
+}
+.kasse::backdrop { background: rgba(11, 10, 10, .72); }
+.kasse[open] { animation: kasse-ein .35s var(--ease-out); }
+@keyframes kasse-ein { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+.kasse sup { font-size: .5em; }
+.kasse__innen { position: relative; } /* wackelt beim Stempel – nie das <dialog> selbst bewegen, GSAP hängt es zum Messen um */
+.kasse__kopf { display: flex; justify-content: space-between; align-items: center; }
+.kasse__marke { margin: 0; font: 800 .75rem/1 var(--font-body); letter-spacing: .5em; }
+.kasse__zu {
+  width: 2.2rem; height: 2.2rem; margin-right: -.5rem; border: 0; border-radius: 50%; cursor: pointer;
+  background: none; color: inherit; font: 400 1.6rem/1 var(--font-body);
+}
+.kasse__zu:hover { background: #ead9d3; }
+.kasse :focus-visible { outline: 3px solid var(--blood); outline-offset: 2px; }
+.kasse__titel { margin: 1.1rem 0 .9rem; font: 600 1.35rem/1.1 var(--font-body); letter-spacing: -.03em; }
+.kasse__artikel {
+  display: grid; grid-template-columns: 3.4rem 1fr auto; gap: .9rem; align-items: start;
+  padding-block: .9rem; border-block: 1px solid #e6d8d2;
+}
+.kasse__bild { aspect-ratio: 4 / 5; border-radius: 6px; background: linear-gradient(160deg, #f7ece6, #d9c6c4); }
+.kasse__name { margin: 0; font-weight: 600; }
+.kasse__meta { margin: .2rem 0 0; font-size: .78rem; color: #6e6363; }
+.kasse__preis { margin: 0; font-weight: 600; white-space: nowrap; }
+.kasse__summe { margin: .8rem 0 1.1rem; }
+.kasse__summe div { display: flex; justify-content: space-between; gap: 1rem; padding-block: .15rem; }
+.kasse__summe dt, .kasse__summe dd { margin: 0; }
+.kasse__summe dd { text-align: right; }
+.kasse__gesamt { margin-top: .4rem; padding-top: .5rem !important; border-top: 1px solid #e6d8d2; font-weight: 700; font-size: 1.05rem; }
+.kasse__gesamt s { text-decoration: none; }
+.kasse.is-entlarvt .kasse__gesamt s { text-decoration: line-through 3px var(--blood); color: #6e6363; font-weight: 400; }
+.kasse__null { color: var(--blood); }
+.kasse__los {
+  width: 100%; border: 0; border-radius: 999px; padding: .95em 1em; cursor: pointer;
+  background: #2b2626; color: #fbf6f2; font: 600 .9rem/1 var(--font-body);
+}
+.kasse__los:hover { background: #000; }
+.kasse__laden { margin-bottom: .3rem; }
+.kasse__balken { height: .5rem; border-radius: 999px; background: #ead9d3; overflow: hidden; }
+.kasse__balken span { display: block; height: 100%; width: 0; background: #2b2626; border-radius: inherit; }
+.kasse__status { margin: .55rem 0 0; font-size: .8rem; color: #6e6363; min-height: 1.45em; }
+.kasse__ende { display: grid; gap: 1rem; justify-items: start; margin-top: .4rem; }
+.kasse__spruch { margin: 0; font: 400 clamp(2rem, 9vw, 2.6rem)/.95 var(--font-shout); text-transform: uppercase; color: var(--blood); }
+.kasse__ende .btn:hover { background: var(--ink); color: var(--paper); }
+.kasse__fuss { margin: 1rem 0 0; font-size: .7rem; color: #8b7f7f; }
+.kasse__stempel {
+  position: absolute; left: 0; right: 0; top: 7.2rem; width: max-content; margin-inline: auto; z-index: 2;
+  pointer-events: none; white-space: nowrap;
+  font-size: clamp(3.4rem, 15vw, 5rem); border-width: 7px; padding: .15em .35em .05em; mix-blend-mode: multiply;
+  opacity: 0;
+}
+.kasse.is-entlarvt .kasse__stempel { opacity: 1; }
+.kasse [hidden] { display: none !important; }
+.kasse__laden:focus { outline: none; }
