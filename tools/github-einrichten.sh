@@ -201,146 +201,130 @@ finish() {
 
 run_wizard() {
 
-TOTAL_STAGES=8
+TOTAL_STAGES=6
 
-PROBE_DIR="${PROBE_DIR:-D:/claude/fof/fof-probe}"
+# Der Wizard schreibt keine .env-Datei; ask soll darum nichts aus einer fremden .env vorschlagen.
+ENV_FILE=/dev/null
+
+REPO_NAME="${REPO_NAME:-fuckofffashion}"
 SITE_DIR="${SITE_DIR:-D:/claude/fof/site}"
-CB="https://codeberg.org"
+GH="https://github.com"
+GH_USER=""
 
-banner "Codeberg einrichten: FUCK OFF FASHION Konzertkalender"
+banner "GitHub einrichten: FUCK OFF FASHION Konzertkalender"
 
 # ── 1 ─────────────────────────────────────────────────────────────────────
-stage "Codeberg-Account und Organisation"
-say "Codeberg ist ein gemeinnütziger Git-Dienst (Git = Versionsverwaltung für Dateien)."
-say "Der tägliche Konzertlauf und die fertige Webseite liegen dort."
-say "Dieser Wizard fragt keine Passwörter oder Tokens ab. Du klickst alles selbst im Browser."
+stage "Beim privaten GitHub-Konto anmelden"
+say "GitHub ist ein Git-Dienst (Git = Versionsverwaltung für Dateien). Dort liegt der Quelltext,"
+say "dort läuft der tägliche Konzertlauf (GitHub Actions) und von dort wird die Seite ausgeliefert (GitHub Pages)."
+say "Dieser Wizard fragt keine Passwörter oder Tokens ab. Du meldest dich selbst an."
 printf '\n'
-open_url "$CB/user/sign_up"
-step "Hast du schon einen Codeberg-Account? Wenn nicht, jetzt registrieren und die Bestätigungs-Mail anklicken."
-pause "Account fertig? Enter drücken."
-open_url "$CB/org/create"
-step "Neue Organisation anlegen. Name genau: fuckofffashion (alles klein, ohne Leerzeichen)."
-step "Die Organisation bündelt die Repos; die Seite wird später unter fuckofffashion.codeberg.page erreichbar."
-pause "Organisation 'fuckofffashion' existiert? Enter drücken."
+warn "Auf diesem Rechner ist das Firmenkonto bei gh (GitHub-Kommandozeile) angemeldet."
+say "Das Projekt gehört auf dein PRIVATES Konto, nicht dorthin."
+printf '\n'
+open_url "$GH/login"
+step "Im Browser mit deinem privaten GitHub-Konto anmelden (nicht mit dem Firmenkonto)."
+say "Dann im Terminal (zweites Git-Bash-Fenster, nicht dieses Wizard-Fenster):"
+cmd "gh auth status"
+note "Zeigt alle angemeldeten Konten; das aktive trägt 'Active account: true'."
+say "Ist dein privates Konto noch nicht dabei:"
+cmd "gh auth login --hostname github.com --web"
+note "gh ist die GitHub-Kommandozeile. '--web' öffnet den Browser zur Anmeldung; gh zeigt einen Einmal-Code, den du dort eingibst."
+say "Sind beide Konten da, das private aktiv schalten:"
+cmd "gh auth switch --hostname github.com --user <dein-privater-name>"
+note "Quelle: cli.github.com/manual/gh_auth_switch (abgerufen 2026-11-04). Ohne Angaben fragt gh nach dem Konto."
+say "Danach nochmals 'gh auth status': Active account muss dein privater Name sein."
+printf '\n'
+ask GH_USER "Dein privater GitHub-Benutzername (nur zur Anzeige der Adressen hier):" || GH_USER=""
+[[ -n "$GH_USER" ]] || { GH_USER="<dein-name>"; warn "Kein Name eingegeben, ich zeige '<dein-name>' als Platzhalter."; }
+pause "Angemeldet und das private Konto aktiv? Enter drücken."
 
 # ── 2 ─────────────────────────────────────────────────────────────────────
-stage "Drei Repositories anlegen"
-say "Ein Repository (kurz: Repo) ist ein Projektordner auf Codeberg."
-say "Zwei Repos für die Seite, weil ein Repo namens 'pages' an der Wurzel von"
-say "fuckofffashion.codeberg.page ausgeliefert wird. Unter /site/ würden die absoluten Pfade in 404.html brechen."
+stage "Öffentliches Repository anlegen"
+say "Ein Repository (kurz: Repo) ist ein Projektordner auf GitHub."
+say "Es muss ÖFFENTLICH sein und LEER bleiben (kein README, keine Lizenz, keine .gitignore):"
+say "Dein lokaler Verlauf wird später hochgeladen, ein Startcommit auf GitHub würde dabei stören."
 printf '\n'
-open_url "$CB/repo/create"
-step "Besitzer: Organisation fuckofffashion wählen (nicht dein persönlicher Account)."
-step "Repo 1: Name 'site', öffentlich. Haken bei 'Repository initialisieren' NICHT setzen (leer lassen). Hier liegt der Quelltext."
-step "Repo 2: Name 'pages', öffentlich, mit Haken bei Initialisierung (README). Hier landet nur die fertige Ausgabe."
-step "Repo 3: Name 'fof-probe', Besitzer fuckofffashion, leer lassen. Nur für den 7-Tage-Test."
-note "Wichtig: 'site' leer lassen, sonst lehnt Codeberg den ersten Upload ab (zwei verschiedene Verläufe)."
-step "Prüfen: In 'pages' muss der Standard-Branch 'main' heißen (Repo öffnen, Branch-Auswahl oben links)."
-step "Falls er anders heißt: Repo-Einstellungen > Branches > Standard-Branch auf 'main' ändern oder den Branch 'main' anlegen."
-pause "Alle drei Repos angelegt und Branch 'main' in 'pages' geprüft? Enter drücken."
+open_url "$GH/new"
+step "Als Besitzer (Owner) dein privates Konto wählen: $GH_USER"
+step "Repository name: $REPO_NAME"
+step "Sichtbarkeit: Public."
+step "Bei 'Add README', '.gitignore' und 'license' nichts auswählen (alle auf 'None' bzw. aus)."
+step "'Create repository' klicken."
+note "Hinweis: Auf der Anlegen-Seite stehen die Optionen README/.gitignore/License; die Beschriftungen können sich ändern."
+pause "Leeres, öffentliches Repo '$GH_USER/$REPO_NAME' existiert? Enter drücken."
 
 # ── 3 ─────────────────────────────────────────────────────────────────────
 stage "Lizenz bestätigen"
-say "Vorschlag: CC0 1.0 (Public Domain, jeder darf alles frei nutzen) für Motive und Code."
-say "Ausgenommen: alles unter assets/vendor/*, dort gelten die Lizenzen der jeweiligen Autoren."
+say "Vorschlag: CC0 1.0 (Public Domain, jeder darf alles frei nutzen) für eigene Motive und Code."
+say "Ausgenommen: alles unter assets/vendor/* und data/*, dort gelten die Bedingungen laut LICENSE-Datei."
+say "Weil das Repo öffentlich ist, darf damit jeder die Dateien nutzen und weitergeben."
 printf '\n'
-if confirm "Passt CC0 1.0 mit dieser Ausnahme für dich?"; then
-  say "Gut. Die LICENSE-Datei folgt im Projekt (eigener Task); hier ist nichts weiter zu tun."
+if confirm "Passt CC0 1.0 mit diesen Ausnahmen für dich?"; then
+  say "Gut. Die LICENSE-Datei im Projekt bleibt, wie sie ist."
 else
   warn "Dann nenne Claude danach die gewünschte Lizenz (z. B. CC BY 4.0, MIT)."
-  say "Die LICENSE-Datei wird entsprechend angepasst, bevor du die Seite hochlädst."
-  SKIPPED+=("Lizenz: andere Wahl Claude mitteilen, LICENSE anpassen lassen")
+  say "Die LICENSE-Datei wird angepasst, BEVOR du etwas hochlädst. Bis dahin: nicht pushen."
+  SKIPPED+=("Lizenz: andere Wahl Claude mitteilen, LICENSE anpassen lassen, erst danach pushen")
 fi
 pause "Weiter mit Enter."
 
 # ── 4 ─────────────────────────────────────────────────────────────────────
-stage "Actions (automatische Läufe) einschalten"
-say "Forgejo Actions führen den täglichen Lauf aus. Laut Codeberg-Doku (docs.codeberg.org/ci/actions)"
-say "sind sie in jedem Repo standardmäßig AUS. Codeberg bietet gehostete Actions nur eingeschränkt an."
-note "Die Doku verweist für Details auf https://codeberg.org/actions/meta; das Runner-Label 'codeberg-tiny' steht auf der Doku-Seite nicht."
+stage "Pages und Actions einstellen"
+say "Quelle: GitHub-Doku, abgerufen 2026-11-04."
 printf '\n'
-open_url "$CB/actions/meta"
-step "Lies dort kurz, ob du gehostete Runner beantragen oder einfach nutzen kannst."
-open_url "$CB/fuckofffashion/site/settings"
-step "Repo-Einstellungen von 'site': Bereich 'Units' bzw. 'Einheiten' (laut Doku: Units > Overview), 'Actions' aktivieren, speichern."
-open_url "$CB/fuckofffashion/fof-probe/settings"
-step "Dasselbe im Repo 'fof-probe'."
-pause "Actions in beiden Repos aktiv? Enter drücken."
+open_url "$GH/$GH_USER/$REPO_NAME/settings/pages"
+step "Repo > Settings (falls nicht sichtbar: erst das Menü 'More' aufklappen) > Pages."
+step "Unter 'Build and deployment' bei 'Source' die Auswahl 'GitHub Actions' wählen."
+note "Menüpfad laut docs.github.com (Configuring a publishing source for your GitHub Pages site). Die Adresse oben ist abgeleitet, nicht aus der Doku."
+printf '\n'
+open_url "$GH/$GH_USER/$REPO_NAME/settings/actions"
+step "Repo > Settings > Actions > General > 'Actions permissions': 'Allow all actions and reusable workflows' lassen/wählen, speichern."
+note "Laut Doku ist Actions in allen Repos standardmäßig eingeschaltet; hier nur prüfen, dass es nicht abgeschaltet ist."
+note "Unsicher: Ob die Beschriftung der Option genau so lautet, nennt die Doku nicht wörtlich. Sie beschreibt nur 'alle Actions erlaubt'."
+note "Der Workflow nutzt nur Actions von GitHub selbst (actions/checkout, configure-pages, upload-pages-artifact, deploy-pages)."
+pause "Pages-Source 'GitHub Actions' gesetzt und Actions erlaubt? Enter drücken."
 
 # ── 5 ─────────────────────────────────────────────────────────────────────
-stage "Probelauf hochladen (7 Tage Test)"
-say "Der Probelauf schreibt täglich um 04:00 UTC (05:00 MEZ) eine Zeile in probe.log und listet"
-say "python3, node und git mit Versionen. Daran siehst du, ob Codeberg zuverlässig läuft und das Image reicht."
+stage "Adresse und eigene Domain (jetzt nur lesen)"
+say "Du hast noch keine eigene Domain. Die Seite startet darum als Projektseite unter dieser Adresse:"
+cmd "https://$GH_USER.github.io/$REPO_NAME/"
+say "Die Seite selbst nutzt relative Pfade und läuft deshalb auch in diesem Unterordner."
+say "404.html (die Fehlerseite) braucht eine feste Basis, weil GitHub sie auch für verschachtelte Adressen ausliefert."
+say "Das Veröffentlichungs-Skript stellt sie selbst ein: auf /$REPO_NAME/ im Actions-Lauf, auf / mit eigener Domain."
 printf '\n'
-say "1. Ein Token nur für diesen Push erzeugen (Token = Passwort-Ersatz für Programme):"
-open_url "$CB/user/settings/applications"
-step "Unter 'Manage Access Tokens': Name z. B. fof-push, Recht für Repositories 'Read and Write', erzeugen, kopieren (wird nur einmal angezeigt)."
-note "Dieses Token darf in alle deine Repos schreiben (siehe Stufe 6). Nach dem letzten Push in Stufe 8 kannst du es wieder löschen."
-say "2. Im Terminal (Git Bash) ausführen:"
-cmd "cd $PROBE_DIR"
-cmd "git remote add origin $CB/fuckofffashion/fof-probe.git"
-cmd "git push -u origin main"
-say "Diese Befehle in einem ZWEITEN Git-Bash-Fenster ausführen, nicht in diesem Wizard-Fenster."
-say "Git fragt nach Benutzername (dein Codeberg-Name) und Passwort: dort das Token einfügen. Das ist die einzige Stelle im Terminal, an der ein Token hingehört."
-printf '\n'
-say "3. Manuell starten:"
-open_url "$CB/fuckofffashion/fof-probe/actions"
-step "Reiter 'Actions', Workflow 'probe', 'Run workflow' klicken. Im Log sollten Datum und Werkzeug-Versionen stehen."
-note "Schlägt der Schritt 'Committen und pushen' im Workflow fehl: Push abgelehnt, also Actions-Rechte und Token-Rechte des Repos prüfen."
-pause "Manueller Start war grün (oder du notierst den Fehler)? Enter drücken."
-say "In 7 Tagen: probe.log muss 7 geplante Einträge (event=schedule) zwischen 04:00 und 06:00 UTC haben."
-
-# ── 6 ─────────────────────────────────────────────────────────────────────
-stage "Zugriffstoken PAGES_TOKEN und Secret"
-say "Der Konzertlauf schreibt die fertige Seite ins Repo 'pages'. Dafür braucht er ein Token mit Schreibrecht."
-warn "Das PAGES_TOKEN niemals ins Terminal, in Chats oder in Dateien einfügen. Nur ins Browserfeld des Secrets."
-printf '\n'
-say "Reichweite des Tokens (Stand 2026-11-04):"
-note "Laut Forgejo-Doku (forgejo.org/docs/latest/user/token-scope) gilt 'write:repository' für alle Repos, auf die der Account zugreifen kann,"
-note "außer bei der Option 'Specific repositories' (nur gewählte Repos). Ob Codeberg diese Option schon anbietet, weiß ich nicht: im Formular nachsehen."
-note "Die Codeberg-Doku zu Tokens (docs.codeberg.org/advanced/access-token) beschreibt keine Rechte."
-say "Sicherer (optional): ein eigener Bot-Account, der nur auf 'pages' Schreibrecht hat (nur dort als Mitarbeiter eintragen)."
-say "Dann kann ein geleaktes Token nicht an 'site' oder andere Repos."
-printf '\n'
-open_url "$CB/user/settings/applications"
-step "Token erzeugen (Name z. B. pages-schreiben), Recht Repository 'Read and Write', wenn möglich nur Repo 'pages'. Kopieren."
-open_url "$CB/fuckofffashion/site/settings"
-step "Repo 'site', Einstellungen: Bereich Actions > Secrets > neues Secret."
-step "Name genau: PAGES_TOKEN   Wert: das kopierte Token. Speichern."
-note "Den genauen Menüpunkt für Secrets nennt die Doku nicht; er liegt in den Repo-Einstellungen unter Actions."
-warn "Der erste Push von 'site' startet den Workflow 'konzerte' sofort. PAGES_TOKEN muss vorher gesetzt sein."
-pause "Secret PAGES_TOKEN gespeichert? Enter drücken."
-
-# ── 7 ─────────────────────────────────────────────────────────────────────
-stage "Später: eigene Domain (jetzt nur lesen)"
-say "Das machst du erst, wenn die Seite unter fuckofffashion.codeberg.page läuft."
-warn "Widerspruch zum Plan: Der Plan ging von einer Datei .domains im Repo 'pages' aus."
-say "Laut Codeberg-Doku, Stand 2026-11-04 (beim Umsetzen erneut prüfen!), gilt aber:"
-step "Eine .domains-Datei ist nicht mehr nötig; die Freigabe läuft über DNS."
-step "DNS beim Domain-Anbieter: CNAME auf codeberg.page. (Subdomain) oder ALIAS (Hauptdomain)."
-step "Dazu ein TXT-Eintrag mit der Clone-URL des Repos, Name _git-pages-forge-allowlist (bei Deployment per Actions)."
+say "Später mit eigener Domain (jetzt nichts tun), laut GitHub-Doku, abgerufen 2026-11-04:"
+step "Im Repo: Settings > Pages > 'Custom domain' die Domain eintragen und speichern. Erst danach DNS einrichten."
+step "Domain-Anbieter (DNS): Hauptdomain mit A-Einträgen auf 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153"
+step "(oder ALIAS/ANAME auf $GH_USER.github.io). Subdomain (www.…) mit CNAME-Eintrag auf $GH_USER.github.io, ohne Repo-Namen."
+step "Im Repo-Wurzelordner eine Datei CNAME mit der Domain ablegen (eine Zeile). Sie schaltet die Basis von 404.html automatisch auf '/'."
+note "DNS-Änderungen brauchen bis zu 24 Stunden."
+warn "Laut Doku wird eine CNAME-Datei bei Veröffentlichung per Actions von GitHub ignoriert; maßgeblich ist die Einstellung unter Pages."
 note "Die Werte können sich ändern. Immer die aktuelle Doku öffnen, wenn es soweit ist."
-open_url "https://docs.codeberg.org/codeberg-pages/using-custom-domain/"
+open_url "https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
 pause "Gelesen? Enter drücken."
 
-# ── 8 ─────────────────────────────────────────────────────────────────────
+# ── 6 ─────────────────────────────────────────────────────────────────────
 stage "Letzter Schritt: Seite hochladen (noch nicht ausführen)"
-warn "Mit diesem Push geht die Seite öffentlich online. Nur nach Absprache mit Claude pushen."
-say "Voraussetzungen: Impressum ist ausgefüllt, PAGES_TOKEN ist gesetzt (Stufe 6),"
-say "und der fertige Stand liegt auf 'master'. Aktuell arbeitet das Projekt auf dem Branch 'konzerte';"
-say "'master' enthält den fertigen Stand erst nach dem Zusammenführen (Merge), den Claude am Ende macht."
-say "Prüfe das:"
+warn "Mit dem ersten Push geht die Seite öffentlich online. Nur nach Absprache mit Claude pushen."
+say "Voraussetzungen:"
+step "Der lokale Verlauf ist bereinigt (das macht Claude gemeinsam mit dir, vorher nicht pushen)."
+step "Impressum und Datenschutz sind ausgefüllt. Sonst bricht das Veröffentlichungs-Skript ab (Platzhalter '[bitte ausfüllen]')."
+step "Pages-Source steht auf 'GitHub Actions' (Stufe 4)."
+printf '\n'
+say "Der fertige Stand liegt auf 'master' (Merge macht Claude am Ende). Prüfen:"
 cmd "git -C $SITE_DIR branch --show-current"
 cmd "git -C $SITE_DIR log --oneline -1 master"
 say "Gibt es 'origin' schon? Prüfen:"
 cmd "git -C $SITE_DIR remote get-url origin"
 say "Fehlermeldung: anlegen. Sonst nur die Adresse umstellen:"
-cmd "git -C $SITE_DIR remote add origin $CB/fuckofffashion/site.git"
-cmd "git -C $SITE_DIR remote set-url origin $CB/fuckofffashion/site.git"
+cmd "git -C $SITE_DIR remote add origin $GH/$GH_USER/$REPO_NAME.git"
+cmd "git -C $SITE_DIR remote set-url origin $GH/$GH_USER/$REPO_NAME.git"
 say "Dann (erst nach Absprache):"
-cmd "git -C $SITE_DIR push origin master:main"
-say "Git fragt wieder nach Benutzername und Passwort: dasselbe Push-Token wie in Stufe 5 (fof-push) einfügen."
-note "Lokal heißt der Hauptbranch 'master', auf Codeberg 'main', wie der Workflow es erwartet."
+cmd "git -C $SITE_DIR push -u origin master:main"
+say "Fragt Git nach einer Anmeldung (unter Windows meist ein Browser-Fenster, nicht von der Doku belegt), das private Konto wählen. Passwörter nie ins Terminal tippen."
+note "Lokal heißt der Hauptbranch 'master', auf GitHub 'main', wie der Workflow es erwartet."
+say "Der Push startet den Workflow 'konzerte' sofort (Reiter 'Actions' im Repo); er holt Daten, baut die Seite und stellt sie online."
 pause "Enter zum Beenden."
 
 finish
