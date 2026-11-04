@@ -51,7 +51,7 @@ class VeroeffentlichenTest(unittest.TestCase):
         return subprocess.run(
             [BASH, (self.wurzel / "tools" / "veroeffentlichen.sh").as_posix(),
              *(Path(a).as_posix() for a in args)],
-            cwd=cwd or self.tmp, capture_output=True, text=True)
+            cwd=cwd or self.tmp, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
     def wurzel_unveraendert(self):
         self.assertEqual(dateien(self.wurzel), ALLOWLIST | AUSGESCHLOSSEN | {"tools/veroeffentlichen.sh"})
@@ -134,6 +134,18 @@ class VeroeffentlichenTest(unittest.TestCase):
     def test_nicht_existierendes_ziel_bricht_ab(self):
         r = self.lauf(self.ziel / "gibts-nicht")
         self.assertNotEqual(r.returncode, 0)
+
+    def test_platzhalter_bitte_ausfuellen_bricht_ab_ohne_das_ziel_zu_leeren(self):
+        schreibe(self.wurzel, "impressum.html", '<p><span class="todo">[bitte ausfüllen]</span> Name</p>')
+        schreibe(self.ziel, ".git/HEAD")
+        schreibe(self.ziel, "alt.html", "bleibt")
+        r = self.lauf(self.ziel)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("[bitte ausfüllen]", r.stderr)
+        self.assertIn("impressum.html", r.stderr)
+        self.assertNotIn("datenschutz.html", r.stderr)
+        self.assertEqual((self.ziel / "alt.html").read_text(), "bleibt")
+        self.assertNotIn("impressum.html", dateien(self.ziel))
 
     def test_fehlende_quelle_bricht_ab_ohne_das_ziel_zu_leeren(self):
         (self.wurzel / "data/karte.json").unlink()

@@ -26,6 +26,10 @@ for ordner in css js assets; do
   [ -d "$ordner" ] || fehler "Quellordner fehlt: $ordner, Abbruch"
 done
 
+# Go-live-Schutz: Platzhalter in den Rechtstexten dürfen nicht veröffentlicht werden.
+offen=$(grep -l -F '[bitte ausfüllen]' index.html konzerte.html 404.html impressum.html datenschutz.html || true)
+[ -z "$offen" ] || fehler "Platzhalter [bitte ausfüllen] noch in: $(echo $offen), erst ausfüllen, Abbruch"
+
 # Ohne .git darf das Ziel nur leer sein (Schutz vor dem Leeren falscher Ordner).
 if [ ! -e "$ziel/.git" ] && [ -n "$(ls -A "$ziel")" ]; then
   fehler "Ziel $ziel hat kein .git, ist aber nicht leer, Abbruch"
