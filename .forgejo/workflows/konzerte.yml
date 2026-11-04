@@ -1,0 +1,114 @@
+# Täglicher Konzertlauf: Daten holen, nach main committen, ins Pages-Repo veröffentlichen.
+#
+# Branch: Der Workflow arbeitet auf `main`. Lokal heißt der Hauptbranch `master`;
+# beim ersten Push (Task 16) wird er als `main` hochgeladen.
+#
+# Benötigtes Secret: PAGES_TOKEN (Schreibzugriff auf das Repo fuckofffashion/pages).
+name: konzerte
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  push:
+    branches: [main]
+    # Der Bot-Commit ändert nur data/; ohne diese Zeile würde er den Workflow erneut starten.
+    paths-ignore:
+      - 'data/**'
+  workflow_dispatch:
+
+# Geplanter Lauf und Push-Lauf dürfen nicht gleichzeitig committen.
+# Ein laufender Lauf wird nicht abgebrochen, der nächste wartet.
+concurrency:
+  group: konzerte
+  cancel-in-progress: false
+
+env:
+  PAGES_REPO_URL: https://codeberg.org/fuckofffashion/pages.git
+
+jobs:
+  konzerte:
+    runs-on: codeberg-tiny
+    steps:
+      # actions/* löst Codeberg über code.forgejo.org auf.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Werkzeuge prüfen
+        run: |
+          if ! command -v python3 >/dev/null 2>&1; then
+            echo "FEHLER: python3 fehlt im Runner-Image (codeberg-tiny). Abbruch." >&2
+            exit 1
+          fi
+          python3 --version
+          if command -v node >/dev/null 2>&1; then node --version; else echo "HINWEIS: node fehlt im Image, JS-Tests werden übersprungen."; fi
+
+      - name: Python-Tests
+        run: python3 -m unittest discover -s tools/konzerte/tests -t .
+
+      - name: JS-Tests
+        run: |
+          if command -v node >/dev/null 2>&1; then
+            node --test "tests/js/*.test.mjs"
+          else
+            echo "ÜBERSPRUNGEN: node ist im Image nicht vorhanden, JS-Tests nicht gelaufen."
+          fi
+
+      # abholen schreibt bei Ausfall einer Quelle die übrigen Daten trotzdem (Exit 1).
+      # Darum merkt dieser Schritt nur den Exit-Code; committet und veröffentlicht wird
+      # danach, und der letzte Schritt beendet den Lauf mit dem gemerkten Code.
+      - name: Konzerte abholen
+        run: |
+          set +e
+          timeout 540 python3 -m tools.konzerte.abholen
+          code=$?
+          set -e
+          echo "abholen: Exit-Code $code"
+          echo "ABHOLEN_CODE=$code" >> "$GITHUB_ENV"
+
+      # Nur bei Exit 0 oder 1. Ein Timeout (124) oder ein Absturz veröffentlicht nichts.
+      - name: Daten nach main committen
+        if: (env.ABHOLEN_CODE == '0' || env.ABHOLEN_CODE == '1') && github.ref_name == 'main'
+        run: |
+          if [ -z "$(git status --porcelain -- 'data/*.json')" ]; then
+            echo "Keine Änderung an data/*.json, kein Commit."
+            exit 0
+          fi
+          git config user.name "konzerte-bot"
+          git config user.email "konzerte-bot@users.noreply.codeberg.org"
+          git add -- data/*.json
+          git commit -m "Konzertdaten aktualisiert $(date -u +%Y-%m-%d) [skip ci]"
+          git push origin HEAD:main
+
+      - name: Ins Pages-Repo veröffentlichen
+        if: (env.ABHOLEN_CODE == '0' || env.ABHOLEN_CODE == '1') && github.ref_name == 'main'
+        env:
+          PAGES_TOKEN: ${{ secrets.PAGES_TOKEN }}
+        run: |
+          # Kein set -x: das Secret darf nie im Log landen.
+          if [ -z "$PAGES_TOKEN" ]; then
+            echo "FEHLER: Secret PAGES_TOKEN ist nicht gesetzt." >&2
+            exit 1
+          fi
+          ziel="$RUNNER_TEMP/pages"
+          rm -rf "$ziel"
+          # Token nur im Header, nie in der URL, damit er weder im Log noch in .git/config steht.
+          git -c http.extraHeader="Authorization: token $PAGES_TOKEN" clone "$PAGES_REPO_URL" "$ziel"
+          bash tools/veroeffentlichen.sh "$ziel"
+          cd "$ziel"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Pages-Repo unverändert, kein Push."
+            exit 0
+          fi
+          git config user.name "konzerte-bot"
+          git config user.email "konzerte-bot@users.noreply.codeberg.org"
+          git commit -m "Veröffentlicht $(date -u +%Y-%m-%dT%H:%MZ)"
+          git -c http.extraHeader="Authorization: token $PAGES_TOKEN" push origin HEAD:main
+
+      # Läuft immer: bei gemerktem Fehlercode (1 = Quelle ausgefallen, 124 = Timeout) wird der Lauf rot,
+      # damit Codeberg Mark eine Mail schickt.
+      - name: Ergebnis von abholen auswerten
+        if: always() && env.ABHOLEN_CODE != '' && env.ABHOLEN_CODE != '0'
+        run: |
+          echo "abholen endete mit Exit-Code $ABHOLEN_CODE (1 = Quelle ausgefallen, 124 = Timeout)." >&2
+          exit "$ABHOLEN_CODE"
