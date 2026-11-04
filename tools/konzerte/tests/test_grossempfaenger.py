@@ -20,6 +20,20 @@ FIRMEN = [
     "Stadtverwaltung",
     "Agentur für Arbeit Kleve",
     "Universitätsklinikum",
+    "Stadt Leipzig Neues Rathaus",
+    "Bundesarchiv",
+    "Helmholtz Zentrum München",
+    "Provinzial Versicherungsanstalten",
+    "Vereinigte Sparkassen",
+    "Kassenärztliche Vereinigung Hessen",
+    "IHK Halle-Dessau",
+    "NORD/LB",
+    "GEZ",
+    "Mey & Edlich",
+    "Reichwald + Co",
+    "Johannes-Gutenberg-Universität",
+    "Johannes-Gutenberg-UniversitÃ¤t",  # doppelt kodiert, wie im Rohdatensatz
+    "Amt für Soziales und Versorgung",
 ]
 ORTE = [
     "Bankholzen",
@@ -32,6 +46,14 @@ ORTE = [
     "Maikammer",
     "Weil am Rhein",
     "Sankt Augustin",
+    "Amt Neuhaus",
+    "Amt Wachsenburg",
+    "Amt Creuzburg",
+    "Coburg",
+    "Cottbus",
+    "Hofamt",
+    "Stadt Wehlen",
+    "Landesbergen",
 ]
 
 
@@ -51,7 +73,10 @@ class ErkennungTest(unittest.TestCase):
         self.assertFalse(ist_grossempfaenger("Nordsee se"))
 
     def test_co_ohne_wortgrenze_ist_kein_treffer(self):
-        self.assertFalse(ist_grossempfaenger("Hof & Cottbus"))
+        self.assertFalse(ist_grossempfaenger("Hof &Cottbus"))
+        self.assertFalse(ist_grossempfaenger("Coburg"))
+        self.assertFalse(ist_grossempfaenger("Cottbus"))
+        self.assertTrue(ist_grossempfaenger("HUK-Coburg"))
 
 
 class SicherheitsnetzTest(unittest.TestCase):
@@ -64,6 +89,17 @@ class SicherheitsnetzTest(unittest.TestCase):
         entferne_grossempfaenger(orte)
         # Postfach Berlin fällt, beide "Bank AG"-Zeilen bleiben (Name hat eine Zeile mit Einwohnern)
         self.assertEqual(sorted(z[1] for z in orte), ["11111", "99999"])
+
+    def test_vorsatz_mit_ort_in_gleicher_plz(self):
+        orte = [
+            ["DE", "33095", "Kreis Paderborn", 51.7, 8.7, 0],
+            ["DE", "33095", "Paderborn", 51.7, 8.7, 0],
+            ["DE", "85385", "Gemeinde Eching", 48.3, 11.6, 0],  # kein eigener Ort in der PLZ ...
+            ["DE", "85386", "Eching", 48.3, 11.6, 14000],  # ... aber Ort mit Einwohnern im Land
+            ["DE", "01829", "Stadt Wehlen", 50.9, 14.0, 0],  # ohne Ort im Land bleibt es stehen
+        ]
+        entferne_grossempfaenger(orte)
+        self.assertEqual(sorted(z[2] for z in orte), ["Eching", "Paderborn", "Stadt Wehlen"])
 
     def test_nur_de_wird_bereinigt(self):
         orte = [["NL", "1000", "Bank AG", 52.0, 4.0, 0], ["DE", "20000", "Bank AG", 53.0, 10.0, 0]]
