@@ -139,7 +139,36 @@
 .wall > :nth-child(4n+2) { grid-column: 8 / span 4; --rot: 3deg; margin-top: 6rem; }
 .wall > :nth-child(4n+3) { grid-column: 3 / span 4; --rot: 1.5deg; }
 .wall > :nth-child(4n+4) { grid-column: 8 / span 5; --rot: -3.5deg; margin-top: -4rem; }
+/* Gefiltert zählt der Rhythmus nur sichtbare Plakate. Browser ohne „nth-child(… of …)“ verwerfen
+   diese Regeln und behalten den Rhythmus oben (dann bleiben nur Lücken im Muster). */
+.wall > :nth-child(4n+1 of :not([hidden])) { grid-column: 1 / span 6; --rot: -2.5deg; margin-top: 0; }
+.wall > :nth-child(4n+2 of :not([hidden])) { grid-column: 8 / span 4; --rot: 3deg; margin-top: 6rem; }
+.wall > :nth-child(4n+3 of :not([hidden])) { grid-column: 3 / span 4; --rot: 1.5deg; margin-top: 0; }
+.wall > :nth-child(4n+4 of :not([hidden])) { grid-column: 8 / span 5; --rot: -3.5deg; margin-top: -4rem; }
 @media (max-width: 800px) { .wall > * { grid-column: 1 / -1 !important; margin-top: 0 !important; } }
+
+/* Motiv-Filter (Wand und Motivwahl): Schablonen-Knöpfe, ohne JS nicht da (hidden) */
+.motivfilter { --mf-fg: var(--paper); --mf-bg: var(--ink-2);
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .5rem; margin: calc(var(--sp-3) - var(--sp-6)) 0 var(--sp-5); }
+.motivfilter[hidden], .wall > [hidden], .tr__thumb[hidden] { display: none; }
+.motivfilter__knopf {
+  min-height: 2.75rem; padding: .55rem 1rem; cursor: pointer;
+  font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-transform: uppercase;
+  color: var(--mf-fg); background: transparent; border: 2px solid var(--mf-fg);
+  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+}
+.motivfilter__knopf:nth-child(2) { rotate: -1deg; }
+.motivfilter__knopf:nth-child(4) { rotate: .8deg; }
+.motivfilter__knopf[aria-pressed="true"] { background: var(--mf-fg); color: var(--mf-bg); }
+/* Hover nur mit Maus: auf dem Handy bliebe der getippte Knopf sonst rot statt gedrückt */
+@media (hover: hover) {
+  .motivfilter__knopf[aria-pressed="false"]:hover { background: var(--blood); border-color: var(--blood); color: var(--paper); }
+}
+.tr .motivfilter { --mf-fg: var(--ink); --mf-bg: var(--paper); width: 100%; margin: 0 0 .25rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .is-neu { animation: motiv-ein .3s var(--ease-out) both; }
+}
+@keyframes motiv-ein { from { opacity: 0; } }
 .license { grid-column: 1 / -1; margin-top: var(--sp-6); display: grid; grid-template-columns: 14rem 1fr; gap: var(--gutter);
   border-top: 2px solid var(--paper); padding-top: var(--sp-3); }
 .license p { margin: 0; max-width: var(--measure); }

@@ -1,0 +1,83 @@
+{
+  "_hinweis": "Einzige Liste aller Motive. Nach jeder Änderung: python tools/build-motive.py (schreibt Wand und Motivwahl in index.html neu).",
+  "gruppen": [
+    { "id": "kritik", "name": "Kritik" },
+    { "id": "anarchie", "name": "Anarchie" },
+    { "id": "skate", "name": "Skate" }
+  ],
+  "designer_start": "001",
+  "motive": [
+    {
+      "nr": "000", "titel": "Fuck Off Fashion", "datei": "fof-000-brust", "typ": "line",
+      "breite": 985, "hoehe": 830,
+      "alt": "Motiv 000: Schriftzug „Fuck Off Fashion“ in drei Zeilen, Schablonenschrift, für die Brust",
+      "groesse": { "schwarz": "48 kB", "weiss": "48 kB" },
+      "designer": false,
+      "gruppen": ["anarchie"]
+    },
+    {
+      "nr": "001", "titel": "Punk bleibt Punk", "datei": "punk-bleibt-punk", "typ": "color",
+      "breite": 1024, "hoehe": 1024,
+      "alt": "Motiv 001: Anarchie-A, „fuck off fashion“, „Punk bleibt Punk“",
+      "groesse": { "png": "1,7 MB" }, "download": "fof-001-punk-bleibt-punk.png",
+      "designer": true, "maske": false,
+      "gruppen": []
+    },
+    {
+      "nr": "002", "titel": "Kauf nix", "datei": "fof-002-kauf-nix", "typ": "color",
+      "breite": 1024, "hoehe": 1024,
+      "alt": "Motiv 002: umgekippter Einkaufswagen, rot durchgekreuzt, „Kauf nix – mach selbst“",
+      "groesse": { "png": "2,1 MB" }, "download": "fof-002-kauf-nix.png",
+      "designer": true, "maske": true,
+      "gruppen": ["kritik"]
+    },
+    {
+      "nr": "003", "titel": "Flicken statt Wegwerfen", "datei": "fof-003-flicken", "typ": "color",
+      "breite": 1024, "hoehe": 1024,
+      "alt": "Motiv 003: Sicherheitsnadel durch einen Stoffflicken mit rotem Anarchie-A, „Flicken statt Wegwerfen“",
+      "groesse": { "png": "1,9 MB" }, "download": "fof-003-flicken.png",
+      "designer": true, "maske": true,
+      "gruppen": ["kritik"]
+    },
+    {
+      "nr": "004", "titel": "Fast Fashion kills", "datei": "fof-004-fast-fashion-kills", "typ": "color",
+      "breite": 1024, "hoehe": 1024,
+      "alt": "Motiv 004: Totenkopf mit Kleiderbügel und Preisschild „0 Euro“, „Fast Fashion kills“",
+      "groesse": { "png": "1,6 MB" }, "download": "fof-004-fast-fashion-kills.png",
+      "designer": true, "maske": true,
+      "gruppen": ["kritik"]
+    },
+    {
+      "nr": "005", "titel": "Anarchy DJ", "datei": "fof-005-anarchy-dj", "typ": "line",
+      "breite": 788, "hoehe": 974,
+      "alt": "Motiv 005: Anarchie-A mit Armen und Beinen an einem Mischpult",
+      "groesse": { "schwarz": "42 kB", "weiss": "42 kB" },
+      "designer": true,
+      "gruppen": ["anarchie"]
+    },
+    {
+      "nr": "006", "titel": "Skate", "datei": "fof-006-skate", "typ": "line",
+      "breite": 1024, "hoehe": 538,
+      "alt": "Motiv 006: Schriftzug „Skate“, das A ist ein Anarchie-A auf einem Skateboard",
+      "groesse": { "schwarz": "123 kB", "weiss": "122 kB" },
+      "designer": true,
+      "gruppen": ["skate"]
+    },
+    {
+      "nr": "007", "titel": "Skate or die", "datei": "fof-007-skate-or-die", "typ": "line",
+      "breite": 848, "hoehe": 981,
+      "alt": "Motiv 007: Anarchie-A, darüber „Skate“, darunter „or die“",
+      "groesse": { "schwarz": "40 kB", "weiss": "40 kB" },
+      "designer": true,
+      "gruppen": ["anarchie", "skate"]
+    },
+    {
+      "nr": "008", "titel": "Anarchie", "datei": "fof-008-anarchie", "typ": "solid",
+      "breite": 1008, "hoehe": 1024,
+      "alt": "Motiv 008: Anarchie-Zeichen, A im Kreis, knallrot gesprüht mit Tropfnasen",
+      "groesse": { "png": "731 kB" },
+      "designer": true, "maske": false,
+      "gruppen": ["anarchie"]
+    }
+  ]
+}

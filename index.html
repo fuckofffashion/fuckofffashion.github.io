@@ -10,17 +10,19 @@
   <meta property="og:description" content="Mode ist tot. Druck sie selbst. Freie Motive, kein Shop, kein Copyright.">
   <meta property="og:image" content="assets/img/og.jpg">
   <meta property="og:type" content="website">
-  <link rel="icon" href="assets/img/favicon.svg?v=15" type="image/svg+xml">
+  <link rel="icon" href="assets/img/favicon.svg?v=16" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=15">
-  <link rel="stylesheet" href="css/base.css?v=15">
-  <link rel="stylesheet" href="css/site.css?v=15">
+  <link rel="stylesheet" href="css/tokens.css?v=16">
+  <link rel="stylesheet" href="css/base.css?v=16">
+  <link rel="stylesheet" href="css/site.css?v=16">
   <!-- Intro: entscheidet vor dem ersten Bild, ob es läuft -->
   <script>
     (function (d) {
       d.classList.add("js");
       try {
-        if (sessionStorage.getItem("fof-intro") || matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("no-intro");
+        // Geteilter Motiv-Link (#motive-skate): gleich an die Wand, ohne Intro
+        if (sessionStorage.getItem("fof-intro") || matchMedia("(prefers-reduced-motion: reduce)").matches
+            || /^#motive-/i.test(location.hash)) d.classList.add("no-intro");
       } catch (e) { d.classList.add("no-intro"); }
     })(document.documentElement);
   </script>
@@ -195,8 +197,16 @@
         <p class="lead" style="max-width:28ch;margin:0">Nimm dir, was du brauchst. Alle Motive in voller Auflösung, ohne Anmeldung.</p>
       </div>
 
-      <div class="wall grid">
-        <figure class="poster js-poster">
+      <!-- motive:wand:start (erzeugt von tools/build-motive.py aus tools/motive.json, nicht von Hand ändern) -->
+      <div class="motivfilter js-motivfilter" role="group" aria-label="Motive nach Thema filtern" aria-controls="wand-motive" data-hash hidden>
+        <button class="motivfilter__knopf" type="button" data-gruppe="" aria-pressed="true">Alle</button>
+        <button class="motivfilter__knopf" type="button" data-gruppe="kritik" aria-pressed="false">Kritik</button>
+        <button class="motivfilter__knopf" type="button" data-gruppe="anarchie" aria-pressed="false">Anarchie</button>
+        <button class="motivfilter__knopf" type="button" data-gruppe="skate" aria-pressed="false">Skate</button>
+      </div>
+      <p class="visually-hidden js-motivfilter-live" aria-live="polite"></p>
+      <div class="wall grid" id="wand-motive">
+        <figure class="poster js-poster" data-gruppen="anarchie">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img poster__img--line" src="assets/img/fof-000-brust-schwarz-1024.webp" width="985" height="830" loading="lazy"
                alt="Motiv 000: Schriftzug „Fuck Off Fashion“ in drei Zeilen, Schablonenschrift, für die Brust">
@@ -213,28 +223,28 @@
           <a class="poster__dl" href="assets/img/punk-bleibt-punk.png" download="fof-001-punk-bleibt-punk.png">↓ PNG laden <span class="visually-hidden">: Punk bleibt Punk, 1,7 MB</span></a>
           <figcaption class="poster__meta"><span class="poster__title">Punk bleibt Punk</span><span class="poster__no">Nr. 001 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="kritik">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img" src="assets/img/fof-002-kauf-nix-1024.webp" width="1024" height="1024" loading="lazy"
                alt="Motiv 002: umgekippter Einkaufswagen, rot durchgekreuzt, „Kauf nix – mach selbst“">
           <a class="poster__dl" href="assets/img/fof-002-kauf-nix.png" download="fof-002-kauf-nix.png">↓ PNG laden <span class="visually-hidden">: Kauf nix, 2,1 MB</span></a>
           <figcaption class="poster__meta"><span class="poster__title">Kauf nix</span><span class="poster__no">Nr. 002 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="kritik">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img" src="assets/img/fof-003-flicken-1024.webp" width="1024" height="1024" loading="lazy"
                alt="Motiv 003: Sicherheitsnadel durch einen Stoffflicken mit rotem Anarchie-A, „Flicken statt Wegwerfen“">
           <a class="poster__dl" href="assets/img/fof-003-flicken.png" download="fof-003-flicken.png">↓ PNG laden <span class="visually-hidden">: Flicken statt Wegwerfen, 1,9 MB</span></a>
           <figcaption class="poster__meta"><span class="poster__title">Flicken statt Wegwerfen</span><span class="poster__no">Nr. 003 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="kritik">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img" src="assets/img/fof-004-fast-fashion-kills-1024.webp" width="1024" height="1024" loading="lazy"
                alt="Motiv 004: Totenkopf mit Kleiderbügel und Preisschild „0 Euro“, „Fast Fashion kills“">
           <a class="poster__dl" href="assets/img/fof-004-fast-fashion-kills.png" download="fof-004-fast-fashion-kills.png">↓ PNG laden <span class="visually-hidden">: Fast Fashion kills, 1,6 MB</span></a>
           <figcaption class="poster__meta"><span class="poster__title">Fast Fashion kills</span><span class="poster__no">Nr. 004 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="anarchie">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img poster__img--line" src="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" width="788" height="974" loading="lazy"
                alt="Motiv 005: Anarchie-A mit Armen und Beinen an einem Mischpult">
@@ -244,7 +254,7 @@
           </div>
           <figcaption class="poster__meta"><span class="poster__title">Anarchy DJ</span><span class="poster__no">Nr. 005 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="skate">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img poster__img--line" src="assets/img/fof-006-skate-schwarz-1024.webp" width="1024" height="538" loading="lazy"
                alt="Motiv 006: Schriftzug „Skate“, das A ist ein Anarchie-A auf einem Skateboard">
@@ -254,7 +264,7 @@
           </div>
           <figcaption class="poster__meta"><span class="poster__title">Skate</span><span class="poster__no">Nr. 006 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="anarchie skate">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img poster__img--line" src="assets/img/fof-007-skate-or-die-schwarz-1024.webp" width="848" height="981" loading="lazy"
                alt="Motiv 007: Anarchie-A, darüber „Skate“, darunter „or die“">
@@ -264,7 +274,7 @@
           </div>
           <figcaption class="poster__meta"><span class="poster__title">Skate or die</span><span class="poster__no">Nr. 007 · PNG</span></figcaption>
         </figure>
-        <figure class="poster js-poster">
+        <figure class="poster js-poster" data-gruppen="anarchie">
           <span class="tape"></span><span class="tape"></span>
           <img class="poster__img poster__img--line" src="assets/img/fof-008-anarchie-1024.webp" width="1008" height="1024" loading="lazy"
                alt="Motiv 008: Anarchie-Zeichen, A im Kreis, knallrot gesprüht mit Tropfnasen">
@@ -274,6 +284,7 @@
           <figcaption class="poster__meta"><span class="poster__title">Anarchie</span><span class="poster__no">Nr. 008 · PNG</span></figcaption>
         </figure>
       </div>
+      <!-- motive:wand:end -->
 
       <div class="license">
         <p class="label">Lizenz: keine</p>
@@ -348,24 +359,33 @@
           </fieldset>
           <fieldset class="tr__set tr__set--motifs">
             <legend class="label">Rückenmotiv</legend>
-            <div class="tr__thumbs">
+            <!-- motive:designer:start (erzeugt von tools/build-motive.py aus tools/motive.json, nicht von Hand ändern) -->
+            <div class="motivfilter js-motivfilter" role="group" aria-label="Rückenmotive nach Thema filtern" aria-controls="tr-motive" hidden>
+              <button class="motivfilter__knopf" type="button" data-gruppe="" aria-pressed="true">Alle</button>
+              <button class="motivfilter__knopf" type="button" data-gruppe="kritik" aria-pressed="false">Kritik</button>
+              <button class="motivfilter__knopf" type="button" data-gruppe="anarchie" aria-pressed="false">Anarchie</button>
+              <button class="motivfilter__knopf" type="button" data-gruppe="skate" aria-pressed="false">Skate</button>
+            </div>
+            <p class="visually-hidden js-motivfilter-live" aria-live="polite"></p>
+            <div class="tr__thumbs" id="tr-motive">
               <label class="tr__thumb"><input type="radio" name="motiv" value="001" data-title="Punk bleibt Punk" data-type="color" data-src="assets/img/punk-bleibt-punk-1024.webp" data-png="assets/img/punk-bleibt-punk.png" data-mask="false" checked>
                 <img src="assets/img/punk-bleibt-punk-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 001: Punk bleibt Punk</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="002" data-title="Kauf nix" data-type="color" data-src="assets/img/fof-002-kauf-nix-1024.webp" data-png="assets/img/fof-002-kauf-nix.png" data-mask="true">
+              <label class="tr__thumb" data-gruppen="kritik"><input type="radio" name="motiv" value="002" data-title="Kauf nix" data-type="color" data-src="assets/img/fof-002-kauf-nix-1024.webp" data-png="assets/img/fof-002-kauf-nix.png" data-mask="true">
                 <img src="assets/img/fof-002-kauf-nix-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 002: Kauf nix</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="003" data-title="Flicken statt Wegwerfen" data-type="color" data-src="assets/img/fof-003-flicken-1024.webp" data-png="assets/img/fof-003-flicken.png" data-mask="true">
+              <label class="tr__thumb" data-gruppen="kritik"><input type="radio" name="motiv" value="003" data-title="Flicken statt Wegwerfen" data-type="color" data-src="assets/img/fof-003-flicken-1024.webp" data-png="assets/img/fof-003-flicken.png" data-mask="true">
                 <img src="assets/img/fof-003-flicken-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 003: Flicken statt Wegwerfen</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="004" data-title="Fast Fashion kills" data-type="color" data-src="assets/img/fof-004-fast-fashion-kills-1024.webp" data-png="assets/img/fof-004-fast-fashion-kills.png" data-mask="true">
+              <label class="tr__thumb" data-gruppen="kritik"><input type="radio" name="motiv" value="004" data-title="Fast Fashion kills" data-type="color" data-src="assets/img/fof-004-fast-fashion-kills-1024.webp" data-png="assets/img/fof-004-fast-fashion-kills.png" data-mask="true">
                 <img src="assets/img/fof-004-fast-fashion-kills-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 004: Fast Fashion kills</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="005" data-title="Anarchy DJ" data-type="line" data-black="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" data-white="assets/img/fof-005-anarchy-dj-weiss-1024.webp" data-png-black="assets/img/fof-005-anarchy-dj-schwarz.png" data-png-white="assets/img/fof-005-anarchy-dj-weiss.png">
+              <label class="tr__thumb" data-gruppen="anarchie"><input type="radio" name="motiv" value="005" data-title="Anarchy DJ" data-type="line" data-black="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" data-white="assets/img/fof-005-anarchy-dj-weiss-1024.webp" data-png-black="assets/img/fof-005-anarchy-dj-schwarz.png" data-png-white="assets/img/fof-005-anarchy-dj-weiss.png">
                 <img src="assets/img/fof-005-anarchy-dj-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 005: Anarchy DJ</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="006" data-title="Skate" data-type="line" data-black="assets/img/fof-006-skate-schwarz-1024.webp" data-white="assets/img/fof-006-skate-weiss-1024.webp" data-png-black="assets/img/fof-006-skate-schwarz.png" data-png-white="assets/img/fof-006-skate-weiss.png">
+              <label class="tr__thumb" data-gruppen="skate"><input type="radio" name="motiv" value="006" data-title="Skate" data-type="line" data-black="assets/img/fof-006-skate-schwarz-1024.webp" data-white="assets/img/fof-006-skate-weiss-1024.webp" data-png-black="assets/img/fof-006-skate-schwarz.png" data-png-white="assets/img/fof-006-skate-weiss.png">
                 <img src="assets/img/fof-006-skate-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 006: Skate</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="007" data-title="Skate or die" data-type="line" data-black="assets/img/fof-007-skate-or-die-schwarz-1024.webp" data-white="assets/img/fof-007-skate-or-die-weiss-1024.webp" data-png-black="assets/img/fof-007-skate-or-die-schwarz.png" data-png-white="assets/img/fof-007-skate-or-die-weiss.png">
+              <label class="tr__thumb" data-gruppen="anarchie skate"><input type="radio" name="motiv" value="007" data-title="Skate or die" data-type="line" data-black="assets/img/fof-007-skate-or-die-schwarz-1024.webp" data-white="assets/img/fof-007-skate-or-die-weiss-1024.webp" data-png-black="assets/img/fof-007-skate-or-die-schwarz.png" data-png-white="assets/img/fof-007-skate-or-die-weiss.png">
                 <img src="assets/img/fof-007-skate-or-die-schwarz-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 007: Skate or die</span></label>
-              <label class="tr__thumb"><input type="radio" name="motiv" value="008" data-title="Anarchie" data-type="solid" data-src="assets/img/fof-008-anarchie-1024.webp" data-png="assets/img/fof-008-anarchie.png" data-mask="false">
+              <label class="tr__thumb" data-gruppen="anarchie"><input type="radio" name="motiv" value="008" data-title="Anarchie" data-type="solid" data-src="assets/img/fof-008-anarchie-1024.webp" data-png="assets/img/fof-008-anarchie.png" data-mask="false">
                 <img src="assets/img/fof-008-anarchie-1024.webp" alt="" loading="lazy"><span class="visually-hidden">Nr. 008: Anarchie</span></label>
             </div>
+            <!-- motive:designer:end -->
           </fieldset>
         </form>
 
@@ -495,10 +515,11 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
-<script src="js/motion.js?v=15"></script>
-<script src="js/intro.js?v=15"></script>
-<script src="js/main.js?v=15"></script>
-<script src="js/tragen.js?v=15"></script>
-<script type="module" src="js/faden.js?v=15"></script>
+<script src="js/motion.js?v=16"></script>
+<script src="js/intro.js?v=16"></script>
+<script src="js/main.js?v=16"></script>
+<script src="js/tragen.js?v=16"></script>
+<script type="module" src="js/faden.js?v=16"></script>
+<script type="module" src="js/motive.js?v=16"></script>
 </body>
 </html>
