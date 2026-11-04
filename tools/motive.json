@@ -3,7 +3,8 @@
   "gruppen": [
     { "id": "kritik", "name": "Kritik" },
     { "id": "anarchie", "name": "Anarchie" },
-    { "id": "skate", "name": "Skate" }
+    { "id": "skate", "name": "Skate" },
+    { "id": "diy", "name": "DIY" }
   ],
   "designer_start": "001",
   "motive": [
@@ -77,6 +78,78 @@
       "alt": "Motiv 008: Anarchie-Zeichen, A im Kreis, knallrot gesprüht mit Tropfnasen",
       "groesse": { "png": "731 kB" },
       "designer": true, "maske": false,
+      "gruppen": ["anarchie"]
+    },
+    {
+      "nr": "009", "titel": "DIY or die", "datei": "fof-009-diy-or-die", "typ": "line",
+      "breite": 906, "hoehe": 1022,
+      "alt": "Motiv 009: Spraydose sprüht ein Anarchie-A, „DIY or die“",
+      "groesse": { "schwarz": "26 kB", "weiss": "26 kB" },
+      "designer": true,
+      "gruppen": ["diy", "anarchie"]
+    },
+    {
+      "nr": "010", "titel": "Trag es, bis es reißt", "datei": "fof-010-trag-es", "typ": "line",
+      "breite": 909, "hoehe": 990,
+      "alt": "Motiv 010: Sicherheitsnadel hält einen zerrissenen Stofffetzen zusammen, „Trag es bis es reißt“",
+      "groesse": { "schwarz": "25 kB", "weiss": "26 kB" },
+      "designer": true,
+      "gruppen": ["kritik", "diy"]
+    },
+    {
+      "nr": "011", "titel": "Wer näht dein Shirt?", "datei": "fof-011-wer-naeht", "typ": "line",
+      "breite": 997, "hoehe": 987,
+      "alt": "Motiv 011: Nähmaschinennadel, deren Faden zur erhobenen Faust wird, „Wer näht dein Shirt?“",
+      "groesse": { "schwarz": "29 kB", "weiss": "31 kB" },
+      "designer": true,
+      "gruppen": ["kritik"]
+    },
+    {
+      "nr": "012", "titel": "Flick die Welt", "datei": "fof-012-flick-die-welt", "typ": "line",
+      "breite": 982, "hoehe": 864,
+      "alt": "Motiv 012: Weltkugel, mit groben Kreuzstichen und einem Flicken zusammengenäht, „Flick die Welt“",
+      "groesse": { "schwarz": "30 kB", "weiss": "31 kB" },
+      "designer": true,
+      "gruppen": ["kritik", "diy"]
+    },
+    {
+      "nr": "013", "titel": "Laut bleiben", "datei": "fof-013-laut-bleiben", "typ": "line",
+      "breite": 815, "hoehe": 844,
+      "alt": "Motiv 013: Kassette mit herausquellendem Band, das ein Anarchie-A bildet, „Laut bleiben“",
+      "groesse": { "schwarz": "27 kB", "weiss": "29 kB" },
+      "designer": true,
+      "gruppen": ["anarchie"]
+    },
+    {
+      "nr": "014", "titel": "Niemand führt dich", "datei": "fof-014-niemand-fuehrt-dich", "typ": "line",
+      "breite": 682, "hoehe": 924,
+      "alt": "Motiv 014: Gesprungenes Megafon und zerrissene Leine, „Niemand führt dich“",
+      "groesse": { "schwarz": "31 kB", "weiss": "33 kB" },
+      "designer": true,
+      "gruppen": ["anarchie"]
+    },
+    {
+      "nr": "015", "titel": "Asphalt für alle", "datei": "fof-015-asphalt", "typ": "line",
+      "breite": 1001, "hoehe": 1011,
+      "alt": "Motiv 015: Skateboard über einer gesprengten Kette, „Asphalt für alle“",
+      "groesse": { "schwarz": "37 kB", "weiss": "39 kB" },
+      "designer": true,
+      "gruppen": ["skate"]
+    },
+    {
+      "nr": "016", "titel": "Druck es selbst", "datei": "fof-016-druck-es-selbst", "typ": "line",
+      "breite": 957, "hoehe": 854,
+      "alt": "Motiv 016: Punk-Ratte mit Iro und Spraydose, „Druck es selbst“",
+      "groesse": { "schwarz": "25 kB", "weiss": "28 kB" },
+      "designer": true,
+      "gruppen": ["diy"]
+    },
+    {
+      "nr": "017", "titel": "Zeckenspray. Wirkt nicht.", "datei": "fof-017-zeckenspray", "typ": "line",
+      "breite": 928, "hoehe": 850,
+      "alt": "Motiv 017: Eine Dose Zeckenspray liegt achtlos herum, daneben sprüht eine Zecke mit Iro fröhlich mit ihrer eigenen Dose, „Zeckenspray. Wirkt nicht.“",
+      "groesse": { "schwarz": "30 kB", "weiss": "33 kB" },
+      "designer": true,
       "gruppen": ["anarchie"]
     }
   ]
