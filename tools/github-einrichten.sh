@@ -201,15 +201,27 @@ finish() {
 
 run_wizard() {
 
-TOTAL_STAGES=6
+TOTAL_STAGES=7
 
-# Der Wizard schreibt keine .env-Datei; ask soll darum nichts aus einer fremden .env vorschlagen.
+# Der Wizard schreibt keine .env-Datei.
 ENV_FILE=/dev/null
 
-REPO_NAME="${REPO_NAME:-fuckofffashion}"
+# Hier anpassen. OWNER ist die GitHub-Organisation, REPO das Repository darin.
+# Das Repo "<OWNER>.github.io" wird an der Wurzel ausgeliefert: https://<OWNER>.github.io/
+OWNER="${OWNER:-fuckofffashion}"
+REPO="${REPO:-fuckofffashion.github.io}"
+PRIV_USER="${PRIV_USER:-manarchy-lab}"   # dein privates Konto, Besitzer der Organisation
 SITE_DIR="${SITE_DIR:-D:/claude/fof/site}"
 GH="https://github.com"
-GH_USER=""
+
+# Adresse, unter der die Seite erscheint: Repo "<owner>.github.io" an der Wurzel, jedes andere als Projektseite.
+owner_klein=$(printf '%s' "$OWNER" | tr 'A-Z' 'a-z')
+repo_klein=$(printf '%s' "$REPO" | tr 'A-Z' 'a-z')
+if [[ "$repo_klein" == "$owner_klein.github.io" ]]; then
+  SITE_URL="https://$owner_klein.github.io/"; BASIS="/"
+else
+  SITE_URL="https://$owner_klein.github.io/$REPO/"; BASIS="/$REPO/"
+fi
 
 banner "GitHub einrichten: FUCK OFF FASHION Konzertkalender"
 
@@ -220,10 +232,10 @@ say "dort läuft der tägliche Konzertlauf (GitHub Actions) und von dort wird di
 say "Dieser Wizard fragt keine Passwörter oder Tokens ab. Du meldest dich selbst an."
 printf '\n'
 warn "Auf diesem Rechner ist das Firmenkonto bei gh (GitHub-Kommandozeile) angemeldet."
-say "Das Projekt gehört auf dein PRIVATES Konto, nicht dorthin."
+say "Die Organisation gehört deinem PRIVATEN Konto ($PRIV_USER), nicht dorthin."
 printf '\n'
 open_url "$GH/login"
-step "Im Browser mit deinem privaten GitHub-Konto anmelden (nicht mit dem Firmenkonto)."
+step "Im Browser mit deinem privaten GitHub-Konto ($PRIV_USER) anmelden, nicht mit dem Firmenkonto."
 say "Dann im Terminal (zweites Git-Bash-Fenster, nicht dieses Wizard-Fenster):"
 cmd "gh auth status"
 note "Zeigt alle angemeldeten Konten; das aktive trägt 'Active account: true'."
@@ -231,30 +243,43 @@ say "Ist dein privates Konto noch nicht dabei:"
 cmd "gh auth login --hostname github.com --web"
 note "gh ist die GitHub-Kommandozeile. '--web' öffnet den Browser zur Anmeldung; gh zeigt einen Einmal-Code, den du dort eingibst."
 say "Sind beide Konten da, das private aktiv schalten:"
-cmd "gh auth switch --hostname github.com --user <dein-privater-name>"
+cmd "gh auth switch --hostname github.com --user $PRIV_USER"
 note "Quelle: cli.github.com/manual/gh_auth_switch (abgerufen 2026-11-04). Ohne Angaben fragt gh nach dem Konto."
-say "Danach nochmals 'gh auth status': Active account muss dein privater Name sein."
-printf '\n'
-ask GH_USER "Dein privater GitHub-Benutzername (nur zur Anzeige der Adressen hier):" || GH_USER=""
-[[ -n "$GH_USER" ]] || { GH_USER="<dein-name>"; warn "Kein Name eingegeben, ich zeige '<dein-name>' als Platzhalter."; }
+say "Danach nochmals 'gh auth status': Active account muss $PRIV_USER sein."
 pause "Angemeldet und das private Konto aktiv? Enter drücken."
 
 # ── 2 ─────────────────────────────────────────────────────────────────────
-stage "Öffentliches Repository anlegen"
+stage "Organisation anlegen (kann entfallen, wenn sie schon existiert)"
+say "Eine Organisation bündelt Repos unter einem eigenen Namen. Hier: $OWNER, mit $PRIV_USER als Inhaber."
+say "Hast du sie schon angelegt, diese Stufe einfach überspringen (Enter)."
+printf '\n'
+open_url "$GH/account/organizations/new"
+step "Falls die Adresse nicht passt, so geht es laut GitHub-Doku (abgerufen 2026-11-04):"
+step "  Profilbild oben rechts > Settings > Bereich 'Access' > Organizations > 'New organization'."
+step "Name der Organisation: $OWNER. Den Plan 'Free' wählen."
+note "Welcher Plan angeboten wird, nennt die Doku nicht; im Formular nachsehen. Free reicht für öffentliche Repos."
+step "Du bist danach Inhaber (Owner) der Organisation."
+pause "Organisation '$OWNER' existiert? Enter drücken."
+
+# ── 3 ─────────────────────────────────────────────────────────────────────
+stage "Öffentliches Repository in der Organisation anlegen"
 say "Ein Repository (kurz: Repo) ist ein Projektordner auf GitHub."
+say "Der Name '$REPO' ist wichtig: Nach GitHub-Doku wird ein Repo namens <Besitzer>.github.io"
+say "als Hauptseite des Besitzers ausgeliefert, hier an der Wurzel $SITE_URL"
 say "Es muss ÖFFENTLICH sein und LEER bleiben (kein README, keine Lizenz, keine .gitignore):"
 say "Dein lokaler Verlauf wird später hochgeladen, ein Startcommit auf GitHub würde dabei stören."
 printf '\n'
-open_url "$GH/new"
-step "Als Besitzer (Owner) dein privates Konto wählen: $GH_USER"
-step "Repository name: $REPO_NAME"
+open_url "$GH/organizations/$OWNER/repositories/new"
+step "Als Besitzer (Owner) die Organisation wählen: $OWNER (nicht dein privates Konto)."
+step "Repository name: $REPO"
 step "Sichtbarkeit: Public."
 step "Bei 'Add README', '.gitignore' und 'license' nichts auswählen (alle auf 'None' bzw. aus)."
 step "'Create repository' klicken."
-note "Hinweis: Auf der Anlegen-Seite stehen die Optionen README/.gitignore/License; die Beschriftungen können sich ändern."
-pause "Leeres, öffentliches Repo '$GH_USER/$REPO_NAME' existiert? Enter drücken."
+note "Die Adresse oben ist abgeleitet, nicht aus der Doku; sonst: github.com/new aufrufen und Owner wählen."
+note "Ob GitHub Pages bei Organisationen im Free-Plan für öffentliche Repos verfügbar ist, nennt die abgerufene Doku nicht ausdrücklich. Stufe 5 zeigt es dir."
+pause "Leeres, öffentliches Repo '$OWNER/$REPO' existiert? Enter drücken."
 
-# ── 3 ─────────────────────────────────────────────────────────────────────
+# ── 4 ─────────────────────────────────────────────────────────────────────
 stage "Lizenz bestätigen"
 say "Vorschlag: CC0 1.0 (Public Domain, jeder darf alles frei nutzen) für eigene Motive und Code."
 say "Ausgenommen: alles unter assets/vendor/* und data/*, dort gelten die Bedingungen laut LICENSE-Datei."
@@ -269,48 +294,54 @@ else
 fi
 pause "Weiter mit Enter."
 
-# ── 4 ─────────────────────────────────────────────────────────────────────
+# ── 5 ─────────────────────────────────────────────────────────────────────
 stage "Pages und Actions einstellen"
 say "Quelle: GitHub-Doku, abgerufen 2026-11-04."
 printf '\n'
-open_url "$GH/$GH_USER/$REPO_NAME/settings/pages"
+open_url "$GH/$OWNER/$REPO/settings/pages"
 step "Repo > Settings (falls nicht sichtbar: erst das Menü 'More' aufklappen) > Pages."
 step "Unter 'Build and deployment' bei 'Source' die Auswahl 'GitHub Actions' wählen."
 note "Menüpfad laut docs.github.com (Configuring a publishing source for your GitHub Pages site). Die Adresse oben ist abgeleitet, nicht aus der Doku."
 printf '\n'
-open_url "$GH/$GH_USER/$REPO_NAME/settings/actions"
-step "Repo > Settings > Actions > General > 'Actions permissions': 'Allow all actions and reusable workflows' lassen/wählen, speichern."
-note "Laut Doku ist Actions in allen Repos standardmäßig eingeschaltet; hier nur prüfen, dass es nicht abgeschaltet ist."
-note "Unsicher: Ob die Beschriftung der Option genau so lautet, nennt die Doku nicht wörtlich. Sie beschreibt nur 'alle Actions erlaubt'."
-note "Der Workflow nutzt nur Actions von GitHub selbst (actions/checkout, configure-pages, upload-pages-artifact, deploy-pages)."
+open_url "$GH/$OWNER/$REPO/settings/actions"
+step "Repo > Settings > Actions > General > 'Actions permissions': Actions erlauben ('Allow all actions and reusable workflows'), speichern."
+note "Laut Doku ist Actions standardmäßig eingeschaltet; hier nur prüfen. Die genaue Beschriftung der Option nennt die Doku nur sinngemäß."
+printf '\n'
+say "Hürde bei Organisationen (laut Doku zu Actions in Organisationen):"
+step "Organisation > Settings > Actions > General: Die Richtlinie muss Actions von GitHub erlauben (der Workflow nutzt actions/checkout, configure-pages, upload-pages-artifact, deploy-pages)."
+step "'Nur Actions der eigenen Organisation' würde auch actions/checkout blockieren: das nicht wählen."
+step "'Workflow permissions': Neue Organisationen starten mit 'nur lesen'. Das ist okay, denn der Workflow fordert 'contents: write' ausdrücklich an."
+printf '\n'
+warn "Geplante Läufe (täglich 04:00 UTC): In öffentlichen Repos schaltet GitHub sie ab, wenn 60 Tage lang keine Aktivität im Repo war."
+say "Die täglichen Daten-Commits halten den Lauf meist am Leben. Stoppt er doch: Repo > Actions > 'konzerte' > 'Enable workflow'."
+note "Quelle: docs.github.com, 'Events that trigger workflows' (abgerufen 2026-11-04)."
 pause "Pages-Source 'GitHub Actions' gesetzt und Actions erlaubt? Enter drücken."
 
-# ── 5 ─────────────────────────────────────────────────────────────────────
+# ── 6 ─────────────────────────────────────────────────────────────────────
 stage "Adresse und eigene Domain (jetzt nur lesen)"
-say "Du hast noch keine eigene Domain. Die Seite startet darum als Projektseite unter dieser Adresse:"
-cmd "https://$GH_USER.github.io/$REPO_NAME/"
-say "Die Seite selbst nutzt relative Pfade und läuft deshalb auch in diesem Unterordner."
-say "404.html (die Fehlerseite) braucht eine feste Basis, weil GitHub sie auch für verschachtelte Adressen ausliefert."
-say "Das Veröffentlichungs-Skript stellt sie selbst ein: auf /$REPO_NAME/ im Actions-Lauf, auf / mit eigener Domain."
+say "Die Seite erscheint unter dieser Adresse (kein Unterordner):"
+cmd "$SITE_URL"
+say "Basis für 404.html: $BASIS. Das Veröffentlichungs-Skript setzt sie selbst; im Actions-Lauf liest es sie von actions/configure-pages."
+note "Heißt das Repo anders als <Organisation>.github.io, wäre es eine Projektseite unter .../<repo>/; das Skript behandelt auch diesen Fall."
 printf '\n'
-say "Später mit eigener Domain (jetzt nichts tun), laut GitHub-Doku, abgerufen 2026-11-04:"
+say "Eine eigene Domain gibt es noch nicht. Später, laut GitHub-Doku (abgerufen 2026-11-04):"
 step "Im Repo: Settings > Pages > 'Custom domain' die Domain eintragen und speichern. Erst danach DNS einrichten."
 step "Domain-Anbieter (DNS): Hauptdomain mit A-Einträgen auf 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153"
-step "(oder ALIAS/ANAME auf $GH_USER.github.io). Subdomain (www.…) mit CNAME-Eintrag auf $GH_USER.github.io, ohne Repo-Namen."
-step "Im Repo-Wurzelordner eine Datei CNAME mit der Domain ablegen (eine Zeile). Sie schaltet die Basis von 404.html automatisch auf '/'."
-note "DNS-Änderungen brauchen bis zu 24 Stunden."
-warn "Laut Doku wird eine CNAME-Datei bei Veröffentlichung per Actions von GitHub ignoriert; maßgeblich ist die Einstellung unter Pages."
+step "(oder ALIAS/ANAME auf $owner_klein.github.io). Subdomain (www.…) mit CNAME-Eintrag auf $owner_klein.github.io, ohne Repo-Namen."
+note "Das DNS-Ziel ist der Name der Organisation, nicht der des persönlichen Kontos. DNS-Änderungen brauchen bis zu 24 Stunden."
+warn "Eine Datei CNAME im Repo wird bei Veröffentlichung per Actions von GitHub ignoriert; maßgeblich ist die Einstellung unter Pages."
 note "Die Werte können sich ändern. Immer die aktuelle Doku öffnen, wenn es soweit ist."
 open_url "https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
 pause "Gelesen? Enter drücken."
 
-# ── 6 ─────────────────────────────────────────────────────────────────────
+# ── 7 ─────────────────────────────────────────────────────────────────────
 stage "Letzter Schritt: Seite hochladen (noch nicht ausführen)"
 warn "Mit dem ersten Push geht die Seite öffentlich online. Nur nach Absprache mit Claude pushen."
 say "Voraussetzungen:"
 step "Der lokale Verlauf ist bereinigt (das macht Claude gemeinsam mit dir, vorher nicht pushen)."
-step "Impressum und Datenschutz sind ausgefüllt. Sonst bricht das Veröffentlichungs-Skript ab (Platzhalter '[bitte ausfüllen]')."
-step "Pages-Source steht auf 'GitHub Actions' (Stufe 4)."
+step "Impressum und Datenschutz sind ausgefüllt und die Kontaktmail ist eingetragen. Sonst bricht das Veröffentlichungs-Skript ab"
+step "  (Platzhalter '[bitte ausfüllen]' bzw. 'fuckofffashion.example')."
+step "Pages-Source steht auf 'GitHub Actions' (Stufe 5)."
 printf '\n'
 say "Der fertige Stand liegt auf 'master' (Merge macht Claude am Ende). Prüfen:"
 cmd "git -C $SITE_DIR branch --show-current"
@@ -318,11 +349,11 @@ cmd "git -C $SITE_DIR log --oneline -1 master"
 say "Gibt es 'origin' schon? Prüfen:"
 cmd "git -C $SITE_DIR remote get-url origin"
 say "Fehlermeldung: anlegen. Sonst nur die Adresse umstellen:"
-cmd "git -C $SITE_DIR remote add origin $GH/$GH_USER/$REPO_NAME.git"
-cmd "git -C $SITE_DIR remote set-url origin $GH/$GH_USER/$REPO_NAME.git"
+cmd "git -C $SITE_DIR remote add origin $GH/$OWNER/$REPO.git"
+cmd "git -C $SITE_DIR remote set-url origin $GH/$OWNER/$REPO.git"
 say "Dann (erst nach Absprache):"
 cmd "git -C $SITE_DIR push -u origin master:main"
-say "Fragt Git nach einer Anmeldung (unter Windows meist ein Browser-Fenster, nicht von der Doku belegt), das private Konto wählen. Passwörter nie ins Terminal tippen."
+say "Fragt Git nach einer Anmeldung (unter Windows meist ein Browser-Fenster, nicht von der Doku belegt), das private Konto $PRIV_USER wählen. Passwörter nie ins Terminal tippen."
 note "Lokal heißt der Hauptbranch 'master', auf GitHub 'main', wie der Workflow es erwartet."
 say "Der Push startet den Workflow 'konzerte' sofort (Reiter 'Actions' im Repo); er holt Daten, baut die Seite und stellt sie online."
 pause "Enter zum Beenden."
