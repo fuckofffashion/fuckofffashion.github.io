@@ -10,6 +10,9 @@ export const SPRUECHE = [
 ];
 
 // Deterministisch: gleiche Zahl, gleicher Spruch. Läuft zyklisch durch die Liste.
+// Negative und gebrochene Zahlen werden abgeschnitten und positiv umgebrochen; NaN und Unendlich ergeben den ersten Spruch.
 export function spruch(n) {
-  return SPRUECHE[n % SPRUECHE.length];
+  const l = SPRUECHE.length;
+  const i = Number.isFinite(n) ? ((Math.trunc(n) % l) + l) % l : 0;
+  return SPRUECHE[i];
 }

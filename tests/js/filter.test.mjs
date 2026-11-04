@@ -72,8 +72,25 @@ test("sortieren nach Entfernung setzt Termine ohne km ans Ende", () => {
   assert.deepEqual(ids(sortieren(liste, "entfernung")), ["nah", "fern", "ohne"]);
 });
 
-test("sortieren nach Datum nimmt Datum, dann Zeit (null zuletzt)", () => {
-  assert.deepEqual(ids(sortieren(filtern(T, { von: "2026-11-15", bis: "2026-11-15" }), "datum")), ["B", "C"]);
+test("sortieren nach Datum ordnet umgekehrte Eingabe nach Datum um", () => {
+  const umgekehrt = [...T].reverse().filter((t) => t.id !== "E");
+  assert.deepEqual(ids(sortieren(umgekehrt, "datum")), ["A", "B", "C", "D"]);
+});
+
+test("sortieren nach Datum: gleiches Datum, Zeit null kommt nach gesetzter Zeit", () => {
+  const liste = [
+    { id: "ohneZeit", datum: "2026-11-15", zeit: null, km: null },
+    { id: "mitZeit", datum: "2026-11-15", zeit: "19:00", km: null },
+  ];
+  assert.deepEqual(ids(sortieren(liste, "datum")), ["mitZeit", "ohneZeit"]);
+});
+
+test("sortieren nach Entfernung: bei gleicher Entfernung zuerst das frühere Datum", () => {
+  const liste = [
+    { id: "spaet", km: 5, datum: "2026-11-20", zeit: null },
+    { id: "frueh", km: 5, datum: "2026-11-10", zeit: null },
+  ];
+  assert.deepEqual(ids(sortieren(liste, "entfernung")), ["frueh", "spaet"]);
 });
 
 test("sortieren liefert ein neues Array", () => {

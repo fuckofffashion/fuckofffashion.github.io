@@ -22,3 +22,10 @@ test("spruch(n) ist deterministisch und läuft zyklisch", () => {
   assert.equal(spruch(SPRUECHE.length), SPRUECHE[0]);
   assert.equal(spruch(SPRUECHE.length + 2), SPRUECHE[2]);
 });
+
+test("spruch(n) bleibt bei negativen, gebrochenen und ungültigen Zahlen im gültigen Bereich", () => {
+  const l = SPRUECHE.length;
+  assert.equal(spruch(-1), SPRUECHE[l - 1]);
+  assert.equal(spruch(1.5), SPRUECHE[1]);
+  assert.equal(spruch(NaN), SPRUECHE[0]);
+});
