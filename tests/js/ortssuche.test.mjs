@@ -106,4 +106,8 @@ test("echte Tabelle: kleve -> DE 47533, frankfurt -> Frankfurt am Main", () => {
   const frankfurt = sucheOrt(tabelle, "frankfurt")[0];
   assert.equal(frankfurt.name, "Frankfurt am Main");
   assert.ok(Math.abs(frankfurt.lat - 50.1) < 0.2);
+
+  // Aliase aus build_ortstabelle (Task 8b): deutsche Exonyme finden NL/BE-Städte
+  assert.equal(sucheOrt(tabelle, "den haag")[0].land, "NL");
+  assert.equal(sucheOrt(tabelle, "brüssel")[0].land, "BE");
 });
