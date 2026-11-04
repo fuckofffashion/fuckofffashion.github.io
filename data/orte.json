@@ -2821,5 +2821,1255 @@
  },
  "DE|herford|flafla": {
   "nicht_gefunden": "2026-11-04"
+ },
+ "DE|oldenburg|buddel jungs bar": {
+  "lat": 53.1415046,
+  "lon": 8.2080215,
+  "land": "DE"
+ },
+ "DE|monheim|sojus 7": {
+  "lat": 51.0964496,
+  "lon": 6.8834134,
+  "land": "DE"
+ },
+ "DE|buxtehude|studio 21": {
+  "lat": 53.4615107,
+  "lon": 9.7043646,
+  "land": "DE"
+ },
+ "DE|fulda|kreuz kulturkeller": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|kalbe (milde)|unordnungsamt": {
+  "lat": 52.6562566,
+  "lon": 11.3934173,
+  "land": "DE"
+ },
+ "NL|eindhoven|klokgebouw hallen": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|paris|la maroquinerie": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|karlsruhe|scruffy's irish pub": {
+  "lat": 49.0116504,
+  "lon": 8.3950291,
+  "land": "DE"
+ },
+ "DE|ulm|hemperium": {
+  "lat": 48.3964687,
+  "lon": 9.9852889,
+  "land": "DE"
+ },
+ "DE|geiselwind|eventzentrum": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|erfurt|engelsburg": {
+  "lat": 50.9783146,
+  "lon": 11.0270996,
+  "land": "DE"
+ },
+ "DE|erfurt|veb im bandhaus erfurt": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|(sk) bratislava|pink whale": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|oldenburg|polyester klub": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|karlsruhe|alte hackerei": {
+  "lat": 49.0058987,
+  "lon": 8.4292332,
+  "land": "DE"
+ },
+ "|weimar|kasseturm": {
+  "lat": 50.9818955,
+  "lon": 11.3259926,
+  "land": "DE"
+ },
+ "DE|berlin|k": {
+  "lat": 52.5173885,
+  "lon": 13.3951309,
+  "land": "DE"
+ },
+ "BE|deinze,|brielpoort": {
+  "lat": 50.9806737,
+  "lon": 3.5249733,
+  "land": "BE"
+ },
+ "NL|eindhoven|klokgebouw,": {
+  "lat": 51.4488537,
+  "lon": 5.4569556,
+  "land": "NL"
+ },
+ "|sibiu (ro)|rock & bike club": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|haarlem|patronaat": {
+  "lat": 52.3829997,
+  "lon": 4.6285464,
+  "land": "NL"
+ },
+ "DE|dresden|pawlow": {
+  "lat": 51.0688097,
+  "lon": 13.7556036,
+  "land": "DE"
+ },
+ "DE|dresden|hd – die rock& metalbar": {
+  "lat": 51.0670419,
+  "lon": 13.7509754,
+  "land": "DE"
+ },
+ "DE|tharandt|kuppelhalle": {
+  "lat": 50.9810027,
+  "lon": 13.5816626,
+  "land": "DE"
+ },
+ "DE|cottbus|chekov": {
+  "lat": 51.7504973,
+  "lon": 14.3435343,
+  "land": "DE"
+ },
+ "DE|leipzig|plaque": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|leipzig|zwille": {
+  "lat": 51.3087768,
+  "lon": 12.3733535,
+  "land": "DE"
+ },
+ "DE|halle (saale)|georg friedrich handel halle": {
+  "lat": 51.4946269,
+  "lon": 11.9649221,
+  "land": "DE"
+ },
+ "DE|berlin|wiener blut": {
+  "lat": 52.4982848,
+  "lon": 13.4287341,
+  "land": "DE"
+ },
+ "DE|hamburg st. pauli|betty": {
+  "lat": 53.5507821,
+  "lon": 9.9611066,
+  "land": "DE"
+ },
+ "DE|itzehoe|freiraum itzehoe ev": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|bremen|pier 2": {
+  "lat": 53.1080483,
+  "lon": 8.7509614,
+  "land": "DE"
+ },
+ "DE|dusseldorf|stahlwerk club": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|wermelskirchen|haus eifgen": {
+  "lat": 51.1347264,
+  "lon": 7.2269855,
+  "land": "DE"
+ },
+ "DE|koln deutz|lanxess arena": {
+  "lat": 50.9384967,
+  "lon": 6.9828844,
+  "land": "DE"
+ },
+ "DE|alsdorf|craft bier zentrale": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|schwabisch gmund|esperanza": {
+  "lat": 48.8003603,
+  "lon": 9.8212511,
+  "land": "DE"
+ },
+ "DE|offenburg|spitalkeller": {
+  "lat": 48.4689775,
+  "lon": 7.9438571,
+  "land": "DE"
+ },
+ "DE|ravensburg|messerstress": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|wuppertal|borse": {
+  "lat": 51.2550956,
+  "lon": 7.162915,
+  "land": "DE"
+ },
+ "DE|bamberg|brose arena": {
+  "lat": 49.8795151,
+  "lon": 10.9202866,
+  "land": "DE"
+ },
+ "|salzwedel|club hanseat": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|offenburg|kessel": {
+  "lat": 48.4704996,
+  "lon": 7.9484624,
+  "land": "DE"
+ },
+ "DE|berlin|lichtenberg": {
+  "lat": 52.5321606,
+  "lon": 13.5118927,
+  "land": "DE"
+ },
+ "DE|berlin|across the willy brand haus": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|drachten the|iduna": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|dudelange|atelier": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|oldenburg|kulturetage": {
+  "lat": 53.1425287,
+  "lon": 8.21985,
+  "land": "DE"
+ },
+ "|kosice (sk)|collosseum": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|bratislava (sl)|pink whale,": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|zagreb (hr)|boogaloo": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hamburg|laeiszhalle": {
+  "lat": 53.5560966,
+  "lon": 9.9810766,
+  "land": "DE"
+ },
+ "DE|stuttgart|theaterhaus": {
+  "lat": 48.8103068,
+  "lon": 9.1790426,
+  "land": "DE"
+ },
+ "|wurzburg|cafe cairo": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|berlin|huxleys": {
+  "lat": 52.4868653,
+  "lon": 13.4223211,
+  "land": "DE"
+ },
+ "DE|lichtenstein|juz riot": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|zagreb kroatien|boogaloo": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|koln|stereo wonderland": {
+  "lat": 50.9273748,
+  "lon": 6.9401083,
+  "land": "DE"
+ },
+ "DE|trier|mergener hof": {
+  "lat": 49.7584347,
+  "lon": 6.6446978,
+  "land": "DE"
+ },
+ "DE|erfurt|tiko": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|innsbruck|rudesounds": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|thessaloniki (griechenland)|– we": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|amsterdam|occii": {
+  "lat": 52.354338,
+  "lon": 4.8553367,
+  "land": "NL"
+ },
+ "DE|hamburg|turtur": {
+  "lat": 53.5141241,
+  "lon": 9.9839237,
+  "land": "DE"
+ },
+ "DE|osnabruck|botschaft": {
+  "lat": 52.2679117,
+  "lon": 8.0597261,
+  "land": "DE"
+ },
+ "DE|frankfurt am main|festhalle": {
+  "lat": 50.1118463,
+  "lon": 8.6508513,
+  "land": "DE"
+ },
+ "|athen (griechenland)|– gagarin 205": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|wien|ottakringer brauerei": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|oldenburg|amadeus": {
+  "lat": 53.1409612,
+  "lon": 8.2125823,
+  "land": "DE"
+ },
+ "DE|solingen|cobra": {
+  "lat": 51.1625673,
+  "lon": 7.0166103,
+  "land": "DE"
+ },
+ "DE|frankfurt am main|au the au squat": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|stuttgart|porsche arena": {
+  "lat": 48.7932139,
+  "lon": 9.2282934,
+  "land": "DE"
+ },
+ "DE|reutlingen|franz. k kulturzentrum": {
+  "lat": 48.4954142,
+  "lon": 9.206131,
+  "land": "DE"
+ },
+ "DE|berlin|modus": {
+  "lat": 52.5004068,
+  "lon": 13.3151706,
+  "land": "DE"
+ },
+ "|(b) bruxelles/schaarbeek|brasserie la mule": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|zagreb, croatia|boogaloo zagreb": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|sofia (bulgarien)|– studio orfei": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|berlin|columbia theater": {
+  "lat": 52.4847302,
+  "lon": 13.3914367,
+  "land": "DE"
+ },
+ "|neubrandenburg|ajz neubrandenburg": {
+  "lat": 53.5483984,
+  "lon": 13.2366084,
+  "land": "DE"
+ },
+ "|wurzburg|posthalle": {
+  "lat": 49.8019528,
+  "lon": 9.9316134,
+  "land": "DE"
+ },
+ "DE|lauchhammer|sudclub & rote zora": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|spremberg|erebos": {
+  "lat": 51.5450051,
+  "lon": 14.3814202,
+  "land": "DE"
+ },
+ "DE|zwickau|alter gasometer": {
+  "lat": 50.722967,
+  "lon": 12.5002152,
+  "land": "DE"
+ },
+ "DE|ulm|beteigeuze": {
+  "lat": 48.4059922,
+  "lon": 9.948664,
+  "land": "DE"
+ },
+ "|halberstadt|zora": {
+  "lat": 51.8953222,
+  "lon": 11.04219,
+  "land": "DE"
+ },
+ "|plauen|alte kaffeerosterei": {
+  "lat": 50.5164355,
+  "lon": 12.1241496,
+  "land": "DE"
+ },
+ "DE|berlin|supamolly": {
+  "lat": 52.5105248,
+  "lon": 13.4713392,
+  "land": "DE"
+ },
+ "DE|erfurt|messehalle": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|nl) vlissingen|de piek": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|stuttgart|im wizemann": {
+  "lat": 48.8079853,
+  "lon": 9.2003309,
+  "land": "DE"
+ },
+ "|alfeld|kuba": {
+  "lat": 51.9881864,
+  "lon": 9.8216896,
+  "land": "DE"
+ },
+ "|dobeln|kleinstadtclub": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|berlin|stressfaktor": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|neuruppin|kulturhaus": {
+  "lat": 52.9290228,
+  "lon": 12.811456,
+  "land": "DE"
+ },
+ "DE|hallstadt|kulturboden": {
+  "lat": 49.9275021,
+  "lon": 10.8740557,
+  "land": "DE"
+ },
+ "DE|bad salzungen (thur.)|pressenwerk": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|friedrichshafen|kultur und kongresszentrum graf zeppelin haus": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|hasselt|– aff": {
+  "lat": 50.9399753,
+  "lon": 5.3523764,
+  "land": "BE"
+ },
+ "|leipzig|hellraiser": {
+  "lat": 51.3397975,
+  "lon": 12.4608646,
+  "land": "DE"
+ },
+ "DE|cottbus|messe": {
+  "lat": 51.753805,
+  "lon": 14.3511743,
+  "land": "DE"
+ },
+ "DE|berlin kreuzberg|franken bar": {
+  "lat": 52.5005841,
+  "lon": 13.4222262,
+  "land": "DE"
+ },
+ "DE|berlin|k agh": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hitzacker (elbe)|flamingo": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|halberstadt|zora": {
+  "lat": 51.8953222,
+  "lon": 11.04219,
+  "land": "DE"
+ },
+ "DE|bochum|christuskirche": {
+  "lat": 51.4823835,
+  "lon": 7.2137274,
+  "land": "DE"
+ },
+ "DE|frankfurt am main|alte oper": {
+  "lat": 50.1160471,
+  "lon": 8.6719866,
+  "land": "DE"
+ },
+ "DE|magdeburg bruckfeld|getec arena": {
+  "lat": 52.1279665,
+  "lon": 11.6665914,
+  "land": "DE"
+ },
+ "|braunschweig|kufa": {
+  "lat": 52.2533456,
+  "lon": 10.4995555,
+  "land": "DE"
+ },
+ "|geiselwind|eventzentrum": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|burglengenfeld|vaz burglengenfeld": {
+  "lat": 49.2043495,
+  "lon": 12.0390414,
+  "land": "DE"
+ },
+ "DE|plauen|alte kaffeerosterei": {
+  "lat": 50.5164355,
+  "lon": 12.1241496,
+  "land": "DE"
+ },
+ "DE|berlin|bi nuu": {
+  "lat": 52.5007558,
+  "lon": 13.4414613,
+  "land": "DE"
+ },
+ "DE|berlin hellersdorf|kinokiste": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|eberswalde|exil": {
+  "lat": 52.841871,
+  "lon": 13.7715106,
+  "land": "DE"
+ },
+ "DE|rostock|moya": {
+  "lat": 54.109744,
+  "lon": 12.078199,
+  "land": "DE"
+ },
+ "DE|hamburg altona|lobusch": {
+  "lat": 53.549708,
+  "lon": 9.9309168,
+  "land": "DE"
+ },
+ "DE|dortmund|junkyard": {
+  "lat": 51.53285,
+  "lon": 7.4726708,
+  "land": "DE"
+ },
+ "DE|duisburg rheinhausen|altes madchengymnasium": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|koblenz|haus mitternich": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|saarbrucken|commune": {
+  "lat": 49.2363575,
+  "lon": 6.9939188,
+  "land": "DE"
+ },
+ "DE|dillingen/saar|lokschuppen": {
+  "lat": 49.3577371,
+  "lon": 6.7165511,
+  "land": "DE"
+ },
+ "DE|erbach (bei ulm)|hkv": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|nurnberg|heizhaus": {
+  "lat": 49.456045,
+  "lon": 11.0308403,
+  "land": "DE"
+ },
+ "|stuttgart|lka longhorn": {
+  "lat": 48.7672836,
+  "lon": 9.2517713,
+  "land": "DE"
+ },
+ "DE|jena|rosenkeller": {
+  "lat": 50.9293485,
+  "lon": 11.5848647,
+  "land": "DE"
+ },
+ "DE|sonneberg|gesellschaftshaus": {
+  "lat": 50.3631552,
+  "lon": 11.1768499,
+  "land": "DE"
+ },
+ "|steyr|kulturhaus roda": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|berlin prenzlauer berg|kesselhaus / maschinenhaus / kulturbrauerei": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|bielefeld|lokschuppen": {
+  "lat": 52.0365537,
+  "lon": 8.5514521,
+  "land": "DE"
+ },
+ "DE|furth|kunstkeller 0.27": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|dordrecht|poppodium bibelot": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hannover|theater am aegi": {
+  "lat": 52.3676328,
+  "lon": 9.7431627,
+  "land": "DE"
+ },
+ "DE|gottingen|musa": {
+  "lat": 51.5499507,
+  "lon": 9.9149586,
+  "land": "DE"
+ },
+ "DE|wurzburg|cafe cairo": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|wurzburg|circus krone": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|zoetermeer|cultuurpodium boerderij": {
+  "lat": 52.0633298,
+  "lon": 4.4694618,
+  "land": "NL"
+ },
+ "|dusseldorf|stahlwerk club": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hamburg|lola": {
+  "lat": 53.5812509,
+  "lon": 9.9698763,
+  "land": "DE"
+ },
+ "DE|koln|castell": {
+  "lat": 50.964137,
+  "lon": 7.0023663,
+  "land": "DE"
+ },
+ "DE|erfurt|alte oper": {
+  "lat": 50.9715096,
+  "lon": 11.0222256,
+  "land": "DE"
+ },
+ "DE|erfurt|stadttheater": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|kassel|kulturzentrum farberei kassel": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|st. jurgen lubeck|kolosseum": {
+  "lat": 53.8549443,
+  "lon": 10.6890776,
+  "land": "DE"
+ },
+ "DE|hameln|freiraum": {
+  "lat": 52.1040436,
+  "lon": 9.3663304,
+  "land": "DE"
+ },
+ "DE|ibbenburen|scheune": {
+  "lat": 52.2676127,
+  "lon": 7.7369538,
+  "land": "DE"
+ },
+ "DE|koln|buze (buze/burgerzentrum ehrenfeld)": {
+  "lat": 50.9528107,
+  "lon": 6.9123173,
+  "land": "DE"
+ },
+ "DE|viechtach|kulturcafe hinkofer": {
+  "lat": 49.0791339,
+  "lon": 12.8854995,
+  "land": "DE"
+ },
+ "|(pl) pobiedna|pds punkteon": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|bad salzungen|presswerk": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|regensburg|audimax regensburg": {
+  "lat": 48.9986757,
+  "lon": 12.0945626,
+  "land": "DE"
+ },
+ "DE|kiel|max": {
+  "lat": 54.3270631,
+  "lon": 10.1101379,
+  "land": "DE"
+ },
+ "DE|munchen sendling|isarphilharmonie": {
+  "lat": 48.1114407,
+  "lon": 11.553687,
+  "land": "DE"
+ },
+ "|rosenheim|circus krone": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|echternach|atelier": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|essen|lichtburg": {
+  "lat": 51.4548502,
+  "lon": 7.0130103,
+  "land": "DE"
+ },
+ "DE|leipzig|kupfersaal": {
+  "lat": 51.3379976,
+  "lon": 12.377008,
+  "land": "DE"
+ },
+ "DE|halle saale|charles bronson": {
+  "lat": 51.4897076,
+  "lon": 11.9840875,
+  "land": "DE"
+ },
+ "DE|freiburg im breisgau|cafe atlantik": {
+  "lat": 47.9914912,
+  "lon": 7.8545883,
+  "land": "DE"
+ },
+ "|groningen|vera": {
+  "lat": 53.2170549,
+  "lon": 6.570087,
+  "land": "NL"
+ },
+ "DE|frankfurt (oder)|kamea": {
+  "lat": 52.3397504,
+  "lon": 14.543959,
+  "land": "DE"
+ },
+ "DE|peine|garage peine": {
+  "lat": 52.3224582,
+  "lon": 10.2295574,
+  "land": "DE"
+ },
+ "DE|bielefeld|nr. z. p.": {
+  "lat": 52.0328492,
+  "lon": 8.5093574,
+  "land": "DE"
+ },
+ "DE|braunschweig|westand": {
+  "lat": 52.2530547,
+  "lon": 10.4991776,
+  "land": "DE"
+ },
+ "DE|wuppertal|lcb": {
+  "lat": 51.2712338,
+  "lon": 7.2032556,
+  "land": "DE"
+ },
+ "DE|euskirchen|bauernstubchen": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|offenbach|stadthalle": {
+  "lat": 50.0824799,
+  "lon": 8.7773602,
+  "land": "DE"
+ },
+ "DE|unterschleissheim|gleis 1": {
+  "lat": 48.2890231,
+  "lon": 11.5830314,
+  "land": "DE"
+ },
+ "|mannheim|halle 02": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|halle (saale)|rockpool": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|chemnitz|hang over": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hamburg ottensen|cafe treibeis": {
+  "lat": 53.5562205,
+  "lon": 9.9329659,
+  "land": "DE"
+ },
+ "DE|dortmund|westfalenhalle": {
+  "lat": 51.4965148,
+  "lon": 7.4569324,
+  "land": "DE"
+ },
+ "DE|konstanz|contrast": {
+  "lat": 47.6791203,
+  "lon": 9.1634368,
+  "land": "DE"
+ },
+ "|cottbus|gladhouse": {
+  "lat": 51.7543992,
+  "lon": 14.3336945,
+  "land": "DE"
+ },
+ "DE|rostock|stadthalle": {
+  "lat": 54.0777668,
+  "lon": 12.1273414,
+  "land": "DE"
+ },
+ "DE|hamburg|exile": {
+  "lat": 53.5511787,
+  "lon": 9.9617928,
+  "land": "DE"
+ },
+ "|(i) milano|q hub": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|frankfurt am main|brotfabrik": {
+  "lat": 50.1314316,
+  "lon": 8.6260585,
+  "land": "DE"
+ },
+ "DE|mannheim|forum jugendkulturzentrum": {
+  "lat": 49.494532,
+  "lon": 8.4787963,
+  "land": "DE"
+ },
+ "DE|dusseldorf|savoy theater": {
+  "lat": 51.218579,
+  "lon": 6.7844608,
+  "land": "DE"
+ },
+ "DE|dusseldorf oberbilk|mitsubishi electric halle (philipshalle)": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|osnabruck|hyde park": {
+  "lat": 52.311269,
+  "lon": 8.0156699,
+  "land": "DE"
+ },
+ "DE|osnabruck|hyde park": {
+  "lat": 52.311269,
+  "lon": 8.0156699,
+  "land": "DE"
+ },
+ "DE|neu ulm|ratiopharm arena": {
+  "lat": 48.3817426,
+  "lon": 10.0047373,
+  "land": "DE"
+ },
+ "DE|erfurt|centrum club (etc )": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|stuttgart west|jan`s keller": {
+  "lat": 48.7720301,
+  "lon": 9.1609475,
+  "land": "DE"
+ },
+ "DE|berlin|uber eats music hall": {
+  "lat": 52.5049039,
+  "lon": 13.4431471,
+  "land": "DE"
+ },
+ "DE|hamburg|sporthalle": {
+  "lat": 53.5878505,
+  "lon": 10.0279921,
+  "land": "DE"
+ },
+ "DE|trier|tuchfabrik": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|bremen|ovb arena": {
+  "lat": 53.0866902,
+  "lon": 8.8168654,
+  "land": "DE"
+ },
+ "|schwerte|rattenloch kunterbunt": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|berlin|freiraum im $@#@riterviertel": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|brussels|ancienne belgique,": {
+  "lat": 50.8470454,
+  "lon": 4.3492674,
+  "land": "BE"
+ },
+ "DE|meppen|juz jam center": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|munchen|zenith": {
+  "lat": 48.1946864,
+  "lon": 11.6078535,
+  "land": "DE"
+ },
+ "|obertraubling|airport obertraubling": {
+  "lat": 48.9772866,
+  "lon": 12.1567505,
+  "land": "DE"
+ },
+ "DE|markneukirchen|musikhalle": {
+  "lat": 50.3097278,
+  "lon": 12.3359725,
+  "land": "DE"
+ },
+ "DE|duisburg|jz st. peter": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|antwerpen –bl|trix": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|munster|botschaft": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|sneek the|het bolwerk": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|stuttgart|schleyerhalle": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|kempten|big box": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|leipzig|haus leipzig": {
+  "lat": 51.340605,
+  "lon": 12.3645637,
+  "land": "DE"
+ },
+ "DE|berlin|urania": {
+  "lat": 52.5012401,
+  "lon": 13.3480623,
+  "land": "DE"
+ },
+ "|warschau –pl|proxima": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "NL|uden the|culture stage de pul": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|bielefeld|lokschuppen": {
+  "lat": 52.0365537,
+  "lon": 8.5514521,
+  "land": "DE"
+ },
+ "|eisenhuttenstadt|club steelbruch": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|paderborn|kulturwerkstatt (kulte)": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|essen|juz hu weg": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|munchen|ampere": {
+  "lat": 48.1328909,
+  "lon": 11.5894872,
+  "land": "DE"
+ },
+ "DE|bremen|bettys black pearl": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|hameln|sumpfblume kultur und kommunikationszentrum e.v.": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|ghent|de vierde zaal": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|kiel|wunderino arena merkur ostseehalle": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|antwerp|kavka zappa,": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|bg sofia|, hristo botev hall": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|brno czech republic|fleda club": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|ro bukarest|, quantic": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|kassel sud|nordhessen arena": {
+  "lat": 51.2980034,
+  "lon": 9.4823497,
+  "land": "DE"
+ },
+ "DE|dresden|reithalle/strasse e": {
+  "lat": 51.085593,
+  "lon": 13.764458,
+  "land": "DE"
+ },
+ "DE|berlin|spirale": {
+  "lat": 52.4936066,
+  "lon": 13.3064477,
+  "land": "DE"
+ },
+ "BE|antwerp|– kavka oudaan": {
+  "lat": 51.2156788,
+  "lon": 4.4031014,
+  "land": "BE"
+ },
+ "|saarbrucken|garage": {
+  "lat": 49.23244,
+  "lon": 6.9995193,
+  "land": "DE"
+ },
+ "DE|oberhausen|gdanska": {
+  "lat": 51.4683651,
+  "lon": 6.8500305,
+  "land": "DE"
+ },
+ "|bristol, united kingdom –|the prospect building": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|lingen (ems)|emslandhallen": {
+  "lat": 52.5138137,
+  "lon": 7.3160198,
+  "land": "DE"
+ },
+ "DE|duisburg|indie": {
+  "lat": 51.431603,
+  "lon": 6.7723417,
+  "land": "DE"
+ },
+ "DE|rothenburg o.d.t.|molkerei": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|seraing|om": {
+  "lat": 50.6073612,
+  "lon": 5.5364634,
+  "land": "BE"
+ },
+ "|falmouth united kingdom|princess pavilion": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|karlsruhe|p8": {
+  "lat": 49.0193669,
+  "lon": 8.4094841,
+  "land": "DE"
+ },
+ "|glasgow united kingdom|cylde room": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|dublin 1 ireland|the academy": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|mannheim|sap arena": {
+  "lat": 49.4641171,
+  "lon": 8.5179596,
+  "land": "DE"
+ },
+ "|liverpool united kingdom|o2 academy": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|stuttgart|helene p": {
+  "lat": 48.7500827,
+  "lon": 9.1702099,
+  "land": "DE"
+ },
+ "DE|trier nord|swt arena": {
+  "lat": 49.7716451,
+  "lon": 6.6638101,
+  "land": "DE"
+ },
+ "|london united kingdom|electric brixton": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|tangermunde|kaminstube": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|freiburg im breisgau|sick arena": {
+  "lat": 48.0161679,
+  "lon": 7.8402097,
+  "land": "DE"
+ },
+ "BE|antwerpen|– trix": {
+  "lat": 51.2195776,
+  "lon": 4.4483726,
+  "land": "BE"
+ },
+ "|frankfurt am main|jahrhunderthalle": {
+  "lat": 50.0994964,
+  "lon": 8.5189652,
+  "land": "DE"
+ },
+ "DE|nurnberg|stereo deluxe club": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|jena|sparkassen arena": {
+  "lat": 50.8991763,
+  "lon": 11.5883221,
+  "land": "DE"
+ },
+ "DE|regensburg|stadtwerk.donau arena": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|wilhelmshaven|kling klang": {
+  "lat": 53.5209171,
+  "lon": 8.1080089,
+  "land": "DE"
+ },
+ "|a – innsbruck|olympiahalle": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|wels (auatria)|alter schl8hof": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|wurzburg|posthalle": {
+  "lat": 49.8019528,
+  "lon": 9.9316134,
+  "land": "DE"
+ },
+ "|munchen|muffatwerk, ampere": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|malle|kemphe ondestroom": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|mannheim|maimarktclub": {
+  "lat": 49.4682689,
+  "lon": 8.5250183,
+  "land": "DE"
+ },
+ "DE|zwickau|sparkassen arena": {
+  "lat": 50.7040194,
+  "lon": 12.4966134,
+  "land": "DE"
+ },
+ "DE|emden|grusewsky": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|filderstadt|filharmonie": {
+  "lat": 48.6729583,
+  "lon": 9.2133189,
+  "land": "DE"
+ },
+ "|innsbruck|music hall": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|schaerbeek|brasserie de la mule": {
+  "lat": 50.865878,
+  "lon": 4.3730863,
+  "land": "BE"
+ },
+ "DE|bremen|eisen": {
+  "lat": 53.0724269,
+  "lon": 8.8232589,
+  "land": "DE"
+ },
+ "DE|frankfurt am main|schoppche keller": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|siegen|siegerlandhalle": {
+  "lat": 50.8680616,
+  "lon": 8.0104649,
+  "land": "DE"
+ },
+ "NL|rotterdam|wgw": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|bielefeld|extra": {
+  "lat": 52.0164144,
+  "lon": 8.5308792,
+  "land": "DE"
+ },
+ "DE|salzwedel|hanseat": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|heidelberg|villa nachttanz": {
+  "lat": 49.4053379,
+  "lon": 8.6385583,
+  "land": "DE"
+ },
+ "NL|arnhem|cafe de wacht": {
+  "lat": 51.9830588,
+  "lon": 5.9092391,
+  "land": "NL"
+ },
+ "|koln|essig fabrik": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "BE|brussel|le chaff": {
+  "lat": 50.8375152,
+  "lon": 4.3457359,
+  "land": "BE"
+ },
+ "DE|ludwigsburg|scala": {
+  "lat": 48.8954669,
+  "lon": 9.1937222,
+  "land": "DE"
+ },
+ "DE|wiesbaden|kreativfabrik wiesbaden e.v.": {
+  "lat": 50.0667449,
+  "lon": 8.248829,
+  "land": "DE"
+ },
+ "DE|aulendorf|irreal bar": {
+  "lat": 47.9528527,
+  "lon": 9.6418662,
+  "land": "DE"
+ },
+ "DE|eggenthal|rotten cat": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|munster|sputnikhalle": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|bremen|rum bumpers": {
+  "lat": 53.0751706,
+  "lon": 8.8257747,
+  "land": "DE"
+ },
+ "DE|heilbronn|maschinenfabrik": {
+  "lat": 49.1384855,
+  "lon": 9.2103117,
+  "land": "DE"
+ },
+ "DE|saarbrucken|saarlandhalle": {
+  "lat": 49.2491533,
+  "lon": 6.9860318,
+  "land": "DE"
+ },
+ "BE|namur|– le petit bitu": {
+  "lat": 50.4656165,
+  "lon": 4.8619044,
+  "land": "BE"
+ },
+ "|osnabruck|lagerhalle": {
+  "lat": 52.2761532,
+  "lon": 8.0394671,
+  "land": "DE"
+ },
+ "DE|hamburg|monkeys music club": {
+  "lat": 53.5576381,
+  "lon": 9.9309291,
+  "land": "DE"
+ },
+ "DE|halle saale)|alte schule": {
+  "lat": 51.4671287,
+  "lon": 11.9848793,
+  "land": "DE"
+ },
+ "DE|dresden|blauer salon": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|berlin|max schmeling halle": {
+  "lat": 52.5447995,
+  "lon": 13.4044944,
+  "land": "DE"
+ },
+ "|uk – brighton|– the hope & ruin": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|uk – glasgow|– ivory black": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|uk – birmingham|– castle & falcon": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|uk – nottingham|– cathedral": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|uk – london|– underworld": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|berlin|max schmeling halle": {
+  "lat": 52.5447995,
+  "lon": 13.4044944,
+  "land": "DE"
+ },
+ "DE|lubeck|veb/alternative": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|koln|kulturkirche": {
+  "lat": 50.9485109,
+  "lon": 7.0080976,
+  "land": "DE"
+ },
+ "DE|siegen|veb": {
+  "lat": 50.8701963,
+  "lon": 8.0306864,
+  "land": "DE"
+ },
+ "DE|coesfeld|pampa": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|nurnberg|kunstverein e.v. (kv)": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|dk – copenhagen|– beta": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|se – malmo|– plan b": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|se – borlange|– broken dreams": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|erfurt|gewerkschaftshaus": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|se – sundbyberg|– encore": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "DE|chemnitz|messe": {
+  "lat": 50.8163491,
+  "lon": 12.882097,
+  "land": "DE"
  }
 }
