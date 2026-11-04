@@ -29,6 +29,19 @@ class MerkmaleTest(unittest.TestCase):
     def test_frei_kein_teilwort(self):
         self.assertFalse(ist_frei("Freiburg Festhalle, 12 EUR", L))
 
+    def test_frei_formulierungen(self):
+        for text in ("Eintritt frei!", "Eintritt: frei", "Eintritt ist frei", "Freier Eintritt", "Eintritt auf Spende",
+                     "Spendenbasis", "gegen Spende", "Hutkasse", "Pay what you can", "gratis", "Kostenlos",
+                     "toegang gratis", "gratis entree", "Eintritt frei, Spende willkommen"):
+            with self.subTest(text=text):
+                self.assertTrue(ist_frei(text, L))
+
+    def test_frei_keine_falschtreffer(self):
+        for text in ("Freiburg", "Freitag 20 Uhr", "Free Jazz Abend", "free", "Eintritt 8 EUR", "Eintritt: 5 Euro",
+                     "Freizeitzentrum", "Vorverkauf gratisfrei", "Preis frei wählbar Eintritt 10"):
+            with self.subTest(text=text):
+                self.assertFalse(ist_frei(text, L))
+
     def test_kommerz(self):
         self.assertTrue(ist_kommerz(["https://www.eventim.de/event/x"], L))
 
