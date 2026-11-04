@@ -78,7 +78,7 @@ open_url() {
 
 # pause "msg" waits for the human to confirm they've done the manual part.
 pause() {
-  printf '  %s%s%s ' "$DIM" "${1:-Enter drücken zum Weiterfahren}" "$RESET"
+  printf '  %s%s%s ' "$DIM" "${1:-Enter drücken zum Weitermachen}" "$RESET"
   read -r _ || true
 }
 
@@ -275,11 +275,13 @@ printf '\n'
 say "1. Ein Token nur für diesen Push erzeugen (Token = Passwort-Ersatz für Programme):"
 open_url "$CB/user/settings/applications"
 step "Unter 'Manage Access Tokens': Name z. B. fof-push, Recht für Repositories 'Read and Write', erzeugen, kopieren (wird nur einmal angezeigt)."
+note "Dieses Token darf in alle deine Repos schreiben (siehe Stufe 6). Nach dem letzten Push in Stufe 8 kannst du es wieder löschen."
 say "2. Im Terminal (Git Bash) ausführen:"
 cmd "cd $PROBE_DIR"
 cmd "git remote add origin $CB/fuckofffashion/fof-probe.git"
 cmd "git push -u origin main"
-say "Git fragt nach Benutzername (dein Codeberg-Name) und Passwort: dort das Token einfügen, nicht ins Wizard-Fenster."
+say "Diese Befehle in einem ZWEITEN Git-Bash-Fenster ausführen, nicht in diesem Wizard-Fenster."
+say "Git fragt nach Benutzername (dein Codeberg-Name) und Passwort: dort das Token einfügen. Das ist die einzige Stelle im Terminal, an der ein Token hingehört."
 printf '\n'
 say "3. Manuell starten:"
 open_url "$CB/fuckofffashion/fof-probe/actions"
@@ -291,7 +293,7 @@ say "In 7 Tagen: probe.log muss 7 geplante Einträge (event=schedule) zwischen 0
 # ── 6 ─────────────────────────────────────────────────────────────────────
 stage "Zugriffstoken PAGES_TOKEN und Secret"
 say "Der Konzertlauf schreibt die fertige Seite ins Repo 'pages'. Dafür braucht er ein Token mit Schreibrecht."
-warn "Das Token niemals in dieses Terminal, in Chats oder in Dateien einfügen. Nur ins Browserfeld."
+warn "Das PAGES_TOKEN niemals ins Terminal, in Chats oder in Dateien einfügen. Nur ins Browserfeld des Secrets."
 printf '\n'
 say "Reichweite des Tokens (Stand 2026-11-04):"
 note "Laut Forgejo-Doku (forgejo.org/docs/latest/user/token-scope) gilt 'write:repository' für alle Repos, auf die der Account zugreifen kann,"
@@ -337,6 +339,7 @@ cmd "git -C $SITE_DIR remote add origin $CB/fuckofffashion/site.git"
 cmd "git -C $SITE_DIR remote set-url origin $CB/fuckofffashion/site.git"
 say "Dann (erst nach Absprache):"
 cmd "git -C $SITE_DIR push origin master:main"
+say "Git fragt wieder nach Benutzername und Passwort: dasselbe Push-Token wie in Stufe 5 (fof-push) einfügen."
 note "Lokal heißt der Hauptbranch 'master', auf Codeberg 'main', wie der Workflow es erwartet."
 pause "Enter zum Beenden."
 
