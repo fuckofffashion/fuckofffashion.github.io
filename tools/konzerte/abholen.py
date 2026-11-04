@@ -16,6 +16,7 @@ from tools.konzerte import knox, radar
 from tools.konzerte.merkmale import genres, ist_frei, ist_kommerz, lade_listen
 from tools.konzerte.ortstabelle import Ortstabelle
 from tools.konzerte.ortung import LAENDER, USER_AGENT, Ortung, nominatim_suche
+from tools.konzerte.zusammenfuehren import fuehre_zusammen
 
 FENSTER_TAGE = 180
 NOMINATIM_BUDGET = 300
@@ -222,6 +223,9 @@ def main(argv=None, hole_knox=None, hole_radar=None):
                 merkmale_setzen(t, listen)
         if ortung.fehler:
             log(f"WARNUNG nominatim: {ortung.fehler}")
+        vorher_anzahl = len(termine)
+        termine = fuehre_zusammen(termine)
+        log(f"Dubletten zusammengeführt: {vorher_anzahl - len(termine)}")
         brauchbar = [t for t in termine if ist_geortet(t)]
         for t in termine:
             if t.land != "X" and not ist_geortet(t):

@@ -35,6 +35,12 @@ def basisnamen(name):
     return alle
 
 
+def stadtschluessel(name):
+    """Alle normalisierten Namensformen einer Stadt (voll und Basisform); zwei Städte
+    gelten als gleich, wenn sich ihre Schlüsselmengen schneiden."""
+    return {normalisiere(name)} | basisnamen(name)
+
+
 def _mittel(punkte):
     return (sum(p[0] for p in punkte) / len(punkte), sum(p[1] for p in punkte) / len(punkte))
 
