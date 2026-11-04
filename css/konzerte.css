@@ -224,6 +224,24 @@ select.kz-input { appearance: auto; }
 
 .kz-mehr { margin: var(--sp-3) 0 0; text-align: center; max-width: none; }
 
+/* Danke an die Quellen: ein Zettel Kopierpapier */
+.kz__dank { margin: .6rem 0 0; font: 700 var(--fs-small)/1.4 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); }
+.kz__dank a { color: var(--ash); text-decoration-color: var(--blood); text-underline-offset: .25em; }
+.kz__dank a:hover { color: var(--paper); }
+.kz-danke {
+  position: relative; margin-top: var(--sp-5); max-width: 40rem; rotate: -.6deg;
+  background: var(--paper); color: var(--ink); padding: 1.8rem clamp(1.25rem, 4vw, 2.2rem) 1.5rem;
+  box-shadow: 0 18px 40px -22px #000; clip-path: polygon(0 .4%, 100% 0, 99.5% 100%, .4% 99.4%);
+  scroll-margin-top: 6rem;
+}
+.kz-danke .tape { top: -.7rem; left: 2.5rem; width: 6rem; height: 1.5rem; transform: rotate(-4deg); }
+.page .kz-danke__titel { margin: .2rem 0 .8rem; text-transform: none; font: 400 clamp(2rem, 1.4rem + 2.6vw, 3.2rem)/1 var(--font-edding); color: var(--blood); }
+.kz-danke p { margin: 0 0 .8rem; max-width: 52ch; }
+.kz-danke a:not(.btn) { color: inherit; text-decoration-color: var(--blood); text-underline-offset: .2em; }
+.kz-danke__versprechen { font-weight: 700; }
+.kz-danke__knoepfe { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.2rem 0 1rem; }
+.kz-danke .kz-klein { margin: 0; }
+
 /* Quellen */
 .kz-quellen {
   margin-top: var(--sp-5); padding-top: var(--sp-2); border-top: 1px solid var(--ink-3);
