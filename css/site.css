@@ -15,6 +15,17 @@
 .head nav { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
 .head nav a { font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); text-decoration: none; padding-block: .5rem; }
 @media (max-width: 560px) { .head__mark span { display: none; } .head nav .nav--wide { display: none; } }
+/* Handy: Logo und Navigation passen sicher in eine Zeile – Abstände und Schrift sind an die Bildbreite gedeckelt,
+   so sprengt auch eine vergrößerte Systemschrift (Android-Textskalierung) die Zeile nicht, und das Logo
+   schrumpft nie unter die Navigation. Dazu eine dunkle Leiste: Inhalt läuft beim Scrollen darunter durch
+   statt durch die Navigation hindurch. Desktop bleibt beim Differenz-Mischmodus ohne Grund. */
+@media (max-width: 560px) {
+  .head { column-gap: 3vw; background: var(--ink); mix-blend-mode: normal; }
+  .head__mark { flex: none; }
+  .head__mark svg { width: min(1.7rem, 7vw); height: min(1.7rem, 7vw); }
+  .head nav { gap: min(1rem, 3.2vw); min-width: 0; }
+  .head nav a { font-size: min(var(--fs-label), 3.1vw); white-space: nowrap; }
+}
 @media (max-width: 370px) { .head nav .nav--mid { display: none; } } /* Startseite: vier Punkte passen erst ab 371 px */
 
 /* Hero --------------------------------------------------- */

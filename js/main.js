@@ -46,11 +46,13 @@
     /* Hero – wartet auf das Intro */
     const heroTitle = document.querySelector(".js-hero-title");
     const heroLines = splitLines(heroTitle);
+    // Läuft das Intro, landet dessen A auf dem Logo: das Logo bleibt dann stehen, nur Name und Navigation blenden ein
+    const kopf = document.getElementById("intro") ? head.querySelectorAll(".head__mark span, nav") : head;
     if (!MOTION.reduced) {
       gsap.set(heroLines, { clipPath: "inset(0 100% 0 0)" });
       gsap.set(".js-hero-fade, .js-stamp", { opacity: 0 });
       gsap.set(".hero__logo img", { clipPath: "inset(100% 0 0 0)" });
-      gsap.set(head, { opacity: 0 });
+      gsap.set(kopf, { opacity: 0 });
     }
     FOF.introDone.then(played => {
       const tl = gsap.timeline({ delay: played ? .25 : .1 });
@@ -58,7 +60,7 @@
         .add(tapeReveal(heroTitle), .1)
         .add(stamp(document.querySelector(".js-stamp")), "-=.2")
         .to(".js-hero-fade", { opacity: 1, duration: MOTION.dur.base, ease: MOTION.ease.out, stagger: .1 }, "-=.15")
-        .to(head, { opacity: 1, duration: MOTION.dur.base }, "<");
+        .to(kopf, { opacity: 1, duration: MOTION.dur.base }, "<");
     });
 
     /* Sektions-Headlines: Klebeband */

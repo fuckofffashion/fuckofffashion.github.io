@@ -106,7 +106,15 @@ body::after {
   font-family: var(--font-shout); font-size: clamp(1.6rem, 3vw, 2.4rem); text-transform: uppercase;
   padding-inline: .6em;
 }
-.ticker__in span::after { content: "Ⓐ"; font-family: var(--font-body); font-weight: 800; padding-left: 1.2em; }
+/* Trenner: das Anarchie-A aus Motiv 007 (kleine Fassung, die Stiche wären hier nur Grauschleier), als Maske in Textfarbe.
+   Gleich groß wie das frühere Zeichen „Ⓐ“ in Archivo 800: Höhe .977 em von -.117 em (Unterlänge) bis zur
+   Versalhöhe .86 em, so sitzt es wie vorher mittig zur Schrift. */
+.ticker__in span::after {
+  content: ""; display: inline-block; width: 1.13em; height: .977em; margin-left: 1.2em; vertical-align: -.117em;
+  background: currentColor;
+  -webkit-mask: url("../assets/img/anarchie-a-klein.svg") center / contain no-repeat;
+          mask: url("../assets/img/anarchie-a-klein.svg") center / contain no-repeat;
+}
 
 /* Glitch – nur als kurzes Ereignis ------------------------ */
 .glitch { position: relative; display: inline-block; }
