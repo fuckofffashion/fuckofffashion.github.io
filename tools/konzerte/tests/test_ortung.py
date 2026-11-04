@@ -63,7 +63,7 @@ class OrtungTest(unittest.TestCase):
         self.assertAlmostEqual(b.lat, 48.399, places=3)
 
     def test_nicht_gefunden_30_tage(self):
-        for tage, abfragen in ((10, 0), (31, 1)):
+        for tage, abfragen in ((10, 0), (29, 0), (30, 1), (31, 1)):
             with self.subTest(tage=tage):
                 hole = FakeHole()
                 alt = (HEUTE - timedelta(days=tage)).isoformat()
@@ -101,10 +101,30 @@ class OrtungTest(unittest.TestCase):
         self.assertEqual((t.land, t.lat, t.lon), ("NL", 52.0, 4.0))
         self.assertEqual(o.cache["|amsterdam|roxy"]["land"], "NL")
 
-    def test_bekanntes_land_wird_nicht_ueberschrieben(self):
+    def test_treffer_im_falschen_land_wird_verworfen(self):
         hole = FakeHole(antwort=[{"lat": 51.2, "lon": 4.4, "land": "BE"}])
-        t = ortung_mit(hole).orte(termin())
+        o = ortung_mit(hole)
+        t = o.orte(termin())
+        self.assertEqual(len(hole.abfragen), 1)
         self.assertEqual(t.land, "DE")
+        self.assertFalse(t.genau)
+        self.assertAlmostEqual(t.lat, 48.399, places=3)
+        self.assertEqual(o.cache, {})
+
+    def test_kaputter_cache_ist_ein_fehlschlag(self):
+        for eintrag in ("text", None, 5, [], {}, {"lat": 1.0}, {"lat": None, "lon": None},
+                        {"nicht_gefunden": 7}, {"nicht_gefunden": "kaputt"}):
+            with self.subTest(eintrag=eintrag):
+                hole = FakeHole()
+                t = ortung_mit(hole, {"DE|ulm|roxy": eintrag}).orte(termin())
+                self.assertEqual(len(hole.abfragen), 1)
+                self.assertTrue(t.genau)
+
+    def test_nicht_gefunden_in_der_zukunft_wird_neu_versucht(self):
+        hole = FakeHole()
+        zukunft = (HEUTE + timedelta(days=3)).isoformat()
+        ortung_mit(hole, {"DE|ulm|roxy": {"nicht_gefunden": zukunft}}).orte(termin())
+        self.assertEqual(len(hole.abfragen), 1)
 
     def test_tabelle_ueberschreibt_bekanntes_land_nicht(self):
         # Stadt gibt es nur in NL, Termin sagt DE: Land bleibt DE, keine Koordinaten
@@ -119,6 +139,7 @@ class OrtungTest(unittest.TestCase):
         b = o.orte(termin(laden="Cafe Abseits"))
         self.assertEqual(len(hole.abfragen), 1)
         self.assertEqual(o.cache, {})
+        self.assertEqual(o.fehler, "OSError: HTTP 429")
         self.assertFalse(a.genau)
         self.assertFalse(b.genau)
         self.assertIsNotNone(a.lat)
@@ -146,6 +167,22 @@ class WarteTest(unittest.TestCase):
         geschlafen.clear()
         ortung._warte(lambda: 105.0, geschlafen.append)
         self.assertEqual(geschlafen, [])
+
+    def test_wartezeit_waechst_nicht(self):
+        zeit = [100.0]
+        waits, starts = [], []
+
+        def schlafen(s):
+            waits.append(s)
+            zeit[0] += s
+
+        ortung._letzte_anfrage = 0.0
+        for _ in range(6):
+            ortung._warte(lambda: zeit[0], schlafen)
+            starts.append(zeit[0])
+            zeit[0] += 0.3  # die Anfrage selbst dauert
+        self.assertTrue(all(w <= 1.0 for w in waits), waits)
+        self.assertTrue(all(b - a >= 1.0 for a, b in zip(starts, starts[1:])), starts)
 
 
 if __name__ == "__main__":

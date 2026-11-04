@@ -22,7 +22,7 @@ def _warte(uhr=time.monotonic, schlafen=time.sleep):
     rest = _letzte_anfrage + ABSTAND_SEKUNDEN - uhr()
     if rest > 0:
         schlafen(rest)
-    _letzte_anfrage = uhr() + max(rest, 0)
+    _letzte_anfrage = uhr()
 
 
 def nominatim_suche(abfrage):
@@ -56,13 +56,14 @@ class Ortung:
         self.hole = hole
         self.heute = heute
         self.budget = budget
+        self.fehler = None  # Meldung, falls Nominatim wegen eines Fehlers abgeschaltet wurde
 
     def orte(self, t):
         if t.land == "X":
             return t
         schluessel = f"{t.land or ''}|{normalisiere(t.stadt)}|{normalisiere(t.laden)}"
         eintrag = self.cache.get(schluessel)
-        if eintrag and "lat" in eintrag:
+        if isinstance(eintrag, dict) and eintrag.get("lat") is not None and eintrag.get("lon") is not None:
             self._setze(t, eintrag["lat"], eintrag["lon"], eintrag.get("land"), True)
             return t
         if t.laden and self.budget > 0 and not self._kuerzlich_nicht_gefunden(eintrag):
@@ -72,13 +73,13 @@ class Ortung:
         return t
 
     def _kuerzlich_nicht_gefunden(self, eintrag):
-        if not eintrag or "nicht_gefunden" not in eintrag:
+        if not isinstance(eintrag, dict):
             return False
         try:
             seit = (self.heute - date.fromisoformat(eintrag["nicht_gefunden"])).days
-        except ValueError:
+        except (KeyError, TypeError, ValueError):
             return False
-        return seit < NICHT_GEFUNDEN_TAGE
+        return 0 <= seit < NICHT_GEFUNDEN_TAGE
 
     def _nominatim(self, t, schluessel):
         """True bei Treffer. Bei Fehler wird Nominatim für den Rest des Laufs abgeschaltet."""
@@ -87,13 +88,16 @@ class Ortung:
         self.budget -= 1
         try:
             treffer = self.hole(abfrage)
-        except Exception:
+        except Exception as e:
             self.budget = 0
+            self.fehler = f"{type(e).__name__}: {e}"
             return False
         if not treffer:
             self.cache[schluessel] = {"nicht_gefunden": self.heute.isoformat()}
             return False
         lat, lon, land = treffer[0]["lat"], treffer[0]["lon"], treffer[0].get("land")
+        if t.land in LAENDER and land in LAENDER and land != t.land:
+            return False  # Treffer im falschen Land: verwerfen, nicht cachen
         if t.land is None and land is None and t.stadt:
             gefunden = self.tabelle.nach_name(t.stadt)
             land = gefunden[0] if gefunden else None
