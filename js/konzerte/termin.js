@@ -127,7 +127,18 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
     a.rel = "noopener noreferrer";
     const name = sauber(t.laden) || sauber(t.stadt) || "diesem Termin";
     a.setAttribute("aria-label", `Hinkommen zu ${name}, öffnet openstreetmap.org`);
-    hin.append(a, element("span", "kz-hin__hinweis", "öffnet openstreetmap.org"));
+    // Standard ist Fahrrad; zu Fuß und Auto sind kleine Alternativen mit demselben Ziel
+    const andere = element("span", "kz-hin__andere");
+    [["fuss", "zu Fuß", "Hinkommen zu Fuß"], ["auto", "Auto", "Hinkommen mit dem Auto"]].forEach(([modus, text, art], i) => {
+      const b = element("a", "kz-link kz-hin__modus", text);
+      b.href = routenLink(t, start, modus);
+      b.target = "_blank";
+      b.rel = "noopener noreferrer";
+      b.setAttribute("aria-label", `${art} zu ${name}, öffnet openstreetmap.org`);
+      if (i) andere.append(" · ");
+      andere.append(b);
+    });
+    hin.append(a, andere, element("span", "kz-hin__hinweis", "öffnet openstreetmap.org"));
     was.append(hin);
   }
 

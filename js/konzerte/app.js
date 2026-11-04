@@ -399,7 +399,9 @@ function start(wurzel) {
 
       if (Number.isFinite(d.ohne_ort) && d.ohne_ort > 0) {
         el.ohneOrt.replaceChildren(
-          `${d.ohne_ort.toLocaleString("de-DE")} Termine ohne Ort, die findest du `,
+          d.ohne_ort === 1
+            ? "1 Termin ohne Ort, den findest du "
+            : `${d.ohne_ort.toLocaleString("de-DE")} Termine ohne Ort, die findest du `,
           link(KNOX_START, "bei KNOX"),
         );
         el.ohneOrt.hidden = false;
