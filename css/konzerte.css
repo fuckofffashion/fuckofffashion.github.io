@@ -117,7 +117,44 @@ select.kz-input { appearance: auto; }
 
 /* Ergebnisse ---------------------------------------------- */
 .kz-ergebnis { min-width: 0; }
-.js-karte:empty { display: none; } /* Platzhalter für die Karte (Task 9) */
+
+/* Copyshop-Karte: eine Kopie auf altem Papier, festgeklebt über der Liste.
+   Grau entsteht wie beim Kopierer aus Rasterpunkten; Land ist Papier, Grenzen Toner. */
+.kz-karte { position: relative; margin: 0 0 var(--sp-3); }
+.kz-karte .tape { top: -.75rem; right: 12%; width: 6.5rem; height: 1.5rem; transform: rotate(4deg); }
+.kz-karte__bild {
+  display: block; width: 100%; height: clamp(18rem, 52vh, 30rem);
+  background: radial-gradient(circle, var(--ink) 0 .9px, transparent 1.3px) 0 0 / 5px 5px, var(--paper-2);
+  clip-path: polygon(0 .8%, 99.6% 0, 100% 99.2%, .3% 100%);
+  cursor: grab; user-select: none; -webkit-user-select: none;
+  touch-action: pan-x pan-y; /* ein Finger scrollt die Seite, zwei Finger gehören der Karte */
+}
+.kz-karte__bild.is-ziehen { cursor: grabbing; }
+.kz-karte__land path { fill: var(--paper); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.kz-karte__regionen { fill: none; stroke: var(--ink); stroke-width: .8; stroke-opacity: .5; vector-effect: non-scaling-stroke; }
+.kz-karte__staedte rect { fill: var(--ink); }
+.kz-karte__staedte text {
+  fill: var(--ink); font-family: var(--font-zine); font-weight: 700; letter-spacing: .04em;
+  paint-order: stroke; stroke: var(--paper); stroke-width: .25em; stroke-linejoin: round;
+}
+.kz-karte__kreis { fill: var(--ink); fill-opacity: .06; stroke: var(--ink); }
+.kz-karte__mitte { fill: var(--ink); stroke: var(--blood); }
+.kz-karte__schild { fill: var(--ink); }
+.kz-karte__satz { fill: var(--paper); font-family: var(--font-zine); font-weight: 700; }
+.kz-karte__a { color: var(--blood); cursor: pointer; }
+.kz-karte__haufen { cursor: pointer; }
+.kz-karte__haufen circle { fill: var(--blood); stroke: var(--ink); }
+.kz-karte__haufen text { fill: var(--paper); font-family: var(--font-shout); pointer-events: none; }
+.kz-karte .is-ungefaehr { opacity: .45; } /* nur ungefähr geortet: blasser gedruckt */
+.kz-karte__hilfe { margin: .5rem 0 0; max-width: none; font: 400 var(--fs-label)/1.4 var(--font-zine); color: var(--ash); letter-spacing: .04em; }
+.kz-karte__hilfe-finger { display: none; }
+@media (pointer: coarse) {
+  .kz-karte__hilfe-maus { display: none; }
+  .kz-karte__hilfe-finger { display: inline; }
+}
+
+/* Von der Karte angesprungener Termin */
+.kz-termin.is-markiert { outline: 3px solid var(--blood); outline-offset: 4px; background: var(--ink-2); }
 
 .kz-leiste {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: .8rem 1.5rem;
@@ -220,4 +257,5 @@ select.kz-input { appearance: auto; }
   .kz-filter { padding: 1.3rem 1rem 1rem; gap: .9rem; }
   .kz-gruppe + .kz-gruppe { padding-top: .8rem; }
   .kz-leiste { align-items: start; }
+  .kz-karte__bild { height: min(46vh, 17rem); } /* kompakt: die Liste bleibt in Daumennähe */
 }

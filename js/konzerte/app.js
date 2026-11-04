@@ -7,6 +7,7 @@ import { STUFEN } from "./einheiten.js?v=13";
 import { SPRUECHE, spruch } from "./leer.js?v=13";
 import { ortsfeld } from "./ortsfeld.js?v=13";
 import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=13";
+import { starteKarte } from "./karte.js?v=13";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
@@ -331,6 +332,24 @@ function start(wurzel) {
   }
 
   el.mehr.addEventListener("click", zeigeMehr);
+
+  // Karte: Klick auf ein A meldet die Termin-Id. Liegt der Eintrag noch hinter „Mehr zeigen“,
+  // wird bis dorthin nachgeladen; dann scrollen und hervorheben.
+  starteKarte($(".js-karte"));
+  let markiert = null;
+  document.addEventListener("konzerte:zeige", (e) => {
+    const id = String(e.detail?.id);
+    const i = treffer.findIndex((t) => String(t.id) === id);
+    if (i < 0) return;
+    while (gezeigt <= i) zeigeMehr();
+    const li = document.getElementById(`termin-${id}`);
+    if (!li) return;
+    markiert?.classList.remove("is-markiert");
+    li.classList.add("is-markiert");
+    markiert = li;
+    const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    li.scrollIntoView({ block: "center", behavior: ruhig ? "auto" : "smooth" });
+  });
 
   // „Mehr Filter“ auf dem Telefon zu, sonst offen (dort ist der Knopf ausgeblendet)
   const schmal = matchMedia("(max-width: 560px)");

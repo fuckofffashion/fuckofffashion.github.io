@@ -106,7 +106,15 @@
 
     <!-- Ergebnisse --------------------------------------------- -->
     <section class="kz-ergebnis" aria-labelledby="kz-zahl">
-      <svg class="js-karte" aria-hidden="true"></svg>
+      <!-- Copyshop-Karte (js/konzerte/karte.js). Nur Beiwerk: die Liste darunter ist die zugängliche Ansicht. -->
+      <div class="kz-karte js-karte" aria-hidden="true" hidden>
+        <span class="tape"></span>
+        <svg class="kz-karte__bild"></svg>
+        <p class="kz-karte__hilfe">
+          <span class="kz-karte__hilfe-maus">Rad zoomt · Ziehen schiebt · Klick auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
+          <span class="kz-karte__hilfe-finger">Zwei Finger zoomen · Tipp auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
+        </p>
+      </div>
 
       <div class="kz-leiste">
         <h2 class="kz-zahl js-zahl" id="kz-zahl" aria-live="polite">Lade Termine …</h2>
