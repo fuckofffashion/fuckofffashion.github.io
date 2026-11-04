@@ -45,6 +45,12 @@ class OrtungTest(unittest.TestCase):
         self.assertEqual(hole.abfragen, ["Roxy, 89077 Ulm"])
         self.assertEqual(o.cache["DE|ulm|roxy"], {"lat": 48.4, "lon": 9.99, "land": "DE"})
 
+    def test_ohne_ort_keine_nominatim_abfrage(self):
+        hole = FakeHole()
+        t = ortung_mit(hole).orte(termin(laden="IMPORT EXPORT", plz=None, stadt="", land=None))
+        self.assertEqual(hole.abfragen, [])
+        self.assertIsNone(t.lat)
+
     def test_cache_vor_nominatim(self):
         hole = FakeHole()
         cache = {"DE|ulm|roxy": {"lat": 1.5, "lon": 2.5, "land": "DE"}}

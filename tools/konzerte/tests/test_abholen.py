@@ -72,6 +72,20 @@ class AbholenTest(unittest.TestCase):
         self.assertTrue(nach_band["De Kift & Friends"]["frei"])
         self.assertFalse(nach_band["Mother’s Cake"]["kommerz"])
 
+    def test_abgesagte_fallen_raus(self):
+        with open(FIXTURE, encoding="utf-8") as f:
+            feed = f.read().replace("Beton Combo", "Beton Combo ABGESAGT", 1)
+        lauf(self.daten, hole_knox=lambda: feed)
+        bands = [t["bands"] for t in lies(self.daten, "konzerte.json")["termine"]]
+        self.assertNotIn("Beton Combo ABGESAGT", bands)
+        self.assertEqual(len(bands), len(lies(self.daten, "konzerte.json")["termine"]))
+        self.assertTrue(bands)
+
+    def test_koordinaten_gerundet(self):
+        lauf(self.daten)
+        for t in lies(self.daten, "konzerte.json")["termine"]:
+            self.assertEqual(t["lat"], round(t["lat"], 4))
+
     def test_zeitfenster(self):
         lauf(self.daten, heute="2026-11-01")
         self.assertTrue(any(t["datum"] == "2026-11-03" for t in lies(self.daten, "konzerte.json")["termine"]))

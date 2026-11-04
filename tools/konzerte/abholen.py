@@ -6,6 +6,7 @@ Aufruf: python -m tools.konzerte.abholen [--knox-datei PFAD] [--heute YYYY-MM-DD
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
 import urllib.request
@@ -18,6 +19,8 @@ from tools.konzerte.ortung import LAENDER, USER_AGENT, Ortung, nominatim_suche
 
 FENSTER_TAGE = 180
 NOMINATIM_BUDGET = 300
+CACHE_SPEICHERN_ALLE = 50
+ABGESAGT = re.compile(r"(?<!\w)(abgesagt|cancelled|canceled)(?!\w)", re.I)
 AUSFALL_TAGE_BIS_FEHLER = 2  # dritter kaputter Tag in Folge
 KNOX_URL = "https://knox.p-u-n-k.de/db/feed.php?datum_von={von}&datum_bis={bis}"
 QUELLEN = [{"id": "knox", "name": "Knox Punkkonzerte Datenbank", "url": "https://knox.p-u-n-k.de/db/"}]
@@ -72,6 +75,17 @@ def schreibe_json(pfad, daten, kompakt):
         raise
 
 
+def ist_abgesagt(t):
+    return ABGESAGT.search(f"{t.bands} {t.zusatz}") is not None
+
+
+def runde(d):
+    for k in ("lat", "lon"):
+        if d[k] is not None:
+            d[k] = round(d[k], 4)
+    return d
+
+
 def merkmale_setzen(t, listen):
     text = " ".join(x for x in (t.bands, t.zusatz, t.text) if x)
     t.genres = genres(text, listen)
@@ -95,6 +109,9 @@ def hole_quelle_knox(heute, bis, knox_datei, hole_knox):
 
 
 def main(argv=None, hole_knox=None):
+    for strom in (sys.stdout, sys.stderr):
+        if hasattr(strom, "reconfigure"):
+            strom.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser(prog="abholen")
     p.add_argument("--knox-datei")
     p.add_argument("--heute")
@@ -128,12 +145,17 @@ def main(argv=None, hole_knox=None):
         gesamt = len(termine)
         termine = sorted((t for t in termine if heute_s <= t.datum <= bis_s), key=lambda t: t.datum)
         log(f"Zeitfenster {heute_s} bis {bis_s}: {len(termine)} von {gesamt} Terminen")
+        im_fenster = len(termine)
+        termine = [t for t in termine if not ist_abgesagt(t)]
+        log(f"Abgesagt entfernt: {im_fenster - len(termine)}")
         tabelle = Ortstabelle.laden(args.tabelle)
         cache = lies_json(orte_pfad, {})
 
         def hole(abfrage):
             nonlocal nominatim_anfragen
             nominatim_anfragen += 1
+            if nominatim_anfragen % CACHE_SPEICHERN_ALLE == 0:
+                schreibe_json(orte_pfad, cache, kompakt=False)
             return nominatim_suche(abfrage)
 
         ortung = Ortung(cache, tabelle, hole, heute, 0 if args.ohne_nominatim else NOMINATIM_BUDGET)
@@ -145,7 +167,7 @@ def main(argv=None, hole_knox=None):
             log(f"WARNUNG nominatim: {ortung.fehler}")
         brauchbar = [t for t in termine if t.lat is not None and t.land in LAENDER]
         ohne_ort = sum(1 for t in termine if t.land != "X" and not (t.lat is not None and t.land in LAENDER))
-        ausgabe = sorted((t.to_dict() for t in brauchbar), key=lambda d: (d["datum"], d["zeit"] or "", d["stadt"]))
+        ausgabe = sorted((runde(t.to_dict()) for t in brauchbar), key=lambda d: (d["datum"], d["zeit"] or "", d["stadt"]))
         genau = sum(1 for t in brauchbar if t.genau)
         log(f"Geortet: {genau} genau, {len(brauchbar) - genau} über die Ortstabelle, {ohne_ort} ohne Ort")
         log(f"Nominatim-Anfragen: {nominatim_anfragen}")

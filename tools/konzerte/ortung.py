@@ -62,11 +62,11 @@ class Ortung:
         if t.land == "X":
             return t
         schluessel = f"{t.land or ''}|{normalisiere(t.stadt)}|{normalisiere(t.laden)}"
-        eintrag = self.cache.get(schluessel)
+        eintrag = self.cache.get(schluessel) if (t.stadt or t.plz) else None
         if isinstance(eintrag, dict) and eintrag.get("lat") is not None and eintrag.get("lon") is not None:
             self._setze(t, eintrag["lat"], eintrag["lon"], eintrag.get("land"), True)
             return t
-        if t.laden and self.budget > 0 and not self._kuerzlich_nicht_gefunden(eintrag):
+        if t.laden and (t.stadt or t.plz) and self.budget > 0 and not self._kuerzlich_nicht_gefunden(eintrag):
             if self._nominatim(t, schluessel):
                 return t
         self._tabelle(t)
