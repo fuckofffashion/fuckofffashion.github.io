@@ -5,34 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nicht gefunden · Fuck Off Fashion</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/tokens.css?v=14">
-  <link rel="stylesheet" href="/css/base.css?v=14">
-  <link rel="stylesheet" href="/css/site.css?v=14">
+  <!-- 404.html wird auch für verschachtelte Adressen ausgeliefert (z. B. /a/b). Darum zählen alle Pfade ab dieser Basis.
+       tools/veroeffentlichen.sh setzt sie in der veröffentlichten Kopie: "/" (eigene Domain, lokal) oder "/<repo>/" (Projektseite). -->
+  <base href="/">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css?v=14">
+  <link rel="stylesheet" href="css/base.css?v=14">
+  <link rel="stylesheet" href="css/site.css?v=14">
 </head>
 <body>
-<a class="skip" href="#main">Zum Inhalt springen</a>
+<a class="skip" href="#main" onclick="document.getElementById('main').focus();return false">Zum Inhalt springen</a>
 <header class="head head--static">
-  <a class="head__mark" href="/" aria-label="Fuck Off Fashion – Startseite">
+  <a class="head__mark" href="./" aria-label="Fuck Off Fashion – Startseite">
     <svg viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="104" r="76"/><path d="M48 176 100 20 152 176"/><path d="M14 124 188 112"/></g></svg>
     <span>Fuck Off Fashion</span>
   </a>
   <nav aria-label="Hauptnavigation">
-    <a class="scrawl" href="/#anarchie">Anarchie</a>
-    <a class="scrawl" href="/#wand">Motive</a>
-    <a class="scrawl nav--wide" href="/#selbermachen">Selbermachen</a>
-    <a class="scrawl" href="/konzerte.html">Konzerte</a>
+    <a class="scrawl" href="index.html#anarchie">Anarchie</a>
+    <a class="scrawl" href="index.html#wand">Motive</a>
+    <a class="scrawl nav--wide" href="index.html#selbermachen">Selbermachen</a>
+    <a class="scrawl" href="konzerte.html">Konzerte</a>
   </nav>
 </header>
-<main id="main" class="page wrap">
+<main id="main" class="page wrap" tabindex="-1">
   <p class="label label--red">Fehler 404</p>
   <h1 class="shout shout--mega">Besetzt.</h1>
   <p class="lead">Diese Seite gibt es nicht (mehr). Vielleicht wurde sie enteignet.</p>
-  <p><a class="btn" href="/">Zur Startseite <span class="btn__icon" aria-hidden="true">→</span></a></p>
+  <p><a class="btn" href="./">Zur Startseite <span class="btn__icon" aria-hidden="true">→</span></a></p>
 </main>
 <footer class="foot label">
   <span>Fuck Off Fashion · keine Cookies, kein Tracking, kein Shop</span>
-  <nav aria-label="Rechtliches"><a class="scrawl" href="/impressum.html">Impressum</a><a class="scrawl" href="/datenschutz.html">Datenschutz</a></nav>
+  <nav aria-label="Rechtliches"><a class="scrawl" href="impressum.html">Impressum</a><a class="scrawl" href="datenschutz.html">Datenschutz</a></nav>
 </footer>
 </body>
 </html>
