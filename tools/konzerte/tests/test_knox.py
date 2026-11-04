@@ -28,6 +28,48 @@ class ZerlegeOrtTest(unittest.TestCase):
         self.assertEqual(zerlege_ort("Gent, Niederlande"), (None, "Gent", "NL"))
         self.assertEqual(zerlege_ort(""), (None, "", None))
 
+    def test_unbekannte_zusaetze_gehoeren_zum_namen(self):
+        for roh in ("Halle (Saale)", "Frankfurt (Oder)", "Hamburg (St. Pauli)", "Berlin, Kreuzberg"):
+            self.assertEqual(zerlege_ort(roh), (None, roh, None), roh)
+        self.assertEqual(zerlege_ort("06108 Halle (Saale)"), ("06108", "Halle (Saale)", "DE"))
+
+    def test_bindestrich_in_namen(self):
+        self.assertEqual(zerlege_ort("Neu-Ulm"), (None, "Neu-Ulm", None))
+        self.assertEqual(zerlege_ort("Ulm-Soeflingen"), (None, "Ulm-Soeflingen", None))
+        self.assertEqual(zerlege_ort("89231 Neu-Ulm"), ("89231", "Neu-Ulm", "DE"))
+        self.assertEqual(zerlege_ort("DE-Berlin"), (None, "Berlin", "DE"))
+        self.assertEqual(zerlege_ort("CH-Langenthal"), (None, "Langenthal", "X"))
+
+    def test_weitere_marker(self):
+        self.assertEqual(zerlege_ort("Gent (België)"), (None, "Gent", "BE"))
+        self.assertEqual(zerlege_ort("Paris (France)")[2], "X")
+        self.assertEqual(zerlege_ort("Berlin (D)"), (None, "Berlin", "DE"))
+
+
+def _feed(*items):
+    return "<rss><channel>%s</channel></rss>" % "".join(items)
+
+
+def _item(datum, id_="1"):
+    return ("<item><description><![CDATA[<b>Band(s):</b> X<br /> <b>Datum:</b> %s<br /> "
+            "<b>Ort:</b> Hamburg<br /> <b>Wo:</b> Y<br />]]></description>"
+            "<guid>https://knox.p-u-n-k.de/db/index.php?id=%s</guid></item>" % (datum, id_))
+
+
+class FeedRobustTest(unittest.TestCase):
+    def test_zeit(self):
+        t = lese_feed(_feed(_item("Di, 03.11.2026 20:30 Uhr")))
+        self.assertEqual((t[0].datum, t[0].zeit), ("2026-11-03", "20:30"))
+
+    def test_kaputtes_datum_ueberspringt_nur_den_eintrag(self):
+        t = lese_feed(_feed(_item("31.13.2026", "1"), _item("kein Datum", "2"), _item("04.11.2026", "3")))
+        self.assertEqual([x.id for x in t], ["knox-3"])
+
+    def test_nichts_lesbar_ist_fehler(self):
+        with self.assertRaises(ValueError):
+            lese_feed(_feed(_item("31.13.2026")))
+        self.assertEqual(lese_feed(_feed()), [])
+
 
 class FeedTest(unittest.TestCase):
     def test_feed(self):
