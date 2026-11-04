@@ -87,10 +87,6 @@ Lokal heißt der Branch `master`, auf GitHub `main` (`git push -u origin master:
 - Geplante Läufe: In einem öffentlichen Repo schaltet GitHub Workflows mit `schedule` ab, wenn 60 Tage lang keine Aktivität im Repo war (docs.github.com, „Events that trigger workflows“, abgerufen 2026-11-04). Die täglichen Daten-Commits halten den Lauf normalerweise am Leben; stoppt er doch, unter Actions > konzerte „Enable workflow“ klicken.
 - Einrichtung (Organisation, Repo, Pages-Einstellung): `bash tools/github-einrichten.sh`.
 
-## Platzhalter, die noch raus müssen
-
-- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]` (Name, Anschrift). Kontaktmail ist fuckofffashion@proton.me.
-
 ## Eingeschickten Druck an die Wand „Von euch“ hängen
 
 Nur mit Freigabe aus der Mail. Foto verkleinern (`-1024.webp`, siehe oben), in `index.html` ein `<li class="join__slot">` durch ein Bild ersetzen.
