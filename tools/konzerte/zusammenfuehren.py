@@ -1,4 +1,5 @@
 """Dubletten zwischen KNOX und Radar zusammenführen."""
+import math
 import re
 from dataclasses import replace
 
@@ -6,6 +7,7 @@ from tools.konzerte.ortstabelle import normalisiere, stadtschluessel
 
 STOPPWOERTER = {"the", "and", "und", "support", "special", "guests"}  # "+" und "&" fallen beim Teilen weg
 MIN_JACCARD = 0.5
+MAX_ABSTAND_KM = 30
 
 
 def wortmenge(bands):
@@ -19,16 +21,50 @@ def jaccard(a, b):
     return len(a & b) / len(a | b)
 
 
-def _vereine(knox, radar):
+def abstand_km(lat1, lon1, lat2, lon2):
+    a = (math.sin(math.radians(lat2 - lat1) / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(math.radians(lon2 - lon1) / 2) ** 2)
+    return 12742 * math.asin(math.sqrt(a))
+
+
+def _zu_weit(a, b):
+    return (a.lat is not None and b.lat is not None
+            and abstand_km(a.lat, a.lon, b.lat, b.lon) > MAX_ABSTAND_KM)
+
+
+def _links(a, b):
     links, gesehen = [], set()
-    for l in knox.links + radar.links:
+    for l in a + b:
         if l.get("url") not in gesehen:
             gesehen.add(l.get("url"))
             links.append(l)
+    return links
+
+
+def _vereine(knox, radar):
+    ort = {"lat": radar.lat, "lon": radar.lon, "genau": radar.genau} if radar.lat is not None else {}
     return replace(
-        knox, zeit=knox.zeit or radar.zeit, lat=radar.lat, lon=radar.lon, genau=radar.genau,
-        genres=list(radar.genres), frei=knox.frei or radar.frei, links=links,
-        quellen=["knox", "radar"])
+        knox, zeit=knox.zeit or radar.zeit, genres=list(radar.genres or knox.genres),
+        frei=knox.frei or radar.frei, links=_links(knox.links, radar.links),
+        quellen=["knox", "radar"], **ort)
+
+
+def dubletten_in_quelle(termine):
+    """Doppelte Einträge innerhalb einer Quelle zusammenlegen: gleiches Datum, gleiche Zeit,
+    gleiche Stadt, gleicher Laden und Band-Jaccard >= 0,5. Der erste bleibt, Links werden vereint."""
+    behalten, gruppen = [], {}
+    for t in termine:
+        gruppe = gruppen.setdefault((t.quelle, t.datum, t.zeit, normalisiere(t.laden)), [])
+        woerter, schluessel = wortmenge(t.bands), stadtschluessel(t.stadt)
+        for k in gruppe:
+            if k[0] & schluessel and jaccard(k[1], woerter) >= MIN_JACCARD:
+                k[2].links = _links(k[2].links, t.links)
+                k[2].frei = k[2].frei or t.frei
+                break
+        else:
+            gruppe.append((schluessel, woerter, t))
+            behalten.append(t)
+    return behalten
 
 
 def fuehre_zusammen(termine):
@@ -46,7 +82,7 @@ def fuehre_zusammen(termine):
         kandidaten = {ki for s in stadtschluessel(r.stadt) for ki in gruppen.get((r.datum, s), [])}
         for ki in kandidaten:
             j = jaccard(woerter[ki], woerter[ri])
-            if j >= MIN_JACCARD:
+            if j >= MIN_JACCARD and not _zu_weit(termine[ki], r):
                 paare.append((-j, ki, ri))
     paare.sort()
     knox_zu_radar, radar_belegt = {}, set()

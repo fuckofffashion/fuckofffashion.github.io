@@ -18,6 +18,7 @@ TABELLE = [
     ["BE", "8000", "Brugge", 51.209, 3.225, 118000],
     ["DE", "60311", "Frankfurt am Main", 50.11, 8.68, 750000],
     ["DE", "15230", "Frankfurt (Oder)", 52.347, 14.554, 57000],
+    ["DE", "06108", "Halle (Saale)", 51.48, 11.97, 240000],
     ["DE", "67433", "Neustadt an der Weinstraße", 49.35, 8.14, 53000],
 ]
 
@@ -25,6 +26,14 @@ TABELLE = [
 class OrtstabelleTest(unittest.TestCase):
     def setUp(self):
         self.t = Ortstabelle(TABELLE)
+
+    def test_anfrage_wird_auf_basisform_reduziert(self):
+        land, lat, _ = self.t.nach_name("Halle (Saale)")
+        self.assertEqual(land, "DE")
+        self.assertAlmostEqual(lat, 51.48, delta=0.05)
+
+    def test_volltreffer_schlaegt_basisform_der_anfrage(self):
+        self.assertAlmostEqual(self.t.nach_name("Frankfurt (Oder)")[1], 52.35, delta=0.05)
 
     def test_plz_de(self):
         self.assertAlmostEqual(self.t.nach_plz("DE", "89077")[0], 48.39, delta=0.05)
