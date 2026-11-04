@@ -14,7 +14,7 @@ NE_URL = ("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/"
 DATEIEN = ("ne_10m_admin_0_countries", "ne_10m_admin_1_states_provinces_lines",
            "ne_10m_populated_places")
 
-BBOX = [2.3, 49.3, 15.3, 55.2]
+BBOX = [2.5, 47.2, 15.1, 55.1]
 TOLERANZ = 0.01
 STELLEN = 3
 MIN_EINWOHNER = 200000
