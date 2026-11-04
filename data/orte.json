@@ -4071,5 +4071,36 @@
   "lat": 50.8163491,
   "lon": 12.882097,
   "land": "DE"
+ },
+ "DE|ludwigshafen|das haus": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|se – gothenburg|vega bryggeri": {
+  "nicht_gefunden": "2026-11-04"
+ },
+ "|freiburg|artik": {
+  "lat": 47.9930517,
+  "lon": 7.8329882,
+  "land": "DE"
+ },
+ "DE|halle (saale)|last exit": {
+  "lat": 51.5016257,
+  "lon": 11.9663348,
+  "land": "DE"
+ },
+ "DE|dusseldorf|psd bank dome deg": {
+  "lat": 51.2721479,
+  "lon": 6.8114054,
+  "land": "DE"
+ },
+ "BE|antwerpen|– zappa": {
+  "lat": 51.2160316,
+  "lon": 4.4016461,
+  "land": "BE"
+ },
+ "DE|prolsdorf|sportgelande": {
+  "lat": 49.8728575,
+  "lon": 10.6235199,
+  "land": "DE"
  }
 }
