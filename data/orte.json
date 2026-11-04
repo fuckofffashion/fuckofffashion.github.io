@@ -4102,5 +4102,15 @@
   "lat": 49.8728575,
   "lon": 10.6235199,
   "land": "DE"
+ },
+ "DE|leer|juz": {
+  "lat": 53.2328879,
+  "lon": 7.4538891,
+  "land": "DE"
+ },
+ "DE|bad oldesloe|inihaus": {
+  "lat": 53.8062514,
+  "lon": 10.3851746,
+  "land": "DE"
  }
 }
