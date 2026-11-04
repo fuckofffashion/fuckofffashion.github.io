@@ -19,8 +19,12 @@
   }
 
   const words = intro.querySelectorAll(".intro__word");
-  const strokes = intro.querySelectorAll(".intro__a path, .intro__a circle");
-  strokes.forEach(s => { const l = s.getTotalLength(); s.style.strokeDasharray = l; s.style.strokeDashoffset = l; });
+  // Das A (aus Motiv 007) ist eine Fläche: es wird nicht gezogen, sondern durch Sprühstöße in der
+  // Maske aufgedeckt. Ohne JS bleibt der Deckel voll – dann steht das A sofort da.
+  const puffs = intro.querySelectorAll(".intro__a mask circle");
+  const lid = intro.querySelector(".intro__deckel");
+  gsap.set(puffs, { attr: { r: 0 } });
+  if (lid) gsap.set(lid, { opacity: 0 });
 
   let finished = false;
   const tl = gsap.timeline({ onComplete: exit });
@@ -29,7 +33,9 @@
                  { opacity: 1, scale: 1, rotate: i % 2 ? -2 : 1.5, duration: .22, ease: MOTION.ease.stamp }, i * .34)
       .to(intro, { x: 5, y: 3, duration: .035, yoyo: true, repeat: 1, ease: "none" }, i * .34 + .22);
   });
-  tl.to(strokes, { strokeDashoffset: 0, duration: .5, ease: "power2.inOut", stagger: .12 }, "+=.05")
+  // Stöße in Malreihenfolge, je ein kurzer Zisch; der Deckel schließt die letzten Lücken
+  tl.to(puffs, { attr: { r: 150 }, duration: .26, ease: "power3.out", stagger: .034 }, "+=.05")
+    .to(lid, { opacity: 1, duration: .14, ease: "power1.in" }, "-=.1")
     .to({}, { duration: .2 });
 
   function exit() {
