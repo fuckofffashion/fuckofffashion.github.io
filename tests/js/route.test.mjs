@@ -25,3 +25,9 @@ test("drei Modi wählen die passende Engine", () => {
 test("unbekannter Modus fällt auf Rad zurück", () => {
   assert.match(routenLink(ZIEL, START, "ufo"), /engine=fossgis_osrm_bike&/);
 });
+
+test("negative und winzige Koordinaten: Festkomma, keine Exponentialschreibweise", () => {
+  const url = routenLink({ lat: -33.8688, lon: 1e-7 }, { lat: 1e-7, lon: -0.5 });
+  assert.equal(url, `${BASIS}fossgis_osrm_bike&route=0%2C-0.5%3B-33.8688%2C0`);
+  assert.doesNotMatch(url, /\de-\d/);
+});
