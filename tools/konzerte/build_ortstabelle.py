@@ -1,12 +1,13 @@
 """Baut data/orte-tabelle.json aus den GeoNames-Postleitzahl-Dumps (DE, NL, BE).
 
 Lizenz: GeoNames, Creative Commons Attribution 4.0 (siehe readme.txt im Download).
-Aufruf: python -m tools.konzerte.build_ortstabelle
+Aufruf: python -m tools.konzerte.build_ortstabelle [--nur-aliase]
 """
 import io
 import json
 import math
 import os
+import sys
 import urllib.request
 import zipfile
 
@@ -16,6 +17,28 @@ LAENDER = ("DE", "NL", "BE")
 URL = "https://download.geonames.org/export/zip/{}.zip"
 URL_STAEDTE = "https://download.geonames.org/export/dump/cities1000.zip"  # ebenfalls CC BY 4.0
 RADIUS_KM = 15
+
+# Gängige Ortsnamen, die GeoNames nicht führt: (Land, Alias) -> amtlicher Name in der Tabelle.
+ALIASE = {
+    ("NL", "Den Haag"): "'s-Gravenhage",
+    ("NL", "The Hague"): "'s-Gravenhage",
+    ("NL", "Den Bosch"): "'s-Hertogenbosch",
+    ("BE", "Brussel"): "Bruxelles",
+    ("BE", "Brussels"): "Bruxelles",
+    ("BE", "Brüssel"): "Bruxelles",
+    ("BE", "Antwerp"): "Antwerpen",
+    ("BE", "Bruges"): "Brugge",
+    ("BE", "Ghent"): "Gent",
+    ("BE", "Gand"): "Gent",
+    ("BE", "Lüttich"): "Liège",
+    ("BE", "Luik"): "Liège",
+    ("BE", "Liege"): "Liège",
+    ("BE", "Löwen"): "Leuven",
+    ("BE", "Louvain"): "Leuven",
+    ("DE", "Cologne"): "Köln",
+    ("DE", "Munich"): "München",
+    ("DE", "Nuremberg"): "Nürnberg",
+}
 AUSGABE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "orte-tabelle.json")
 
 
@@ -82,6 +105,43 @@ def einwohner(zeile, staedte):
     return beste
 
 
+def wende_aliase_an(orte, aliase=None):
+    """Hängt je Alias eine Zeile an: Kopie der Zielzeile mit den meisten Einwohnern (Gleichstand: erste),
+    nur der Name ist der Alias. Existiert der Alias (normalisiert) im Land schon, wird er übersprungen.
+    Fehlt das Ziel, wird eine Ausnahme geworfen (sonst bliebe Datendrift unbemerkt). Ändert `orte` in place."""
+    for (land, alias), ziel in (ALIASE if aliase is None else aliase).items():
+        vorhandene = {normalisiere(z[2]) for z in orte if z[0] == land}
+        if normalisiere(alias) in vorhandene:
+            continue
+        kandidaten = [z for z in orte if z[0] == land and z[2] == ziel]
+        if not kandidaten:
+            raise ValueError("Alias-Ziel fehlt in der Ortstabelle: %s %s (für %s)" % (land, ziel, alias))
+        beste = kandidaten[0]
+        for z in kandidaten[1:]:
+            if (z[5] if len(z) > 5 else 0) > (beste[5] if len(beste) > 5 else 0):
+                beste = z
+        orte.append([beste[0], beste[1], alias, *beste[3:]])
+    return orte
+
+
+def schreibe(orte, pfad):
+    os.makedirs(os.path.dirname(pfad), exist_ok=True)
+    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"quelle": "GeoNames (CC BY 4.0)", "orte": orte}, f, ensure_ascii=False, separators=(",", ":"))
+    print(pfad, os.path.getsize(pfad), "Bytes")
+
+
+def nur_aliase():
+    """Wendet die Aliasse auf die vorhandene Tabelle an (idempotent, ohne Download)."""
+    pfad = os.path.normpath(AUSGABE)
+    with open(pfad, encoding="utf-8") as f:
+        daten = json.load(f)
+    vorher = len(daten["orte"])
+    wende_aliase_an(daten["orte"])
+    print(len(daten["orte"]) - vorher, "Aliasse ergänzt")
+    schreibe(daten["orte"], pfad)
+
+
 def hole(url):
     anfrage = urllib.request.Request(url, headers={"User-Agent": "FuckOffFashion-Konzerte/1.0"})
     with urllib.request.urlopen(anfrage, timeout=120) as antwort:
@@ -89,6 +149,9 @@ def hole(url):
 
 
 def main():
+    if "--nur-aliase" in sys.argv[1:]:
+        nur_aliase()
+        return
     staedte = lese_staedte(hole(URL_STAEDTE))
     orte = []
     for land in LAENDER:
@@ -97,11 +160,8 @@ def main():
             z.append(einwohner(z, staedte))
         print(land, len(zeilen), "Einträge")
         orte.extend(zeilen)
-    pfad = os.path.normpath(AUSGABE)
-    os.makedirs(os.path.dirname(pfad), exist_ok=True)
-    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"quelle": "GeoNames (CC BY 4.0)", "orte": orte}, f, ensure_ascii=False, separators=(",", ":"))
-    print(pfad, os.path.getsize(pfad), "Bytes")
+    wende_aliase_an(orte)
+    schreibe(orte, os.path.normpath(AUSGABE))
 
 
 if __name__ == "__main__":
