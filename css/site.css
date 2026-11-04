@@ -229,6 +229,11 @@ html:not(.js) .tr__controls { display: none; }
 }
 
 /* Schluss ------------------------------------------------ */
+/* Konzert-Teaser */
+.gig__text { grid-column: 1 / span 8; display: grid; gap: var(--sp-3); justify-items: start; }
+.gig__text > * { margin: 0; }
+@media (max-width: 900px) { .gig__text { grid-column: 1 / -1; } }
+
 .outro { text-align: left; }
 .outro__title { grid-column: 1 / -1; font-size: clamp(3.5rem, 13vw, 13rem); }
 .outro__foot { grid-column: 1 / span 7; display: grid; gap: var(--sp-3); margin-top: var(--sp-4); }

@@ -209,6 +209,10 @@ select.kz-input { appearance: auto; }
 .kz-link:hover { color: var(--blood-hot); }
 .kz-termin__links .kz-link { padding-block: .35rem; }
 .kz-termin__links .kz-link::after { content: " ↗"; }
+.kz-termin__hin { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem; padding-top: .35rem; }
+.kz-hin { padding: .8em 1.1em; min-height: 44px; --fg: var(--paper); box-shadow: inset 0 0 0 2px var(--spray); }
+.kz-hin:hover { box-shadow: none; }
+.kz-hin__hinweis { font: 700 var(--fs-label)/1.3 var(--font-zine); letter-spacing: .06em; color: var(--paper-2); }
 
 /* Leere Liste: ein Spruch statt „0 Ergebnisse“ */
 .kz-leer { margin: var(--sp-4) 0; max-width: 32ch; }

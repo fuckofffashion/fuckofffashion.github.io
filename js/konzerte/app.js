@@ -2,12 +2,12 @@
 // Datenschutz: Der Standort (Geolocation oder getippter Ort) bleibt im Speicher dieser Seite.
 // In localStorage stehen nur Umkreisstufe, Genre und die zwei Schalter.
 // Fremde Texte (Bands, Zusatz, Laden, Stadt) kommen ausschließlich per textContent ins DOM.
-import { filtern, sortieren } from "./filter.js?v=13";
-import { STUFEN } from "./einheiten.js?v=13";
-import { SPRUECHE, spruch } from "./leer.js?v=13";
-import { ortsfeld } from "./ortsfeld.js?v=13";
-import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=13";
-import { starteKarte } from "./karte.js?v=13";
+import { filtern, sortieren } from "./filter.js?v=14";
+import { STUFEN } from "./einheiten.js?v=14";
+import { SPRUECHE, spruch } from "./leer.js?v=14";
+import { ortsfeld } from "./ortsfeld.js?v=14";
+import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=14";
+import { starteKarte } from "./karte.js?v=14";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
@@ -160,7 +160,9 @@ function start(wurzel) {
     const bis = Math.min(treffer.length, gezeigt + SEITE);
     const stapel = document.createDocumentFragment();
     const tage = kalenderTage();
-    for (let i = gezeigt; i < bis; i++) stapel.append(renderTermin(treffer[i], tage));
+    // Start nur bei Geolocation, nicht bei eingetipptem Ort
+    const start = z.mitte?.art === "geo" ? { lat: z.mitte.lat, lon: z.mitte.lon } : null;
+    for (let i = gezeigt; i < bis; i++) stapel.append(renderTermin(treffer[i], tage, start));
     el.liste.append(stapel);
     gezeigt = bis;
     const rest = treffer.length - gezeigt;

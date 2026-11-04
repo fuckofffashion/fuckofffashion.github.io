@@ -52,6 +52,27 @@ Nach Änderungen an `kit/sticker.html`, `kit/flyer.html` oder `kit/kit.css`:
 Die Domain landet als Text und QR-Code auf dem Flyer. Braucht Chrome, PyMuPDF, segno und Pillow.
 Danach Dateigrößen in `index.html` (Sektion Mitmachen) prüfen.
 
+## Konzertkalender
+
+Seite `konzerte.html` mit Liste, Filtern und Copyshop-Karte. Kein Build-Schritt im Browser, die Daten werden vorab erzeugt.
+
+| Pfad | Zuständig für |
+|---|---|
+| `js/konzerte/` | Browser-Module: `app.js` (Zustand, Liste), `filter.js`, `termin.js` (ein Termin), `route.js` (Link „Hinkommen“), `karte.js`, `ortsfeld.js`, `ortssuche.js`, `geo.js` |
+| `tools/konzerte/` | Python-Abholer: KNOX und Radar holen, orten, zusammenführen |
+| `data/*.json` | `konzerte.json` (Termine), `orte.json`, `orte-tabelle.json` (Ortssuche), `karte.json` (Umrisse), `quellen-status.json` |
+
+Daten erzeugen (im Ordner `site`):
+
+- Termine: `python -m tools.konzerte.abholen`. Optionen: `--ohne-radar`, `--ohne-nominatim`, `--knox-datei PFAD`, `--heute YYYY-MM-DD`, `--daten ORDNER`, `--tabelle PFAD`.
+- Ortstabelle: `python -m tools.konzerte.build_ortstabelle` lädt GeoNames neu; mit `--nachbearbeiten` nur Großempfänger entfernen und Aliasse anwenden, ohne Download.
+- Karte: `python -m tools.konzerte.build_karte`.
+
+Tests:
+
+- Browser-Module: `node --test "tests/js/*.test.mjs"`
+- Python: `python -m unittest discover -s tools/konzerte/tests -t .`
+
 ## Platzhalter, die noch raus müssen
 
 - Domain `fuckofffashion.example` auf dem Flyer: Kit mit echter Domain neu drucken (siehe oben).

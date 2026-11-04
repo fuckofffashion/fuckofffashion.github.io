@@ -1,5 +1,6 @@
 // Ein Konzerttermin als Listeneintrag. Fremde Texte nur per textContent, Links nur http/https.
-import { anfahrt } from "./einheiten.js?v=13";
+import { anfahrt } from "./einheiten.js?v=14";
+import { routenLink } from "./route.js?v=14";
 
 const KNOX_EINTRAG = "https://knox.p-u-n-k.de/db/index.php?id=";
 
@@ -59,7 +60,8 @@ export function kalenderTage(jetzt = new Date()) {
   return { heute: tagText(jetzt), morgen: tagText(plusTage(jetzt, 1)), jahr: jetzt.getFullYear() };
 }
 
-export function renderTermin(t, tage = kalenderTage()) {
+// start: {lat, lon} nur bei freigegebener Geolocation, sonst null (Route ohne Startpunkt)
+export function renderTermin(t, tage = kalenderTage(), start = null) {
   const li = element("li", "kz-termin");
   li.id = `termin-${t.id}`;
   li.dataset.id = t.id;
@@ -115,6 +117,19 @@ export function renderTermin(t, tage = kalenderTage()) {
     links.append(link(u.href, u.hostname.replace(/^www\./, "")));
   }
   if (links.childNodes.length) was.append(links);
+
+  // Hinkommen: echter Link zu openstreetmap.org, nur mit Koordinaten
+  if (Number.isFinite(t.lat) && Number.isFinite(t.lon)) {
+    const hin = element("p", "kz-termin__hin");
+    const a = element("a", "btn btn--ghost kz-hin", "Hinkommen");
+    a.href = routenLink(t, start);
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    const name = sauber(t.laden) || sauber(t.stadt) || "diesem Termin";
+    a.setAttribute("aria-label", `Hinkommen zu ${name}, öffnet openstreetmap.org`);
+    hin.append(a, element("span", "kz-hin__hinweis", "öffnet openstreetmap.org"));
+    was.append(hin);
+  }
 
   li.append(wann, was);
   return li;
