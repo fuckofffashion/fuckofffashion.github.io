@@ -7,7 +7,7 @@ from datetime import date
 
 from tools.konzerte.ortstabelle import normalisiere
 
-USER_AGENT = "FuckOffFashion-Konzerte/1.0 (+https://fuckofffashion.example/konzerte.html)"
+USER_AGENT = "FuckOffFashion-Konzerte/1.0 (+https://fuckofffashion.github.io/konzerte.html)"
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 ABSTAND_SEKUNDEN = 1.0
 NICHT_GEFUNDEN_TAGE = 30

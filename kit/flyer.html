@@ -26,7 +26,7 @@
 <div class="flyers"></div>
 <script>
   // Vier gleiche A6-Flyer auf einen A4-Bogen; Adresse kommt aus ?url= (tools/build-kit.py)
-  const url = new URLSearchParams(location.search).get("url") || "fuckofffashion.example";
+  const url = new URLSearchParams(location.search).get("url") || "fuckofffashion.github.io";
   const tpl = document.getElementById("flyer");
   const box = document.querySelector(".flyers");
   for (let i = 0; i < 4; i++) box.append(tpl.content.cloneNode(true));

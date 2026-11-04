@@ -11,7 +11,7 @@ import fitz  # PyMuPDF
 import segno
 from PIL import Image
 
-DOMAIN = "fuckofffashion.example"  # Platzhalter, bis die echte Adresse feststeht
+DOMAIN = "fuckofffashion.github.io"  # Adresse der GitHub-Organisationsseite; bei eigener Domain als Argument übergeben
 CHROME = Path("C:/Program Files (x86)/Google/Chrome/Application/chrome.exe")
 
 SITE = Path(__file__).resolve().parent.parent
