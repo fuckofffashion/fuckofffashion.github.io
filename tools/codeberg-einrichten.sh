@@ -40,11 +40,11 @@ _clear() {
 banner() {
   _clear
   printf '\n%s%s  %s%s\n' "$BOLD" "$BLUE" "$1" "$RESET"
-  printf '%s  %s stages%s\n\n' "$DIM" "$TOTAL_STAGES" "$RESET"
-  printf '%s  You drive the browser; this wizard tells you exactly what to do and\n' "$DIM"
-  printf '  captures the values you copy back. Stop any time with Ctrl-C and re-run\n'
-  printf '  later, since it remembers values already saved.%s\n' "$RESET"
-  pause "Ready to start?"
+  printf '%s  %s Stufen%s\n\n' "$DIM" "$TOTAL_STAGES" "$RESET"
+  printf '%s  Du bedienst den Browser; dieser Wizard sagt dir genau, was zu tun ist.\n' "$DIM"
+  printf '  Mit Strg+C kannst du jederzeit abbrechen. Der Wizard speichert nichts;\n'
+  printf '  bei einem neuen Start beginnst du wieder bei Stufe 1.%s\n' "$RESET"
+  pause "Bereit? Enter drücken."
 }
 
 # stage "Name" clears the screen, then announces a stage and shows progress.
@@ -52,7 +52,7 @@ banner() {
 stage() {
   _clear
   _STAGE_INDEX=$((_STAGE_INDEX + 1))
-  printf '\n%s%s▸ Stage %s/%s · %s%s\n' \
+  printf '\n%s%s▸ Stufe %s/%s · %s%s\n' \
     "$BOLD" "$BLUE" "$_STAGE_INDEX" "$TOTAL_STAGES" "$1" "$RESET"
 }
 
@@ -60,33 +60,34 @@ stage() {
 say()  { printf '  %s\n' "$1"; }
 # step "..." is a numbered-feeling action the human takes in the browser.
 step() { printf '  %s•%s %s\n' "$BLUE" "$RESET" "$1"; }
+cmd()  { printf '  %s$ %s%s\n' "$BOLD" "$1" "$RESET"; }
 note() { printf '  %s%s%s\n' "$DIM" "$1" "$RESET"; }
 warn() { printf '  %s⚠ %s%s\n' "$YELLOW" "$1" "$RESET"; }
 
 # open_url URL opens it in the human's browser, cross-platform incl. WSL.
 open_url() {
   local url="$1"
-  printf '  %s↗ opening%s %s\n' "$GREEN" "$RESET" "$url"
+  printf '  %s↗ öffne%s %s\n' "$GREEN" "$RESET" "$url"
   { if   command -v wslview     >/dev/null 2>&1; then wslview "$url"
-    elif command -v explorer.exe >/dev/null 2>&1; then explorer.exe "$url"
+    elif command -v explorer.exe >/dev/null 2>&1; then explorer.exe "$url" || true  # explorer.exe liefert auch bei Erfolg Exit-Code 1
     elif command -v xdg-open    >/dev/null 2>&1; then xdg-open "$url"
     elif command -v open        >/dev/null 2>&1; then open "$url"
     else false; fi
-  } >/dev/null 2>&1 || warn "couldn't open a browser, so visit it manually: $url"
+  } >/dev/null 2>&1 || warn "Browser ließ sich nicht öffnen, bitte selbst aufrufen: $url"
 }
 
 # pause "msg" waits for the human to confirm they've done the manual part.
 pause() {
-  printf '  %s%s%s ' "$DIM" "${1:-Press Enter to continue}" "$RESET"
+  printf '  %s%s%s ' "$DIM" "${1:-Enter drücken zum Weiterfahren}" "$RESET"
   read -r _ || true
 }
 
 # confirm "question" is a y/N gate; returns success on yes.
 confirm() {
   local reply=""
-  printf '  %s? %s [y/N] ' "$YELLOW" "$1"
+  printf '  %s? %s [j/N] ' "$YELLOW" "$1"
   read -r reply || true
-  [[ "$reply" =~ ^[Yy] ]]
+  [[ "$reply" =~ ^[JjYy] ]]
 }
 
 # _existing KEY: current value of KEY in ENV_FILE, if any, with write_env's single
@@ -111,7 +112,7 @@ ask() {
   current=$(_existing "$key" || true)
   # Readline needs the colour codes wrapped in \001..\002 to place the cursor.
   p="  $s$BOLD$e$prompt$s$RESET$e "
-  [[ -n "$current" ]] && p+="$s$DIM$e[Enter keeps current]$s$RESET$e "
+  [[ -n "$current" ]] && p+="$s$DIM$e[Enter behält den aktuellen Wert]$s$RESET$e "
   read -e -r -p "$p" input || rc=1
   if (( rc )) && [[ -z "$input" ]]; then return 1; fi
   [[ -z "$input" && -n "$current" ]] && input="$current"
@@ -123,7 +124,7 @@ ask_secret() {
   local key="$1" prompt="$2" current input rc=0
   current=$(_existing "$key" || true)
   if [[ -n "$current" ]]; then
-    printf '  %s%s%s %s[Enter keeps current]%s ' "$BOLD" "$prompt" "$RESET" "$DIM" "$RESET"
+    printf '  %s%s%s %s[Enter behält den aktuellen Wert]%s ' "$BOLD" "$prompt" "$RESET" "$DIM" "$RESET"
   else
     printf '  %s%s%s ' "$BOLD" "$prompt" "$RESET"
   fi
@@ -147,7 +148,7 @@ write_env() {
   rm -f "$tmp"
   printf -v "$key" '%s' "$value"
   WRITTEN_ENV+=("$key")
-  printf '  %s✓ wrote%s %s → %s\n' "$GREEN" "$RESET" "$key" "$ENV_FILE"
+  printf '  %s✓ geschrieben%s %s → %s\n' "$GREEN" "$RESET" "$key" "$ENV_FILE"
 }
 
 # set_secret NAME VALUE sets a GitHub Actions repo secret via gh. Falls back
@@ -157,12 +158,12 @@ set_secret() {
   if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     if printf '%s' "$value" | gh secret set "$name" >/dev/null 2>&1; then
       WRITTEN_SECRET+=("$name")
-      printf '  %s✓ set%s GitHub secret %s\n' "$GREEN" "$RESET" "$name"
+      printf '  %s✓ gesetzt%s GitHub-Secret %s\n' "$GREEN" "$RESET" "$name"
       return
     fi
   fi
-  SKIPPED+=("GitHub secret $name (set it manually: gh secret set $name)")
-  warn "skipped GitHub secret $name: gh not ready; set it later"
+  SKIPPED+=("GitHub-Secret $name (von Hand setzen: gh secret set $name)")
+  warn "GitHub-Secret $name übersprungen: gh nicht bereit; später setzen"
 }
 
 # set_var NAME VALUE sets a GitHub Actions repo variable (non-secret).
@@ -170,22 +171,22 @@ set_var() {
   local name="$1" value="$2"
   if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     if gh variable set "$name" --body "$value" >/dev/null 2>&1; then
-      printf '  %s✓ set%s GitHub variable %s\n' "$GREEN" "$RESET" "$name"
+      printf '  %s✓ gesetzt%s GitHub-Variable %s\n' "$GREEN" "$RESET" "$name"
       return
     fi
   fi
-  SKIPPED+=("GitHub variable $name")
-  warn "skipped GitHub variable $name, gh not ready; set it later"
+  SKIPPED+=("GitHub-Variable $name")
+  warn "GitHub-Variable $name übersprungen: gh nicht bereit; später setzen"
 }
 
 # finish clears, then shows a closing summary of everything configured.
 finish() {
   _clear
-  printf '\n%s%s  ✓ Setup complete%s\n' "$BOLD" "$GREEN" "$RESET"
-  (( ${#WRITTEN_ENV[@]} ))    && note "wrote ${#WRITTEN_ENV[@]} value(s) to $ENV_FILE: ${WRITTEN_ENV[*]}"
-  (( ${#WRITTEN_SECRET[@]} )) && note "set ${#WRITTEN_SECRET[@]} GitHub secret(s): ${WRITTEN_SECRET[*]}"
+  printf '\n%s%s  ✓ Einrichtung abgeschlossen%s\n' "$BOLD" "$GREEN" "$RESET"
+  (( ${#WRITTEN_ENV[@]} ))    && note "${#WRITTEN_ENV[@]} Wert(e) nach $ENV_FILE geschrieben: ${WRITTEN_ENV[*]}"
+  (( ${#WRITTEN_SECRET[@]} )) && note "${#WRITTEN_SECRET[@]} GitHub-Secret(s) gesetzt: ${WRITTEN_SECRET[*]}"
   if (( ${#SKIPPED[@]} )); then
-    printf '\n'; warn "still to do by hand:"
+    printf '\n'; warn "noch von Hand zu tun:"
     for s in "${SKIPPED[@]}"; do note "  - $s"; done
   fi
   printf '\n'
@@ -202,9 +203,8 @@ run_wizard() {
 
 TOTAL_STAGES=8
 
-# Hinweis: Die Texte oberhalb dieser Marke (Bibliothek) sind englisch und bleiben
-# unverändert; alle Stufen unten sind deutsch.
 PROBE_DIR="${PROBE_DIR:-D:/claude/fof/fof-probe}"
+SITE_DIR="${SITE_DIR:-D:/claude/fof/site}"
 CB="https://codeberg.org"
 
 banner "Codeberg einrichten: FUCK OFF FASHION Konzertkalender"
@@ -231,11 +231,13 @@ say "fuckofffashion.codeberg.page ausgeliefert wird. Unter /site/ würden die ab
 printf '\n'
 open_url "$CB/repo/create"
 step "Besitzer: Organisation fuckofffashion wählen (nicht dein persönlicher Account)."
-step "Repo 1: Name 'site', Sichtbarkeit öffentlich, Standard-Branch 'main'. Haken bei 'Repository initialisieren' NICHT setzen (leer lassen). Hier liegt der Quelltext."
-step "Repo 2: Name 'pages', öffentlich, Standard-Branch 'main'. Hier darf der Haken für die Initialisierung gesetzt sein (README). Hier landet nur die fertige Ausgabe."
-step "Repo 3: Name 'fof-probe', Besitzer ebenfalls fuckofffashion (oder du selbst), leer lassen. Nur für den 7-Tage-Test."
+step "Repo 1: Name 'site', öffentlich. Haken bei 'Repository initialisieren' NICHT setzen (leer lassen). Hier liegt der Quelltext."
+step "Repo 2: Name 'pages', öffentlich, mit Haken bei Initialisierung (README). Hier landet nur die fertige Ausgabe."
+step "Repo 3: Name 'fof-probe', Besitzer fuckofffashion, leer lassen. Nur für den 7-Tage-Test."
 note "Wichtig: 'site' leer lassen, sonst lehnt Codeberg den ersten Upload ab (zwei verschiedene Verläufe)."
-pause "Alle drei Repos angelegt? Enter drücken."
+step "Prüfen: In 'pages' muss der Standard-Branch 'main' heißen (Repo öffnen, Branch-Auswahl oben links)."
+step "Falls er anders heißt: Repo-Einstellungen > Branches > Standard-Branch auf 'main' ändern oder den Branch 'main' anlegen."
+pause "Alle drei Repos angelegt und Branch 'main' in 'pages' geprüft? Enter drücken."
 
 # ── 3 ─────────────────────────────────────────────────────────────────────
 stage "Lizenz bestätigen"
@@ -255,7 +257,7 @@ pause "Weiter mit Enter."
 stage "Actions (automatische Läufe) einschalten"
 say "Forgejo Actions führen den täglichen Lauf aus. Laut Codeberg-Doku (docs.codeberg.org/ci/actions)"
 say "sind sie in jedem Repo standardmäßig AUS. Codeberg bietet gehostete Actions nur eingeschränkt an."
-note "Die Doku verweist für Details auf https://codeberg.org/actions/meta; Runner-Label 'codeberg-tiny' steht auf der Doku-Seite nicht."
+note "Die Doku verweist für Details auf https://codeberg.org/actions/meta; das Runner-Label 'codeberg-tiny' steht auf der Doku-Seite nicht."
 printf '\n'
 open_url "$CB/actions/meta"
 step "Lies dort kurz, ob du gehostete Runner beantragen oder einfach nutzen kannst."
@@ -267,64 +269,75 @@ pause "Actions in beiden Repos aktiv? Enter drücken."
 
 # ── 5 ─────────────────────────────────────────────────────────────────────
 stage "Probelauf hochladen (7 Tage Test)"
-say "Der Probelauf schreibt täglich um 04:00 UTC (05:00 MEZ) eine Zeile in probe.log"
-say "und listet python3, node und git samt Versionen. So siehst du, ob Codeberg zuverlässig"
-say "läuft und ob das Image für den Konzertlauf reicht."
+say "Der Probelauf schreibt täglich um 04:00 UTC (05:00 MEZ) eine Zeile in probe.log und listet"
+say "python3, node und git mit Versionen. Daran siehst du, ob Codeberg zuverlässig läuft und das Image reicht."
 printf '\n'
-say "Die Dateien liegen lokal in: $PROBE_DIR"
-say "Öffne ein Terminal (Git Bash) und führe der Reihe nach aus:"
+say "1. Ein Token nur für diesen Push erzeugen (Token = Passwort-Ersatz für Programme):"
+open_url "$CB/user/settings/applications"
+step "Unter 'Manage Access Tokens': Name z. B. fof-push, Recht für Repositories 'Read and Write', erzeugen, kopieren (wird nur einmal angezeigt)."
+say "2. Im Terminal (Git Bash) ausführen:"
+cmd "cd $PROBE_DIR"
+cmd "git remote add origin $CB/fuckofffashion/fof-probe.git"
+cmd "git push -u origin main"
+say "Git fragt nach Benutzername (dein Codeberg-Name) und Passwort: dort das Token einfügen, nicht ins Wizard-Fenster."
 printf '\n'
-note "cd $PROBE_DIR"
-note "git remote add origin $CB/fuckofffashion/fof-probe.git"
-note "git push -u origin main"
-printf '\n'
-say "Beim Push fragt Git nach Benutzername und Passwort. Das trägst du dort selbst ein."
-say "Codeberg verlangt dafür ein Zugriffstoken statt Passwort."
-say "Das Token erzeugst du wie in Stufe 6 beschrieben (Rechte: Repository lesen und schreiben); als Passwort einfügen."
-printf '\n'
+say "3. Manuell starten:"
 open_url "$CB/fuckofffashion/fof-probe/actions"
-step "Nach dem Push: Reiter 'Actions' öffnen, Workflow 'probe' wählen, 'Run workflow' (manueller Start) klicken."
-step "Läuft grün durch? Dann enthält probe.log eine Zeile mit dem Datum und die Werkzeug-Versionen."
+step "Reiter 'Actions', Workflow 'probe', 'Run workflow' klicken. Im Log sollten Datum und Werkzeug-Versionen stehen."
+note "Schlägt der Schritt 'Committen und pushen' im Workflow fehl: Push abgelehnt, also Actions-Rechte und Token-Rechte des Repos prüfen."
 pause "Manueller Start war grün (oder du notierst den Fehler)? Enter drücken."
-say "In 7 Tagen: probe.log muss 7 Einträge zwischen 04:00 und 06:00 UTC haben."
+say "In 7 Tagen: probe.log muss 7 geplante Einträge (event=schedule) zwischen 04:00 und 06:00 UTC haben."
 
 # ── 6 ─────────────────────────────────────────────────────────────────────
 stage "Zugriffstoken PAGES_TOKEN und Secret"
-say "Der Konzertlauf schreibt die fertige Seite ins Repo 'pages'. Dafür braucht er ein Token"
-say "(ein Passwort-Ersatz für Programme) mit Schreibrecht auf 'pages'."
+say "Der Konzertlauf schreibt die fertige Seite ins Repo 'pages'. Dafür braucht er ein Token mit Schreibrecht."
 warn "Das Token niemals in dieses Terminal, in Chats oder in Dateien einfügen. Nur ins Browserfeld."
 printf '\n'
+say "Reichweite des Tokens (Stand 2026-11-04):"
+note "Laut Forgejo-Doku (forgejo.org/docs/latest/user/token-scope) gilt 'write:repository' für alle Repos, auf die der Account zugreifen kann,"
+note "außer bei der Option 'Specific repositories' (nur gewählte Repos). Ob Codeberg diese Option schon anbietet, weiß ich nicht: im Formular nachsehen."
+note "Die Codeberg-Doku zu Tokens (docs.codeberg.org/advanced/access-token) beschreibt keine Rechte."
+say "Sicherer (optional): ein eigener Bot-Account, der nur auf 'pages' Schreibrecht hat (nur dort als Mitarbeiter eintragen)."
+say "Dann kann ein geleaktes Token nicht an 'site' oder andere Repos."
+printf '\n'
 open_url "$CB/user/settings/applications"
-step "Unter 'Manage Access Tokens' > 'Token Name': z. B. pages-schreiben. Bei den Rechten, falls angeboten: Repository 'Read and Write', sonst nichts."
-note "Laut Codeberg-Doku (docs.codeberg.org/advanced/access-token) gewähren Tokens vollen Zugriff auf den Account, wenn keine Rechte wählbar sind. Wähle falls möglich die kleinste Berechtigung."
-step "Token erzeugen und kopieren. Es wird nur ein einziges Mal angezeigt."
+step "Token erzeugen (Name z. B. pages-schreiben), Recht Repository 'Read and Write', wenn möglich nur Repo 'pages'. Kopieren."
 open_url "$CB/fuckofffashion/site/settings"
-step "Repo 'site', Einstellungen: Bereich Actions > Secrets (Geheimnisse) > neues Secret."
+step "Repo 'site', Einstellungen: Bereich Actions > Secrets > neues Secret."
 step "Name genau: PAGES_TOKEN   Wert: das kopierte Token. Speichern."
 note "Den genauen Menüpunkt für Secrets nennt die Doku nicht; er liegt in den Repo-Einstellungen unter Actions."
+warn "Der erste Push von 'site' startet den Workflow 'konzerte' sofort. PAGES_TOKEN muss vorher gesetzt sein."
 pause "Secret PAGES_TOKEN gespeichert? Enter drücken."
 
 # ── 7 ─────────────────────────────────────────────────────────────────────
 stage "Später: eigene Domain (jetzt nur lesen)"
 say "Das machst du erst, wenn die Seite unter fuckofffashion.codeberg.page läuft."
-say "Laut docs.codeberg.org/codeberg-pages/using-custom-domain gilt:"
-step "Eine .domains-Datei im Repo 'pages' ist nicht mehr nötig; die Freigabe läuft über DNS."
+warn "Widerspruch zum Plan: Der Plan ging von einer Datei .domains im Repo 'pages' aus."
+say "Laut Codeberg-Doku, Stand 2026-11-04 (beim Umsetzen erneut prüfen!), gilt aber:"
+step "Eine .domains-Datei ist nicht mehr nötig; die Freigabe läuft über DNS."
 step "DNS beim Domain-Anbieter: CNAME auf codeberg.page. (Subdomain) oder ALIAS (Hauptdomain)."
-step "Dazu ein TXT-Eintrag mit der Clone-URL des Repos (Name _git-pages-forge-allowlist bei Deployment per Actions)."
+step "Dazu ein TXT-Eintrag mit der Clone-URL des Repos, Name _git-pages-forge-allowlist (bei Deployment per Actions)."
 note "Die Werte können sich ändern. Immer die aktuelle Doku öffnen, wenn es soweit ist."
 open_url "https://docs.codeberg.org/codeberg-pages/using-custom-domain/"
 pause "Gelesen? Enter drücken."
 
 # ── 8 ─────────────────────────────────────────────────────────────────────
 stage "Letzter Schritt: Seite hochladen (noch nicht ausführen)"
-warn "Mit diesem Push geht die Seite öffentlich online."
-say "Vorher muss das Impressum ausgefüllt sein. Führe es erst nach Absprache mit Claude aus."
-printf '\n'
-note "cd D:/claude/fof/site"
-note "git remote add origin $CB/fuckofffashion/site.git"
-note "git push origin master:main"
-printf '\n'
-say "Lokal heißt der Hauptbranch 'master', auf Codeberg 'main', so wie der Workflow es erwartet."
+warn "Mit diesem Push geht die Seite öffentlich online. Nur nach Absprache mit Claude pushen."
+say "Voraussetzungen: Impressum ist ausgefüllt, PAGES_TOKEN ist gesetzt (Stufe 6),"
+say "und der fertige Stand liegt auf 'master'. Aktuell arbeitet das Projekt auf dem Branch 'konzerte';"
+say "'master' enthält den fertigen Stand erst nach dem Zusammenführen (Merge), den Claude am Ende macht."
+say "Prüfe das:"
+cmd "git -C $SITE_DIR branch --show-current"
+cmd "git -C $SITE_DIR log --oneline -1 master"
+say "Gibt es 'origin' schon? Prüfen:"
+cmd "git -C $SITE_DIR remote get-url origin"
+say "Fehlermeldung: anlegen. Sonst nur die Adresse umstellen:"
+cmd "git -C $SITE_DIR remote add origin $CB/fuckofffashion/site.git"
+cmd "git -C $SITE_DIR remote set-url origin $CB/fuckofffashion/site.git"
+say "Dann (erst nach Absprache):"
+cmd "git -C $SITE_DIR push origin master:main"
+note "Lokal heißt der Hauptbranch 'master', auf Codeberg 'main', wie der Workflow es erwartet."
 pause "Enter zum Beenden."
 
 finish
