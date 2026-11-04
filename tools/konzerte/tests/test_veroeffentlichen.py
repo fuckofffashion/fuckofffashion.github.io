@@ -53,7 +53,7 @@ class VeroeffentlichenTest(unittest.TestCase):
         self.ziel.mkdir()
 
     def lauf(self, *args, cwd=None, env_zusatz=None):
-        env = {k: v for k, v in os.environ.items() if k != "GITHUB_REPOSITORY"}
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_REPOSITORY", "PAGES_BASE_PATH")}
         env.update(env_zusatz or {})
         return subprocess.run(
             [BASH, (self.wurzel / "tools" / "veroeffentlichen.sh").as_posix(),
@@ -120,10 +120,53 @@ class VeroeffentlichenTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertEqual(self.basis_der_404(), BASIS_404)
 
-    def test_404_basis_nutzerseite_github_io_ist_wurzel(self):
-        r = self.lauf(self.ziel, env_zusatz={"GITHUB_REPOSITORY": "mark/mark.github.io"})
+    def basis_mit(self, **env):
+        (self.ziel / ".git").mkdir(exist_ok=True)  # mehrere Läufe nacheinander ins selbe Ziel
+        r = self.lauf(self.ziel, env_zusatz=env)
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(self.basis_der_404(), BASIS_404)
+        return self.basis_der_404()
+
+    def test_404_basis_nutzer_oder_org_seite_ist_wurzel(self):
+        for repo in ("mark/mark.github.io", "fuckofffashion/fuckofffashion.github.io",
+                     "FuckOffFashion/fuckofffashion.GitHub.io"):
+            with self.subTest(repo=repo):
+                self.assertEqual(self.basis_mit(GITHUB_REPOSITORY=repo), BASIS_404)
+
+    def test_404_basis_fremdes_github_io_repo_ist_projektseite(self):
+        self.assertEqual(self.basis_mit(GITHUB_REPOSITORY="mark/other.github.io"),
+                         BASIS_404.replace('href="/"', 'href="/other.github.io/"'))
+
+    def test_404_basis_aus_pages_base_path(self):
+        projekt = BASIS_404.replace('href="/"', 'href="/seite/"')
+        self.assertEqual(self.basis_mit(PAGES_BASE_PATH="/seite"), projekt)
+        self.assertEqual(self.basis_mit(PAGES_BASE_PATH="/seite/"), projekt)
+        self.assertEqual(self.basis_mit(PAGES_BASE_PATH=""), BASIS_404)
+
+    def test_404_pages_base_path_schlaegt_cname_und_repo(self):
+        schreibe(self.wurzel, "CNAME", "example.org")
+        self.assertEqual(self.basis_mit(PAGES_BASE_PATH="/seite", GITHUB_REPOSITORY="a/b"),
+                         BASIS_404.replace('href="/"', 'href="/seite/"'))
+        self.assertEqual(self.basis_mit(PAGES_BASE_PATH="", GITHUB_REPOSITORY="a/b"), BASIS_404)
+
+    def test_404_unbrauchbare_basis_bricht_ab_ohne_das_ziel_zu_leeren(self):
+        schreibe(self.ziel, ".git/HEAD")
+        schreibe(self.ziel, "alt.html", "bleibt")
+        for env in ({"GITHUB_REPOSITORY": "a/b|c"}, {"GITHUB_REPOSITORY": "ohneschraegstrich"},
+                    {"PAGES_BASE_PATH": "/a|b"}):
+            with self.subTest(env=env):
+                r = self.lauf(self.ziel, env_zusatz=env)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertEqual((self.ziel / "alt.html").read_text(), "bleibt")
+
+    def test_platzhalter_domain_bricht_ab_mit_klarer_meldung(self):
+        schreibe(self.wurzel, "index.html", '<a href="mailto:hallo@fuckofffashion.example">Mail</a>')
+        schreibe(self.ziel, ".git/HEAD")
+        schreibe(self.ziel, "alt.html", "bleibt")
+        r = self.lauf(self.ziel)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("Kontaktadresse fehlt noch", r.stderr)
+        self.assertIn("index.html", r.stderr)
+        self.assertEqual((self.ziel / "alt.html").read_text(), "bleibt")
 
     def test_404_ohne_base_in_quelle_bricht_ab_ohne_das_ziel_zu_leeren(self):
         schreibe(self.wurzel, "404.html", "<head></head>")

@@ -10,7 +10,7 @@
 #                0 (alles gut) oder 1 (eine Quelle ausgefallen, übrige Daten trotzdem
 #                geschrieben) endete. Bei 124 (Zeitlimit) oder anderen Codes wird nichts
 #                veröffentlicht.
-#   3. ergebnis  Läuft immer und macht den ganzen Lauf rot, wenn abholen nicht 0 war.
+#   3. ergebnis  Läuft (außer bei Abbruch von Hand) und macht den ganzen Lauf rot, wenn abholen nicht 0 war.
 #                Nötig, weil bei Exit 1 trotzdem veröffentlicht wird: der Job "daten" selbst
 #                bleibt grün, damit "deploy" starten darf. So bekommt Mark trotzdem eine
 #                Fehler-Mail von GitHub, wenn eine Quelle ausfällt.
@@ -40,9 +40,12 @@ concurrency:
 jobs:
   daten:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Auch wenn die Organisation das Token standardmäßig auf "nur lesen" stellt, gelten
+    # diese Rechte, denn sie stehen ausdrücklich im Workflow (Doku: Workflow permissions).
     permissions:
-      contents: write   # für den Daten-Commit nach main
-      pages: write      # configure-pages liest/prüft die Pages-Einstellung
+      contents: write   # nur für den Daten-Commit nach main
+      pages: write      # configure-pages; die Doku nennt kein Mindestrecht, darum sicherheitshalber write
     outputs:
       abholen_code: ${{ steps.abholen.outputs.code }}
     steps:
@@ -51,11 +54,13 @@ jobs:
         with:
           # Immer der aktuelle main-Stand, auch wenn der Lauf hinter concurrency gewartet hat.
           ref: main
+          # Das Token bleibt nicht in .git/config liegen, während Tests und abholen
+          # (fremdes HTML/XML von KNOX und Radar) laufen. Es wird nur beim Push übergeben.
+          persist-credentials: false
 
       - name: Werkzeuge prüfen
         run: |
           python3 --version
-          node --version
 
       - name: Python-Tests
         run: python3 -m unittest discover -s tools/konzerte/tests -t .
@@ -85,29 +90,42 @@ jobs:
       # Nur bei Exit 0 oder 1. Ein Timeout (124) oder ein Absturz veröffentlicht nichts.
       - name: Daten nach main committen
         if: (steps.abholen.outputs.code == '0' || steps.abholen.outputs.code == '1') && github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$(git status --porcelain -- 'data/*.json')" ]; then
             echo "Keine Änderung an data/*.json, kein Commit."
             exit 0
           fi
           git config user.name "konzerte-bot"
-          git config user.email "konzerte-bot@users.noreply.github.com"
+          # Noreply-Adresse des GitHub-Actions-Bots (Konto-ID 41898282): keine Adresse, die ein Fremder registrieren könnte.
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- data/*.json
           git commit -m "Konzertdaten aktualisiert $(date -u +%Y-%m-%d) [skip ci]"
-          git push origin HEAD:main
+          # Kam zwischendurch ein Push von Hand dazu, erst obendrauf setzen (nur data/ ändert sich, Konflikte sind unwahrscheinlich).
+          ziel="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --rebase "$ziel" main
+          git push "$ziel" HEAD:main
+
+      # configure-pages liefert den Pfad, unter dem die Seite wirklich ausgeliefert wird
+      # (base_path: leer an der Wurzel, "/name" bei Projektseite; berücksichtigt auch eine
+      # in den Pages-Einstellungen eingetragene eigene Domain).
+      - name: Pages einrichten
+        id: pages
+        if: (steps.abholen.outputs.code == '0' || steps.abholen.outputs.code == '1') && github.ref_name == 'main'
+        uses: actions/configure-pages@v5
 
       # Die Seite wird in einen frischen, leeren Ordner außerhalb des Repos gebaut
       # (veroeffentlichen.sh weigert sich, ins eigene Repo zu schreiben).
-      # Bricht ab, solange in den Rechtstexten noch "[bitte ausfüllen]" steht.
+      # Bricht ab, solange in den Rechtstexten noch "[bitte ausfüllen]" oder ein
+      # Platzhalter "fuckofffashion.example" steht.
       - name: Seite zusammenbauen
         if: (steps.abholen.outputs.code == '0' || steps.abholen.outputs.code == '1') && github.ref_name == 'main'
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: |
           mkdir "$RUNNER_TEMP/seite"
           bash tools/veroeffentlichen.sh "$RUNNER_TEMP/seite"
-
-      - name: Pages einrichten
-        if: (steps.abholen.outputs.code == '0' || steps.abholen.outputs.code == '1') && github.ref_name == 'main'
-        uses: actions/configure-pages@v5
 
       - name: Pages-Artefakt hochladen
         if: (steps.abholen.outputs.code == '0' || steps.abholen.outputs.code == '1') && github.ref_name == 'main'
@@ -119,6 +137,7 @@ jobs:
     needs: daten
     if: (needs.daten.outputs.abholen_code == '0' || needs.daten.outputs.abholen_code == '1') && github.ref_name == 'main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pages: write      # Pages-Deployment auslösen
       id-token: write   # Nachweis, dass das Deployment aus diesem Lauf kommt
@@ -130,11 +149,14 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Läuft immer: bei gemerktem Fehlercode (1 = Quelle ausgefallen, 124 = Zeitlimit) wird der Lauf rot.
+  # Läuft, außer der Lauf wurde abgebrochen: bei gemerktem Fehlercode (1 = Quelle ausgefallen, 124 = Zeitlimit) wird der Lauf rot.
   ergebnis:
     needs: [daten, deploy]
-    if: always() && needs.daten.outputs.abholen_code != '' && needs.daten.outputs.abholen_code != '0'
+    # !cancelled() statt always(): ein von Hand abgebrochener Lauf soll nicht noch einen Fehler melden.
+    if: ${{ !cancelled() && needs.daten.outputs.abholen_code != '' && needs.daten.outputs.abholen_code != '0' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {}
     steps:
       - name: Ergebnis von abholen auswerten
         env:
