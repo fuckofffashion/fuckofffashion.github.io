@@ -18,6 +18,12 @@ img { display: block; max-width: 100%; }
 .st { display: grid; place-items: center; padding: 4mm; overflow: hidden; min-height: 0; }
 .st img { width: 100%; height: 100%; min-height: 0; object-fit: contain; }
 .st--wide { grid-column: span 2; }
+.stickers--5 { grid-template-rows: repeat(5, minmax(0, 1fr)); }
+.st--mult img { mix-blend-mode: multiply; }          /* weißer Bildgrund verschwindet im Papierton */
+.st--inv img { filter: invert(1); mix-blend-mode: screen; } /* Schwarz auf Weiß wird Weiß auf Schwarz */
+.st:has(.st__marke) { grid-template-rows: minmax(0, 1fr) auto; gap: 1.6mm; padding-bottom: 2.6mm; }
+.st__marke { font-size: 2.6mm; font-weight: 700; color: var(--blood); }
+.st--ink .st__marke { color: var(--paper); }
 .st--ink { background: var(--ink); color: var(--paper); }
 .st--red { background: var(--blood); color: var(--paper); }
 .st--paper { background: var(--paper); }

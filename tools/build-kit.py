@@ -16,7 +16,7 @@ CHROME = Path("C:/Program Files (x86)/Google/Chrome/Application/chrome.exe")
 
 SITE = Path(__file__).resolve().parent.parent
 KIT, OUT = SITE / "kit", SITE / "assets" / "kit"
-PAGES = {"sticker.html": "fof-sticker-bogen-a4", "flyer.html": "fof-flyer-a6"}
+PAGES = {"sticker.html": "fof-sticker-bogen-a4", "sticker-2.html": "fof-sticker-bogen-2-a4", "flyer.html": "fof-flyer-a6"}
 
 
 def main():
