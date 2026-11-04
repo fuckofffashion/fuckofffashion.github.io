@@ -120,6 +120,10 @@ def hole_quelle_radar(heute, bis, listen, cache, hole_radar):
     gelesen = ", ".join(f"{land} {n}" for land, n in z["gelesen"].items())
     log(f"radar: gelesen {gelesen}; mit Genre {z['genre_treffer']}, im Zeitfenster {z['im_fenster']}")
     log(f"radar: {z['orte_geholt']} Orte abgerufen ({z['orte_fehler']} Fehler), {z['behalten']} Termine mit Ort")
+    for warnung in z["warnungen"]:
+        log(f"WARNUNG radar: {warnung}")
+    if z["ohne_land"]:
+        log(f"radar: {z['ohne_land']} Termine ohne Land in der Adresse")
     return termine
 
 
@@ -170,7 +174,6 @@ def main(argv=None, hole_knox=None, hole_radar=None):
         alt = status.get(qid) or {}
         if qid in uebersprungen:
             log(f"{qid}: übersprungen, Termine vom letzten Lauf behalten")
-            fehler = "übersprungen"
         else:
             try:
                 termine = holer[qid]()

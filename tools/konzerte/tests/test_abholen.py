@@ -214,6 +214,19 @@ class RadarAbholenTest(unittest.TestCase):
         self.assertEqual(status["radar"], {"ok_am": None, "fehler_seit": "2026-11-01"})
         self.assertEqual(status["knox"]["fehler_seit"], None)
 
+    def test_radar_ortsausfall_behaelt_alte_termine(self):
+        schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [ALT_RADAR], "ohne_ort": 0})
+
+        def hole(url):
+            if "/location/" in url:
+                raise OSError("Orte weg")
+            return radar_ok(url)
+        code, ausgabe = lauf(self.daten, hole_radar=hole)
+        self.assertEqual(code, 0)
+        self.assertIn("WARNUNG radar:", ausgabe)
+        self.assertIn("radar-alt", [t["id"] for t in lies(self.daten, "konzerte.json")["termine"]])
+        self.assertEqual(lies(self.daten, "quellen-status.json")["radar"], {"ok_am": None, "fehler_seit": "2026-11-01"})
+
     def test_radar_dritter_tag_exit_1(self):
         schreibe(self.daten, "quellen-status.json", {"radar": {"ok_am": "2026-10-29", "fehler_seit": "2026-10-30"}})
         code, ausgabe = lauf(self.daten, hole_radar=radar_tot)

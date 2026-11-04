@@ -1,6 +1,7 @@
 import copy
 import json
 import unittest
+import urllib.error
 from pathlib import Path
 
 from tools.konzerte import radar
@@ -175,13 +176,55 @@ class SammleRadarTest(unittest.TestCase):
         (termine, stats), cache = self.lauf(self.fake({"DE": EVENTS}), budget=0)
         self.assertEqual((termine, stats["orte_geholt"], cache), ([], 0, {}))
 
-    def test_ortfehler_ueberspringt_event(self):
+    def test_alle_ortsabrufe_fehlgeschlagen_ist_quellenfehler(self):
         def hole(url):
             if "/location/" in url:
                 raise OSError("weg")
             return EVENTS if "country][]=DE" in url else LEER
+        with self.assertRaises(ValueError):
+            self.lauf(hole)
+
+    def test_einzelner_ortfehler_ueberspringt_nur_dieses_event(self):
+        zwei = copy.deepcopy(EVENTS)
+        zwei["result"]["603001"]["topic"] = [{"name": "Ska / Reggae"}]  # zweites Event, anderer Ort
+
+        def hole(url):
+            if "a1a36ff1" in url:
+                raise OSError("weg")
+            return LOC if "/location/" in url else (zwei if "country][]=DE" in url else LEER)
         (termine, stats), cache = self.lauf(hole)
-        self.assertEqual((termine, cache, stats["orte_fehler"]), ([], {}, 1))
+        self.assertEqual(([t.bands for t in termine], stats["orte_fehler"]), (["Punk im KuBiZ"], 1))
+        self.assertNotIn("radar|a1a36ff1-eb8f-4c87-be13-6af347af039b", cache)
+
+    def test_404_wird_als_marker_gecacht_ohne_wiederholung(self):
+        def hole(url):
+            self.urls.append(url)
+            if "/location/" in url:
+                raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
+            return EVENTS if "country][]=DE" in url else LEER
+        (termine, stats), cache = self.lauf(hole)
+        self.assertEqual((termine, stats["orte_fehler"]), ([], 0))
+        self.assertEqual(cache["radar|" + KUBIZ]["geholt"], "2026-11-01")
+        self.urls.clear()
+        self.lauf(hole, cache=cache)  # innerhalb von 30 Tagen kein neuer Abruf
+        self.assertFalse(any("/location/" in u for u in self.urls))
+
+    def test_voll_ohne_count_warnt(self):
+        def hole(url):
+            if "/location/" in url:
+                return LOC
+            return {"result": EVENTS["result"]} if "country][]=DE" in url else LEER
+        (_, stats), _ = self.lauf(hole, limit=2)
+        self.assertEqual(len(stats["warnungen"]), 1)
+        self.assertIn("DE", stats["warnungen"][0])
+        (_, stats), _ = self.lauf(self.fake({"DE": EVENTS}), limit=2)
+        self.assertEqual(stats["warnungen"], [])
+
+    def test_ohne_land_wird_gezaehlt(self):
+        loc = copy.deepcopy(LOC)
+        loc["address"]["country"] = None
+        (_, stats), _ = self.lauf(lambda u: loc if "/location/" in u else (EVENTS if "country][]=DE" in u else LEER))
+        self.assertEqual(stats["ohne_land"], 1)
 
     def test_ort_ohne_koordinaten_wird_gecacht(self):
         def hole(url):

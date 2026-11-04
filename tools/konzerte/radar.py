@@ -7,6 +7,7 @@ Das Tag-Feld heißt in der echten API "topic" (nicht "tags"); beide Namen werden
 import json
 import re
 import time
+import urllib.error
 import urllib.request
 from datetime import date
 
@@ -22,6 +23,7 @@ ORTE_BUDGET = 100
 SEITEN_JE_LAND = 5
 LIMIT = 500
 KOORDINATEN_NEU_TAGE = 30
+NICHT_VORHANDEN = (404, 410)
 FREI_PREISE = ("free", "by donation")
 _ZEIT = re.compile(r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})")
 
@@ -39,6 +41,10 @@ def radar_json_netz(url):
         try:
             with urllib.request.urlopen(anfrage, timeout=60) as antwort:
                 return json.load(antwort)
+        except urllib.error.HTTPError as e:
+            if e.code in NICHT_VORHANDEN:  # endgültige Antwort, keine Wiederholung
+                raise
+            letzter = e
         except Exception as e:
             letzter = e
     raise letzter
@@ -168,12 +174,15 @@ def _ohne_koordinaten_veraltet(eintrag, heute):
         return True
 
 
-def _hole_land(hole, land, limit, seiten):
+def _hole_land(hole, land, limit, seiten, warnungen):
     """Alle Events eines Landes; Paging über offset, bis count erreicht ist (höchstens `seiten` Seiten)."""
     alle = {}
     for seite in range(seiten):
         antwort = hole(EVENTS_URL.format(land=land, limit=limit, offset=seite * limit))
-        neu = {k: v for k, v in _ergebnis(antwort).items() if k not in alle}
+        seite_ergebnis = _ergebnis(antwort)
+        if antwort.get("count") is None and len(seite_ergebnis) >= limit:
+            warnungen.append(f"{land}: Antwort ohne count bei voller Seite, Paging kann abgeschnitten sein")
+        neu = {k: v for k, v in seite_ergebnis.items() if k not in alle}
         alle.update(neu)
         if not neu or len(alle) >= (antwort.get("count") or 0):
             break
@@ -186,15 +195,16 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
     hole: url -> JSON (Netz ersetzbar). von/bis: ISO-Daten; nur Events dazwischen kosten einen Ortsabruf.
     Rückgabe: (Termine, Zahlen fürs Log). Fehler beim Event-Abruf oder 0 Events insgesamt lösen eine Exception aus.
     """
-    ereignisse, gelesen = {}, {}
+    ereignisse, gelesen, warnungen = {}, {}, []
     for land in LAENDER:
-        je_land = _hole_land(hole, land, limit, seiten)
+        je_land = _hole_land(hole, land, limit, seiten, warnungen)
         gelesen[land] = len(je_land)
         ereignisse.update(je_land)
     if not ereignisse:
         raise ValueError("Radar lieferte 0 Events")
 
-    zahlen = {"gelesen": gelesen, "genre_treffer": 0, "im_fenster": 0, "orte_geholt": 0, "orte_fehler": 0}
+    zahlen = {"gelesen": gelesen, "genre_treffer": 0, "im_fenster": 0, "orte_geholt": 0, "orte_fehler": 0,
+              "warnungen": warnungen}
     orte = {}
     for ereignis in ereignisse.values():
         e = _lies_ereignis(ereignis, listen)
@@ -215,6 +225,12 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
                     if neu["lat"] is None or neu["lon"] is None:
                         neu["geholt"] = von
                     cache[schluessel] = neu
+                except urllib.error.HTTPError as fehler:
+                    if fehler.code in NICHT_VORHANDEN:  # Ort gibt es nicht mehr: Marker, nach 30 Tagen neuer Versuch
+                        cache[schluessel] = {"lat": None, "lon": None, "plz": None, "stadt": "", "land": None,
+                                             "laden": "", "geholt": von}
+                    else:
+                        zahlen["orte_fehler"] += 1
                 except Exception:
                     zahlen["orte_fehler"] += 1
             if isinstance(cache.get(schluessel), dict):
@@ -222,5 +238,9 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
                 if orte[uuid].get("lat") is not None and orte[uuid].get("lon") is not None:
                     break
     termine = lese_radar({"result": ereignisse}, orte, listen)
+    if zahlen["im_fenster"] and not termine and zahlen["orte_fehler"]:
+        raise ValueError(f"Radar: {zahlen['im_fenster']} passende Events, aber alle Ortsabrufe schlugen fehl "
+                         f"({zahlen['orte_fehler']} Fehler)")
     zahlen["behalten"] = len(termine)
+    zahlen["ohne_land"] = sum(1 for t in termine if t.land is None)
     return termine, zahlen
