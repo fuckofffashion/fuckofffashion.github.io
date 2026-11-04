@@ -1,7 +1,7 @@
 """Tägliches Abholskript: Quellen holen, orten, Merkmale bestimmen, JSON schreiben.
 
 Aufruf: python -m tools.konzerte.abholen [--knox-datei PFAD] [--heute YYYY-MM-DD]
-        [--ohne-nominatim] [--daten ORDNER] [--tabelle PFAD]
+        [--ohne-nominatim] [--ohne-radar] [--daten ORDNER] [--tabelle PFAD]
 """
 import argparse
 import json
@@ -12,7 +12,7 @@ import tempfile
 import urllib.request
 from datetime import date, datetime, timedelta
 
-from tools.konzerte import knox
+from tools.konzerte import knox, radar
 from tools.konzerte.merkmale import genres, ist_frei, ist_kommerz, lade_listen
 from tools.konzerte.ortstabelle import Ortstabelle
 from tools.konzerte.ortung import LAENDER, USER_AGENT, Ortung, nominatim_suche
@@ -23,7 +23,10 @@ CACHE_SPEICHERN_ALLE = 50
 ABGESAGT = re.compile(r"(?<!\w)(abgesagt|cancelled|canceled)(?!\w)", re.I)
 AUSFALL_TAGE_BIS_FEHLER = 2  # dritter kaputter Tag in Folge
 KNOX_URL = "https://knox.p-u-n-k.de/db/feed.php?datum_von={von}&datum_bis={bis}"
-QUELLEN = [{"id": "knox", "name": "Knox Punkkonzerte Datenbank", "url": "https://knox.p-u-n-k.de/db/"}]
+QUELLEN = [
+    {"id": "knox", "name": "Knox Punkkonzerte Datenbank", "url": "https://knox.p-u-n-k.de/db/"},
+    {"id": "radar", "name": "Radar – radar.squat.net", "url": "https://radar.squat.net/"},
+]
 
 
 def log(text):
@@ -108,7 +111,28 @@ def hole_quelle_knox(heute, bis, knox_datei, hole_knox):
     return termine
 
 
-def main(argv=None, hole_knox=None):
+
+
+def hole_quelle_radar(heute, bis, listen, cache, hole_radar):
+    """Quelle Radar: Rückgabe Liste von Termin (schon geortet, Genres gesetzt). Fehler lösen eine Exception aus."""
+    termine, z = radar.sammle_radar(hole_radar or radar.radar_json_netz, cache, listen,
+                                    heute.isoformat(), bis.isoformat())
+    gelesen = ", ".join(f"{land} {n}" for land, n in z["gelesen"].items())
+    log(f"radar: gelesen {gelesen}; mit Genre {z['genre_treffer']}, im Zeitfenster {z['im_fenster']}")
+    log(f"radar: {z['orte_geholt']} Orte abgerufen ({z['orte_fehler']} Fehler), {z['behalten']} Termine mit Ort")
+    return termine
+
+
+def alte_termine(vorher, quelle, heute_s):
+    """Termine einer Quelle aus dem letzten Lauf, ohne Vergangenes."""
+    return [t for t in vorher.get("termine", []) if t.get("quelle") == quelle and t.get("datum", "") >= heute_s]
+
+
+def ist_geortet(t):
+    return t.lat is not None and t.land in LAENDER
+
+
+def main(argv=None, hole_knox=None, hole_radar=None):
     for strom in (sys.stdout, sys.stderr):
         if hasattr(strom, "reconfigure"):
             strom.reconfigure(encoding="utf-8")
@@ -116,6 +140,7 @@ def main(argv=None, hole_knox=None):
     p.add_argument("--knox-datei")
     p.add_argument("--heute")
     p.add_argument("--ohne-nominatim", action="store_true")
+    p.add_argument("--ohne-radar", action="store_true")
     p.add_argument("--daten", default="data")
     p.add_argument("--tabelle", default="data/orte-tabelle.json")
     args = p.parse_args(argv)
@@ -129,27 +154,55 @@ def main(argv=None, hole_knox=None):
 
     vorher = lies_json(konzerte_pfad, {})
     status = lies_json(status_pfad, {})
-    knox_status = status.get("knox") or {}
-    ok_am, fehler_seit = knox_status.get("ok_am"), knox_status.get("fehler_seit")
+    cache = lies_json(orte_pfad, {})
+    listen = lade_listen()
+    vorher_ohne_ort = vorher.get("ohne_ort_je_quelle", {})
+    holer = {
+        "knox": lambda: hole_quelle_knox(heute, bis, args.knox_datei, hole_knox),
+        "radar": lambda: hole_quelle_radar(heute, bis, listen, cache, hole_radar),
+    }
+    uebersprungen = {"radar"} if args.ohne_radar else set()
 
-    termine, fehler = [], None
-    try:
-        termine = hole_quelle_knox(heute, bis, args.knox_datei, hole_knox)
-        log(f"knox: {len(termine)} Termine gelesen")
-    except Exception as e:
-        fehler = f"{type(e).__name__}: {e}"
+    # Jede Quelle für sich: frische Termine, bei Ausfall die vom letzten erfolgreichen Lauf.
+    frisch, ausgabe, ohne_ort_je, neuer_status, ausfaelle = [], [], {}, {}, []
+    for quelle in QUELLEN:
+        qid = quelle["id"]
+        alt = status.get(qid) or {}
+        if qid in uebersprungen:
+            log(f"{qid}: übersprungen, Termine vom letzten Lauf behalten")
+            fehler = "übersprungen"
+        else:
+            try:
+                termine = holer[qid]()
+                log(f"{qid}: {len(termine)} Termine gelesen")
+                frisch += termine
+                ohne_ort_je[qid] = 0
+                neuer_status[qid] = {"ok_am": heute_s, "fehler_seit": None}
+                continue
+            except Exception as e:
+                fehler = f"{type(e).__name__}: {e}"
+                log(f"WARNUNG {qid}: {fehler}")
+        ausgabe += alte_termine(vorher, qid, heute_s)
+        ohne_ort_je[qid] = vorher_ohne_ort.get(qid, 0)
+        log(f"{qid}: {sum(1 for t in ausgabe if t.get('quelle') == qid)} Termine vom letzten erfolgreichen Lauf behalten")
+        if qid in uebersprungen:
+            if alt:
+                neuer_status[qid] = alt
+            continue
+        fehler_seit = alt.get("fehler_seit") or heute_s
+        neuer_status[qid] = {"ok_am": alt.get("ok_am"), "fehler_seit": fehler_seit}
+        if (heute - date.fromisoformat(fehler_seit)).days >= AUSFALL_TAGE_BIS_FEHLER:
+            ausfaelle.append((qid, fehler_seit))
 
-    ausgabe, ohne_ort = [], 0
     nominatim_anfragen = 0
-    if fehler is None:
-        gesamt = len(termine)
-        termine = sorted((t for t in termine if heute_s <= t.datum <= bis_s), key=lambda t: t.datum)
+    if frisch:
+        gesamt = len(frisch)
+        termine = sorted((t for t in frisch if heute_s <= t.datum <= bis_s), key=lambda t: t.datum)
         log(f"Zeitfenster {heute_s} bis {bis_s}: {len(termine)} von {gesamt} Terminen")
         im_fenster = len(termine)
         termine = [t for t in termine if not ist_abgesagt(t)]
         log(f"Abgesagt entfernt: {im_fenster - len(termine)}")
         tabelle = Ortstabelle.laden(args.tabelle)
-        cache = lies_json(orte_pfad, {})
 
         def hole(abfrage):
             nonlocal nominatim_anfragen
@@ -159,37 +212,34 @@ def main(argv=None, hole_knox=None):
             return nominatim_suche(abfrage)
 
         ortung = Ortung(cache, tabelle, hole, heute, 0 if args.ohne_nominatim else NOMINATIM_BUDGET)
-        listen = lade_listen()
         for t in termine:
-            ortung.orte(t)
-            merkmale_setzen(t, listen)
+            if t.lat is None:  # Radar kommt mit Koordinaten, KNOX nur mit Ortsangabe
+                ortung.orte(t)
+            if not t.genres:
+                merkmale_setzen(t, listen)
         if ortung.fehler:
             log(f"WARNUNG nominatim: {ortung.fehler}")
-        brauchbar = [t for t in termine if t.lat is not None and t.land in LAENDER]
-        ohne_ort = sum(1 for t in termine if t.land != "X" and not (t.lat is not None and t.land in LAENDER))
-        ausgabe = sorted((runde(t.to_dict()) for t in brauchbar), key=lambda d: (d["datum"], d["zeit"] or "", d["stadt"]))
+        brauchbar = [t for t in termine if ist_geortet(t)]
+        for t in termine:
+            if t.land != "X" and not ist_geortet(t):
+                ohne_ort_je[t.quelle] += 1
+        ausgabe += [runde(t.to_dict()) for t in brauchbar]
         genau = sum(1 for t in brauchbar if t.genau)
-        log(f"Geortet: {genau} genau, {len(brauchbar) - genau} über die Ortstabelle, {ohne_ort} ohne Ort")
+        log(f"Geortet: {genau} genau, {len(brauchbar) - genau} über die Ortstabelle, {sum(ohne_ort_je.values())} ohne Ort")
         log(f"Nominatim-Anfragen: {nominatim_anfragen}")
-        schreibe_json(orte_pfad, cache, kompakt=False)
-        ok_am, fehler_seit = heute_s, None
-    else:
-        log(f"WARNUNG knox: {fehler}")
-        ausgabe = [t for t in vorher.get("termine", []) if t.get("quelle") == "knox" and t.get("datum", "") >= heute_s]
-        ohne_ort = vorher.get("ohne_ort", 0)
-        log(f"knox: {len(ausgabe)} Termine vom letzten erfolgreichen Lauf behalten")
-        fehler_seit = fehler_seit or heute_s
+    ausgabe.sort(key=lambda d: (d["datum"], d["zeit"] or "", d["stadt"]))
+    schreibe_json(orte_pfad, cache, kompakt=False)
 
     stand = datetime.now().astimezone().isoformat(timespec="seconds")
     schreibe_json(konzerte_pfad,
-                  {"stand": stand, "quellen": QUELLEN, "termine": ausgabe, "ohne_ort": ohne_ort}, kompakt=True)
-    schreibe_json(status_pfad, {"knox": {"ok_am": ok_am, "fehler_seit": fehler_seit}}, kompakt=False)
+                  {"stand": stand, "quellen": QUELLEN, "termine": ausgabe, "ohne_ort": sum(ohne_ort_je.values()),
+                   "ohne_ort_je_quelle": ohne_ort_je}, kompakt=True)
+    schreibe_json(status_pfad, neuer_status, kompakt=False)
     log(f"{len(ausgabe)} Termine geschrieben nach {konzerte_pfad}")
 
-    if fehler is not None and (heute - date.fromisoformat(fehler_seit)).days >= AUSFALL_TAGE_BIS_FEHLER:
-        log(f"FEHLER knox: seit {fehler_seit} ohne Daten")
-        return 1
-    return 0
+    for qid, fehler_seit in ausfaelle:
+        log(f"FEHLER {qid}: seit {fehler_seit} ohne Daten")
+    return 1 if ausfaelle else 0
 
 
 if __name__ == "__main__":

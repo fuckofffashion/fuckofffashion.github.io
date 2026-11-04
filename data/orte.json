@@ -1340,5 +1340,205 @@
  },
  "BE|brussel|magasin 4 (lonerfest iii),": {
   "nicht_gefunden": "2026-11-04"
+ },
+ "radar|5696c22e-aba7-493c-950d-51d175449055": {
+  "lat": 52.5571858,
+  "lon": 13.4700005,
+  "plz": "13088",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "KuBiZ"
+ },
+ "radar|64eed999-6a4e-482f-9a3f-fb0c8ae22cba": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Archiv Potsdam"
+ },
+ "radar|b4c64e1e-f47b-4792-80b6-92dbc975b364": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Trixxxter"
+ },
+ "radar|8b8b63b2-64e5-4831-a91d-7f77bb510890": {
+  "lat": 52.5131015,
+  "lon": 13.4600646,
+  "plz": "10247",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "K19 Café"
+ },
+ "radar|336b6d6e-27d7-4ba2-bb04-c8a347a7d6a2": {
+  "lat": 52.5741137,
+  "lon": 13.4997399,
+  "plz": "13051",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "WB13"
+ },
+ "radar|e0797ab5-0b0d-48d5-8187-8df2599ae09c": {
+  "lat": 52.491791197031,
+  "lon": 13.36655017896,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Rote Insel"
+ },
+ "radar|64f7a2ae-5a29-4ab1-b8cb-3c57f6b212a6": {
+  "lat": null,
+  "lon": null,
+  "plz": "13357",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Alter Schwede"
+ },
+ "radar|cb9cb335-ecf5-4ed3-89dc-2c31375b4cf8": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "in den Räumen des Subversiv e.V."
+ },
+ "radar|c94d57d6-7ae5-4643-a257-c26e6448f182": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "OGH Sonnenallee"
+ },
+ "radar|78bc2fe2-fe96-400e-baff-f57bbd3594e5": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "TRXXXTER"
+ },
+ "radar|71c6ddb0-dca5-4a9b-9963-9b2a8b9219cc": {
+  "lat": null,
+  "lon": null,
+  "plz": "10247",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Abstand"
+ },
+ "radar|67ee5ca6-653f-445b-b4a3-9a68bde17d2b": {
+  "lat": 52.517024,
+  "lon": 13.4619,
+  "plz": "10247",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Fischladen"
+ },
+ "radar|f4143aaf-84f8-4a44-9271-02074546cab7": {
+  "lat": 52.5375431,
+  "lon": 13.4088297,
+  "plz": "10435",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Kastanienkeller"
+ },
+ "radar|6e36d37f-c50d-4a88-bd29-128d82ae601c": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "K"
+ },
+ "radar|04a6738e-60fa-40d5-ad5b-bba9391f140d": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Lichtenberg"
+ },
+ "radar|3258931c-7c97-4fdb-bb67-5ca047bcf324": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "across the Willy Brand Haus"
+ },
+ "radar|90f69361-e463-4b3d-ae75-7af7a2c9c348": {
+  "lat": 52.5084129,
+  "lon": 13.4285622,
+  "plz": "10997",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Rauchhaus"
+ },
+ "radar|be187b59-a338-4c68-8565-083042bbfc2c": {
+  "lat": 52.5364987,
+  "lon": 13.4077602,
+  "plz": "10435",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Lichtblick"
+ },
+ "radar|2efacb37-747c-4c75-8032-eadcfca5d57b": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Stressfaktor"
+ },
+ "radar|3319570f-69f6-4939-86f2-8f7b61032404": {
+  "lat": 52.5095458,
+  "lon": 13.490181723325,
+  "plz": "10365",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Drugstore im Rockhaus"
+ },
+ "radar|a1a36ff1-eb8f-4c87-be13-6af347af039b": {
+  "lat": 52.5297465,
+  "lon": 13.3972037,
+  "plz": "10115",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Schokoladen"
+ },
+ "radar|0b97df42-e00b-4f76-991b-781101a25e0f": {
+  "lat": 52.5373536,
+  "lon": 13.530008829988,
+  "plz": "12681",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Orwohaus"
+ },
+ "radar|e5dd0a6f-9162-45ef-b45c-ce3231a75f4d": {
+  "lat": 52.52644385,
+  "lon": 13.411528390373,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Volksbühne / Roter Salon"
+ },
+ "radar|8b6f64fb-e3e4-473d-bb50-5a63a9b9d9ce": {
+  "lat": 52.5157352,
+  "lon": 13.4522362,
+  "plz": "10243",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Abgedreht-Klub"
+ },
+ "radar|c5f0d090-510c-4404-874a-21ec6785ec73": {
+  "lat": 51.8438309,
+  "lon": 5.8659531,
+  "plz": "6511 LN",
+  "stadt": "Nijmegen",
+  "land": "NL",
+  "laden": "De Onderbroek"
  }
 }

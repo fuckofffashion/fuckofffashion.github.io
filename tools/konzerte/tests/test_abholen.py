@@ -12,13 +12,16 @@ FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "knox-feed.xml").r
 TABELLE = "data/orte-tabelle.json"
 
 
-def lauf(daten, heute="2026-11-01", hole_knox=None):
+def lauf(daten, heute="2026-11-01", hole_knox=None, hole_radar=None):
+    """Ohne hole_radar läuft Radar nicht (kein Netz in Tests)."""
     argv = ["--ohne-nominatim", "--daten", daten, "--tabelle", TABELLE, "--heute", heute]
+    if not hole_radar:
+        argv.append("--ohne-radar")
     if not hole_knox:
         argv += ["--knox-datei", FIXTURE]
     ausgabe = io.StringIO()
     with contextlib.redirect_stdout(ausgabe):
-        code = abholen.main(argv, hole_knox=hole_knox)
+        code = abholen.main(argv, hole_knox=hole_knox, hole_radar=hole_radar)
     return code, ausgabe.getvalue()
 
 
@@ -144,6 +147,96 @@ class AbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten)
         self.assertEqual(code, 0)
         self.assertEqual(lies(self.daten, "quellen-status.json")["knox"], {"ok_am": "2026-11-01", "fehler_seit": None})
+
+
+FIX = os.path.join(os.path.dirname(__file__), "fixtures")
+with open(os.path.join(FIX, "radar-events.json"), encoding="utf-8") as f:
+    RADAR_EVENTS = json.load(f)
+with open(os.path.join(FIX, "radar-location.json"), encoding="utf-8") as f:
+    RADAR_ORT = json.load(f)
+LEER = {"result": {}, "count": 0}
+ALT_RADAR = dict(ALT, id="radar-alt", quelle="radar", stadt="Berlin")
+
+
+def radar_ok(url):
+    if "/location/" in url:
+        return RADAR_ORT
+    return RADAR_EVENTS if "country][]=DE" in url else LEER
+
+
+def radar_tot(url):
+    raise OSError("Radar weg")
+
+
+class RadarAbholenTest(unittest.TestCase):
+    def setUp(self):
+        self._t = tempfile.TemporaryDirectory()
+        self.daten = self._t.name
+        self.addCleanup(self._t.cleanup)
+
+    def test_radar_zweite_quelle(self):
+        code, _ = lauf(self.daten, hole_radar=radar_ok)
+        self.assertEqual(code, 0)
+        k = lies(self.daten, "konzerte.json")
+        self.assertEqual([q["id"] for q in k["quellen"]], ["knox", "radar"])
+        self.assertEqual(k["quellen"][1], {"id": "radar", "name": "Radar – radar.squat.net", "url": "https://radar.squat.net/"})
+        radar = [t for t in k["termine"] if t["quelle"] == "radar"]
+        self.assertEqual([(t["bands"], t["datum"], t["zeit"], t["genau"]) for t in radar],
+                         [("Punk im KuBiZ", "2026-11-04", "23:30", True)])
+        self.assertEqual(radar[0]["genres"], ["Punk / Hardcore / Crust"])  # Merkmale kommen vom Adapter
+        self.assertTrue(any(t["quelle"] == "knox" for t in k["termine"]))
+        self.assertEqual(lies(self.daten, "quellen-status.json"),
+                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None},
+                          "radar": {"ok_am": "2026-11-01", "fehler_seit": None}})
+        self.assertIn("radar|5696c22e-aba7-493c-950d-51d175449055", lies(self.daten, "orte.json"))
+
+    def test_radar_tot_behaelt_alte_knox_laeuft(self):
+        schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [ALT_RADAR], "ohne_ort": 0})
+        code, ausgabe = lauf(self.daten, hole_radar=radar_tot)
+        self.assertEqual(code, 0)
+        self.assertIn("WARNUNG radar:", ausgabe)
+        self.assertNotIn("WARNUNG knox", ausgabe)
+        ids = [t["id"] for t in lies(self.daten, "konzerte.json")["termine"]]
+        self.assertIn("radar-alt", ids)
+        self.assertTrue(any(i.startswith("knox-") for i in ids))
+        status = lies(self.daten, "quellen-status.json")
+        self.assertEqual(status["radar"], {"ok_am": None, "fehler_seit": "2026-11-01"})
+        self.assertEqual(status["knox"]["fehler_seit"], None)
+
+    def test_radar_dritter_tag_exit_1(self):
+        schreibe(self.daten, "quellen-status.json", {"radar": {"ok_am": "2026-10-29", "fehler_seit": "2026-10-30"}})
+        code, ausgabe = lauf(self.daten, hole_radar=radar_tot)
+        self.assertEqual(code, 1)
+        self.assertIn("FEHLER radar:", ausgabe)
+        self.assertEqual(lies(self.daten, "quellen-status.json")["radar"],
+                         {"ok_am": "2026-10-29", "fehler_seit": "2026-10-30"})
+
+    def test_radar_ohne_events_ist_fehler(self):
+        code, ausgabe = lauf(self.daten, hole_radar=lambda url: LEER)
+        self.assertEqual(code, 0)
+        self.assertIn("WARNUNG radar:", ausgabe)
+
+    def test_knox_tot_radar_laeuft(self):
+        schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [ALT], "ohne_ort": 0})
+        code, ausgabe = lauf(self.daten, hole_knox=tot, hole_radar=radar_ok)
+        self.assertEqual(code, 0)
+        self.assertIn("WARNUNG knox:", ausgabe)
+        self.assertEqual(sorted(t["quelle"] for t in lies(self.daten, "konzerte.json")["termine"]), ["knox", "radar"])
+
+    def test_ohne_radar_laesst_radar_unberuehrt(self):
+        schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [ALT_RADAR], "ohne_ort": 0})
+        schreibe(self.daten, "quellen-status.json", {"radar": {"ok_am": "2026-10-31", "fehler_seit": None}})
+        code, _ = lauf(self.daten)
+        self.assertEqual(code, 0)
+        self.assertIn("radar-alt", [t["id"] for t in lies(self.daten, "konzerte.json")["termine"]])
+        self.assertEqual(lies(self.daten, "quellen-status.json")["radar"], {"ok_am": "2026-10-31", "fehler_seit": None})
+
+    def test_ohne_ort_bleibt_bei_ausfall_der_quelle(self):
+        lauf(self.daten)
+        vorher = lies(self.daten, "konzerte.json")["ohne_ort"]
+        self.assertGreaterEqual(vorher, 1)
+        lauf(self.daten, hole_knox=tot)
+        self.assertEqual(lies(self.daten, "konzerte.json")["ohne_ort"], vorher)
 
 
 if __name__ == "__main__":
