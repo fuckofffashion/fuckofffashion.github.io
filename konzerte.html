@@ -15,7 +15,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
-<header class="head">
+<header class="head head--static">
   <a class="head__mark" href="./" aria-label="Fuck Off Fashion – Startseite">
     <svg viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="104" r="76"/><path d="M48 176 100 20 152 176"/><path d="M14 124 188 112"/></g></svg>
     <span>Fuck Off Fashion</span>
@@ -42,12 +42,14 @@
 
       <fieldset class="kz-gruppe">
         <legend class="kz-gruppe__titel">Wo</legend>
-        <button class="btn kz-wo js-wo" type="button">Wo bin ich? <span class="btn__icon" aria-hidden="true">⌖</span></button>
-        <div class="kz-ort">
-          <label class="kz-feld__label" for="kz-ort">PLZ / Ort</label>
-          <input class="kz-input js-ort" id="kz-ort" type="text" autocomplete="off" spellcheck="false"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="kz-ort-liste"
-                 aria-describedby="kz-hinweis" placeholder="z. B. 47533 oder Kleve">
+        <div class="kz-wo-zeile">
+          <button class="btn kz-wo js-wo" type="button">Wo bin ich? <span class="btn__icon" aria-hidden="true">⌖</span></button>
+          <div class="kz-ort">
+            <label class="kz-feld__label" for="kz-ort">PLZ / Ort</label>
+            <input class="kz-input js-ort" id="kz-ort" type="text" autocomplete="off" spellcheck="false"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="kz-ort-liste"
+                   aria-describedby="kz-hinweis" placeholder="z. B. 47533 oder Kleve">
+          </div>
           <ul class="kz-vorschlaege js-ort-liste" id="kz-ort-liste" role="listbox" aria-label="Vorschläge" hidden></ul>
         </div>
         <p class="kz-hinweis js-hinweis" id="kz-hinweis" role="status"></p>
@@ -72,22 +74,34 @@
           <button class="kz-chip js-schnell" type="button" data-wahl="wochenende" aria-pressed="false">Wochenende</button>
           <button class="kz-chip js-schnell" type="button" data-wahl="alles" aria-pressed="false">Alles</button>
         </div>
-        <div class="kz-daten">
-          <label class="kz-feld"><span class="kz-feld__label">von</span><input class="kz-input js-von" type="date"></label>
-          <label class="kz-feld"><span class="kz-feld__label">bis</span><input class="kz-input js-bis" type="date"></label>
-        </div>
       </fieldset>
 
-      <fieldset class="kz-gruppe">
-        <legend class="kz-gruppe__titel">Was</legend>
-        <label class="kz-feld">
-          <span class="kz-feld__label">Genre</span>
-          <select class="kz-input js-genre" aria-describedby="kz-genre-hinweis"><option value="">Alle</option></select>
-        </label>
-        <p class="kz-klein" id="kz-genre-hinweis">Genres raten wir. Wenn's nicht passt: Pogo trotzdem.</p>
-        <label class="kz-schalter"><input class="js-frei" type="checkbox"> <span>Nur Eintritt frei / auf Spende</span></label>
-        <label class="kz-schalter"><input class="js-kommerz" type="checkbox"> <span>Kommerz ausblenden</span></label>
-      </fieldset>
+      <!-- Auf dem Telefon eingeklappt, auf breiten Bildschirmen immer offen (siehe app.js) -->
+      <details class="kz-mehrfilter js-mehrfilter" open>
+        <summary class="kz-mehrfilter__knopf">
+          <span class="kz-mehrfilter__titel">Mehr Filter</span>
+          <span class="kz-mehrfilter__aktiv js-mehrfilter-aktiv"></span>
+        </summary>
+
+        <fieldset class="kz-gruppe kz-gruppe--zeitraum">
+          <legend class="visually-hidden">Zeitraum</legend>
+          <div class="kz-daten">
+            <label class="kz-feld"><span class="kz-feld__label">von</span><input class="kz-input js-von" type="date"></label>
+            <label class="kz-feld"><span class="kz-feld__label">bis</span><input class="kz-input js-bis" type="date"></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="kz-gruppe">
+          <legend class="kz-gruppe__titel">Was</legend>
+          <label class="kz-feld">
+            <span class="kz-feld__label">Genre</span>
+            <select class="kz-input js-genre" aria-describedby="kz-genre-hinweis"><option value="">Alle</option></select>
+          </label>
+          <p class="kz-klein" id="kz-genre-hinweis">Genres raten wir. Wenn's nicht passt: Pogo trotzdem.</p>
+          <label class="kz-schalter"><input class="js-frei" type="checkbox"> <span>Nur Eintritt frei / auf Spende</span></label>
+          <label class="kz-schalter"><input class="js-kommerz" type="checkbox"> <span>Kommerz ausblenden</span></label>
+        </fieldset>
+      </details>
     </form>
 
     <!-- Ergebnisse --------------------------------------------- -->

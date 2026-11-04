@@ -2,11 +2,11 @@
 // Datenschutz: Der Standort (Geolocation oder getippter Ort) bleibt im Speicher dieser Seite.
 // In localStorage stehen nur Umkreisstufe, Genre und die zwei Schalter.
 // Fremde Texte (Bands, Zusatz, Laden, Stadt) kommen ausschließlich per textContent ins DOM.
-import { filtern, sortieren } from "./filter.js";
-import { STUFEN } from "./einheiten.js";
-import { SPRUECHE, spruch } from "./leer.js";
-import { ortsfeld } from "./ortsfeld.js";
-import { renderTermin, element, link, heute, plusTage, tagText } from "./termin.js";
+import { filtern, sortieren } from "./filter.js?v=13";
+import { STUFEN } from "./einheiten.js?v=13";
+import { SPRUECHE, spruch } from "./leer.js?v=13";
+import { ortsfeld } from "./ortsfeld.js?v=13";
+import { renderTermin, element, link, heute, plusTage, tagText } from "./termin.js?v=13";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
@@ -77,6 +77,8 @@ function start(wurzel) {
     mehr: $(".js-mehr"),
     ohneOrt: $(".js-ohne-ort"),
     stand: $(".js-stand"),
+    mehrfilter: $(".js-mehrfilter"),
+    mehrfilterAktiv: $(".js-mehrfilter-aktiv"),
   };
 
   const gespeichert = ladeEinstellungen();
@@ -124,6 +126,21 @@ function start(wurzel) {
     }
   }
 
+  // Kurzfassung der Filter in „Mehr Filter“, sichtbar solange der Block zu ist (Telefon)
+  function zeigeMehrfilter() {
+    const teile = [];
+    const standard = z.von === heute() && !z.bis;
+    const schnell = el.schnell.some((b) => b.getAttribute("aria-pressed") === "true");
+    if (!standard && !schnell) {
+      const kurz = (iso) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.` : "…");
+      teile.push(`${kurz(z.von)}–${kurz(z.bis)}`);
+    }
+    if (z.genre) teile.push(`Genre: ${z.genre}`);
+    if (z.nurFrei) teile.push("nur frei");
+    if (z.ohneKommerz) teile.push("ohne Kommerz");
+    el.mehrfilterAktiv.textContent = teile.join(" · ");
+  }
+
   function zeigeMitte() {
     const da = z.mitte != null;
     el.mitte.hidden = !da;
@@ -169,6 +186,7 @@ function start(wurzel) {
   }
 
   function aktualisiere() {
+    zeigeMehrfilter();
     if (!daten) return;
     const radiusKm = stufe().km;
     const gefiltert = filtern(daten.termine, {
@@ -300,6 +318,14 @@ function start(wurzel) {
 
   el.mehr.addEventListener("click", zeigeMehr);
 
+  // „Mehr Filter“ auf dem Telefon zu, sonst offen (dort ist der Knopf ausgeblendet)
+  const schmal = matchMedia("(max-width: 560px)");
+  const passeMehrfilterAn = () => {
+    el.mehrfilter.open = !schmal.matches;
+  };
+  passeMehrfilterAn();
+  schmal.addEventListener("change", passeMehrfilterAn);
+
   // Anfangszustand ---------------------------------------------------------
   zeigeStufe();
   el.von.value = z.von;
@@ -308,6 +334,7 @@ function start(wurzel) {
   el.kommerz.checked = z.ohneKommerz;
   zeigeSchnellwahl();
   zeigeMitte();
+  zeigeMehrfilter();
 
   // Daten laden ------------------------------------------------------------
   fetch(DATEN_URL, { cache: "no-cache" })

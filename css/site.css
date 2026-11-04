@@ -9,6 +9,7 @@
   transition: transform var(--dur-base) var(--ease-out);
 }
 .head.is-hidden { transform: translateY(-110%); }
+.head--static { position: absolute; } /* Unterseiten: Kopf scrollt mit weg und liegt nie über dem Inhalt */
 .head__mark { display: flex; align-items: center; gap: .6rem; text-decoration: none; font: 400 1.25rem/1 var(--font-shout); text-transform: uppercase; letter-spacing: .02em; }
 .head__mark svg { width: 1.7rem; height: 1.7rem; }
 .head nav { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
