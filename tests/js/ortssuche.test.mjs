@@ -27,6 +27,20 @@ test("PLZ-Präfix findet Kleve 47533 in DE", () => {
   assert.ok(treffer[0].plz.startsWith("4753"));
 });
 
+test("NL-Postleitzahl mit Buchstaben findet den PC4-Eintrag", () => {
+  for (const eingabe of ["6525 AB", "6525AB", "6525 ab", " 6525  Ab "]) {
+    const treffer = sucheOrt(T, eingabe);
+    assert.equal(treffer.length, 1, eingabe);
+    assert.deepEqual([treffer[0].land, treffer[0].plz, treffer[0].name], ["NL", "6525", "Nijmegen"]);
+  }
+});
+
+test("PC4 mit Buchstaben ohne Eintrag und Eingaben, die keine NL-PLZ sind", () => {
+  assert.deepEqual(sucheOrt(T, "9999 ZZ"), []);
+  assert.equal(sucheOrt(T, "4753 Kleve")[0].name, "Kleve"); // Ortsname, kein Postcode-Suffix
+  assert.deepEqual(sucheOrt(T, "6525 A"), []); // ein Buchstabe ist kein Suffix
+});
+
 test("Namens-Präfix ohne Akzent findet Nijmegen in NL", () => {
   assert.equal(sucheOrt(T, "nijm")[0].land, "NL");
 });

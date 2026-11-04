@@ -80,6 +80,16 @@ function plzSuche(index, praefix, max) {
   );
 }
 
+// Niederländische Postleitzahl "6525 AB" / "6525AB": die Tabelle kennt nur die vier Ziffern (PC4).
+function pc4Suche(index, pc4, max) {
+  return suche(
+    index,
+    (o) => o.plz === pc4,
+    (a, b) => vergleiche(a.land, b.land) || vergleiche(a.name, b.name),
+    max,
+  );
+}
+
 // Eingabe aus Ziffern: PLZ-Präfix. Eingabe mit Buchstaben: Namens-Präfix.
 // "47533 Kleve": Buchstaben suchen den Namen, Ziffern filtern die PLZ.
 export function sucheOrt(tabelle, eingabe, max = 8) {
@@ -88,6 +98,9 @@ export function sucheOrt(tabelle, eingabe, max = 8) {
   const index = indexVon(tabelle);
 
   if (/^\d+$/.test(text)) return plzSuche(index, text, max);
+
+  const nl = text.match(/^(\d{4})\s*[a-z]{2}$/i);
+  if (nl) return pc4Suche(index, nl[1], max);
 
   const gemischt = text.match(/^(\d+)\s+(.*\p{L}.*)$/u);
   if (gemischt) return namenSuche(index, gemischt[2], max, gemischt[1]);
