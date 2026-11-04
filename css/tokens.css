@@ -9,6 +9,7 @@
 @font-face { font-family: "Archivo"; src: url("../assets/fonts/archivo-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: swap; }
 @font-face { font-family: "Courier Prime"; src: url("../assets/fonts/courier-prime-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Courier Prime"; src: url("../assets/fonts/courier-prime-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Permanent Marker"; src: url("../assets/fonts/permanent-marker-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 
 :root {
   /* Farbe ------------------------------------------------ */
@@ -28,6 +29,7 @@
   --font-shout: "Anton", "Impact", "Arial Narrow", sans-serif;   /* Headlines, nur Versalien */
   --font-body:  "Archivo", "Helvetica Neue", Arial, sans-serif;   /* Fließtext */
   --font-zine:  "Courier Prime", "Courier New", monospace;        /* Labels, Manifest, Metadaten */
+  --font-edding: "Permanent Marker", "Comic Sans MS", cursive;    /* Handnotizen am Brett */
 
   --fs-mega:  clamp(4.5rem, 16vw, 15rem);
   --fs-1:     clamp(3rem, 8.5vw, 7.5rem);
