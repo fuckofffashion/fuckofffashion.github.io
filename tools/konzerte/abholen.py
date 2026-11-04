@@ -1,7 +1,7 @@
 """Tägliches Abholskript: Quellen holen, orten, Merkmale bestimmen, JSON schreiben.
 
 Aufruf: python -m tools.konzerte.abholen [--knox-datei PFAD] [--heute YYYY-MM-DD]
-        [--ohne-nominatim] [--ohne-radar] [--daten ORDNER] [--tabelle PFAD]
+        [--ohne-nominatim] [--ohne-radar] [--daten ORDNER] [--tabelle PFAD] [--budget-sekunden N]
 """
 import argparse
 import json
@@ -9,6 +9,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 import urllib.request
 from datetime import date, datetime, timedelta
 
@@ -20,6 +21,7 @@ from tools.konzerte.zusammenfuehren import dubletten_in_quelle, fuehre_zusammen
 
 FENSTER_TAGE = 180
 NOMINATIM_BUDGET = 300
+BUDGET_SEKUNDEN = 420  # die CI bricht bei 540 s hart ab und verwirft dann alles, auch den Ortscache
 CACHE_SPEICHERN_ALLE = 50
 ABGESAGT = re.compile(r"(?<!\w)(abgesagt|cancelled|canceled)(?!\w)", re.I)
 AUSFALL_TAGE_BIS_FEHLER = 2  # dritter kaputter Tag in Folge
@@ -114,13 +116,15 @@ def hole_quelle_knox(heute, bis, knox_datei, hole_knox):
 
 
 
-def hole_quelle_radar(heute, bis, listen, cache, hole_radar):
+def hole_quelle_radar(heute, bis, listen, cache, hole_radar, frist_um=None):
     """Quelle Radar: Rückgabe Liste von Termin (schon geortet, Genres gesetzt). Fehler lösen eine Exception aus."""
     termine, z = radar.sammle_radar(hole_radar or radar.radar_json_netz, cache, listen,
-                                    heute.isoformat(), bis.isoformat())
+                                    heute.isoformat(), bis.isoformat(), frist_um=frist_um)
     gelesen = ", ".join(f"{land} {n}" for land, n in z["gelesen"].items())
     log(f"radar: gelesen {gelesen}; mit Genre {z['genre_treffer']}, im Zeitfenster {z['im_fenster']}")
     log(f"radar: {z['orte_geholt']} Orte abgerufen ({z['orte_fehler']} Fehler), {z['behalten']} Termine mit Ort")
+    if z["orte_frist"]:
+        log(f"WARNUNG radar: Zeitbudget aufgebraucht, {z['orte_frist']} Orte nicht abgerufen (kommen im nächsten Lauf)")
     for warnung in z["warnungen"]:
         log(f"WARNUNG radar: {warnung}")
     if z["ohne_land"]:
@@ -137,7 +141,8 @@ def ist_geortet(t):
     return t.lat is not None and t.land in LAENDER
 
 
-def main(argv=None, hole_knox=None, hole_radar=None):
+def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
+    start = uhr()
     for strom in (sys.stdout, sys.stderr):
         if hasattr(strom, "reconfigure"):
             strom.reconfigure(encoding="utf-8")
@@ -148,7 +153,14 @@ def main(argv=None, hole_knox=None, hole_radar=None):
     p.add_argument("--ohne-radar", action="store_true")
     p.add_argument("--daten", default="data")
     p.add_argument("--tabelle", default="data/orte-tabelle.json")
+    p.add_argument("--budget-sekunden", type=float, default=BUDGET_SEKUNDEN,
+                   help="ab dieser Laufzeit keine neuen Netzabfragen für Orte mehr (Standard %(default)s)")
     args = p.parse_args(argv)
+
+    frist = start + args.budget_sekunden
+
+    def frist_um():
+        return uhr() >= frist
 
     heute = date.fromisoformat(args.heute) if args.heute else date.today()
     bis = heute + timedelta(days=FENSTER_TAGE)
@@ -164,7 +176,7 @@ def main(argv=None, hole_knox=None, hole_radar=None):
     vorher_ohne_ort = vorher.get("ohne_ort_je_quelle", {})
     holer = {
         "knox": lambda: hole_quelle_knox(heute, bis, args.knox_datei, hole_knox),
-        "radar": lambda: hole_quelle_radar(heute, bis, listen, cache, hole_radar),
+        "radar": lambda: hole_quelle_radar(heute, bis, listen, cache, hole_radar, frist_um),
     }
     uebersprungen = {"radar"} if args.ohne_radar else set()
 
@@ -215,7 +227,8 @@ def main(argv=None, hole_knox=None, hole_radar=None):
                 schreibe_json(orte_pfad, cache, kompakt=False)
             return nominatim_suche(abfrage)
 
-        ortung = Ortung(cache, tabelle, hole, heute, 0 if args.ohne_nominatim else NOMINATIM_BUDGET)
+        ortung = Ortung(cache, tabelle, hole, heute, 0 if args.ohne_nominatim else NOMINATIM_BUDGET,
+                    frist=frist, uhr=uhr)
         for t in termine:
             if t.lat is None:  # Radar kommt mit Koordinaten, KNOX nur mit Ortsangabe
                 ortung.orte(t)
@@ -237,6 +250,9 @@ def main(argv=None, hole_knox=None, hole_radar=None):
         genau = sum(1 for t in brauchbar if t.genau)
         log(f"Geortet: {genau} genau, {len(brauchbar) - genau} über die Ortstabelle, {sum(ohne_ort_je.values())} ohne Ort")
         log(f"Nominatim-Anfragen: {nominatim_anfragen}")
+        if ortung.uebersprungen:
+            log(f"WARNUNG nominatim: Zeitbudget ({args.budget_sekunden:g} s) aufgebraucht, "
+                f"{ortung.uebersprungen} Abfragen übersprungen (kommen im nächsten Lauf)")
     ausgabe.sort(key=lambda d: (d["datum"], d["zeit"] or "", d["stadt"]))
     schreibe_json(orte_pfad, cache, kompakt=False)
 

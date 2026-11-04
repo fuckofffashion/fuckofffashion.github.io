@@ -50,12 +50,16 @@ def nominatim_suche(abfrage):
 
 
 class Ortung:
-    def __init__(self, cache, tabelle, hole, heute, budget=300):
+    def __init__(self, cache, tabelle, hole, heute, budget=300, frist=None, uhr=time.monotonic):
+        """frist: Zeitpunkt auf der Uhr `uhr`, ab dem keine neuen Nominatim-Anfragen mehr starten (None: keine)."""
         self.cache = cache
         self.tabelle = tabelle
         self.hole = hole
         self.heute = heute
         self.budget = budget
+        self.frist = frist
+        self.uhr = uhr
+        self.uebersprungen = 0  # Abfragen, die wegen der Frist ausfielen (zusätzlich zum Anfragenbudget)
         self.fehler = None  # Meldung, falls Nominatim wegen eines Fehlers abgeschaltet wurde
 
     def orte(self, t):
@@ -67,7 +71,9 @@ class Ortung:
             self._setze(t, eintrag["lat"], eintrag["lon"], eintrag.get("land"), True)
             return t
         if t.laden and (t.stadt or t.plz) and self.budget > 0 and not self._kuerzlich_nicht_gefunden(eintrag):
-            if self._nominatim(t, schluessel):
+            if self.frist is not None and self.uhr() >= self.frist:
+                self.uebersprungen += 1  # Rückfall auf die Tabelle, der Ort bleibt im Cache offen
+            elif self._nominatim(t, schluessel):
                 return t
         self._tabelle(t)
         return t

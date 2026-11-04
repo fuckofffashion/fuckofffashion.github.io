@@ -176,6 +176,15 @@ class SammleRadarTest(unittest.TestCase):
         (termine, stats), cache = self.lauf(self.fake({"DE": EVENTS}), budget=0)
         self.assertEqual((termine, stats["orte_geholt"], cache), ([], 0, {}))
 
+    def test_frist_um_holt_keine_orte_mehr(self):
+        (termine, stats), cache = self.lauf(self.fake({"DE": EVENTS}), frist_um=lambda: True)
+        self.assertFalse(any("/location/" in u for u in self.urls))
+        self.assertEqual((termine, stats["orte_geholt"], stats["orte_frist"], cache), ([], 0, 1, {}))
+
+    def test_frist_noch_nicht_um_holt_orte(self):
+        (termine, stats), _ = self.lauf(self.fake({"DE": EVENTS}), frist_um=lambda: False)
+        self.assertEqual((len(termine), stats["orte_geholt"], stats["orte_frist"]), (1, 1, 0))
+
     def test_alle_ortsabrufe_fehlgeschlagen_ist_quellenfehler(self):
         def hole(url):
             if "/location/" in url:

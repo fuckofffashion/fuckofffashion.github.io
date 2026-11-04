@@ -189,10 +189,12 @@ def _hole_land(hole, land, limit, seiten, warnungen):
     return alle
 
 
-def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT, seiten=SEITEN_JE_LAND):
+def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT, seiten=SEITEN_JE_LAND,
+                 frist_um=None):
     """Events der drei Länder holen, Orte nachladen (Cache, `budget` neue Abrufe) und lesen.
 
     hole: url -> JSON (Netz ersetzbar). von/bis: ISO-Daten; nur Events dazwischen kosten einen Ortsabruf.
+    frist_um: optional, () -> True, sobald die Zeitfrist des Laufs um ist; dann gibt es keine neuen Ortsabrufe mehr.
     Rückgabe: (Termine, Zahlen fürs Log). Fehler beim Event-Abruf oder 0 Events insgesamt lösen eine Exception aus.
     """
     ereignisse, gelesen, warnungen = {}, {}, []
@@ -204,8 +206,8 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
         raise ValueError("Radar lieferte 0 Events")
 
     zahlen = {"gelesen": gelesen, "genre_treffer": 0, "im_fenster": 0, "orte_geholt": 0, "orte_fehler": 0,
-              "warnungen": warnungen}
-    orte = {}
+              "orte_frist": 0, "warnungen": warnungen}
+    orte, ausgelassen = {}, set()
     for ereignis in ereignisse.values():
         e = _lies_ereignis(ereignis, listen)
         if not e:
@@ -217,7 +219,10 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
         for uuid in e["orte"]:
             schluessel = f"radar|{uuid}"
             alt = cache.get(schluessel) if isinstance(cache.get(schluessel), dict) else None
-            if (alt is None or _ohne_koordinaten_veraltet(alt, von)) and budget > 0:
+            fehlt = alt is None or _ohne_koordinaten_veraltet(alt, von)
+            if fehlt and budget > 0 and frist_um and frist_um():
+                ausgelassen.add(uuid)  # Frist um: kein Abruf, der Ort kommt im nächsten Lauf dran
+            elif fehlt and budget > 0:
                 budget -= 1
                 zahlen["orte_geholt"] += 1
                 try:
@@ -237,6 +242,7 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
                 orte[uuid] = cache[schluessel]
                 if orte[uuid].get("lat") is not None and orte[uuid].get("lon") is not None:
                     break
+    zahlen["orte_frist"] = len(ausgelassen)
     termine = lese_radar({"result": ereignisse}, orte, listen)
     if zahlen["im_fenster"] and not termine and zahlen["orte_fehler"]:
         raise ValueError(f"Radar: {zahlen['im_fenster']} passende Events, aber alle Ortsabrufe schlugen fehl "

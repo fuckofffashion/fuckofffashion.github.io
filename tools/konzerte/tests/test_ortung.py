@@ -191,5 +191,38 @@ class WarteTest(unittest.TestCase):
         self.assertTrue(all(b - a >= 1.0 for a, b in zip(starts, starts[1:])), starts)
 
 
+class FristTest(unittest.TestCase):
+    """Zeitfrist: nach Ablauf keine neuen Nominatim-Abfragen mehr, Rückfall auf die Tabelle."""
+
+    def test_nach_der_frist_keine_abfrage_mehr(self):
+        jetzt = [0.0]
+        hole = FakeHole()
+        o = Ortung({}, TABELLE, hole, HEUTE, 300, frist=100.0, uhr=lambda: jetzt[0])
+        a = o.orte(termin(laden="Roxy"))
+        jetzt[0] = 100.0
+        b = o.orte(termin(laden="Cafe Abseits"))
+        c = o.orte(termin(laden="Bar 3"))
+        self.assertEqual(hole.abfragen, ["Roxy, 89077 Ulm"])
+        self.assertTrue(a.genau)
+        self.assertFalse(b.genau)
+        self.assertAlmostEqual(c.lat, 48.399, places=3)
+        self.assertEqual(o.uebersprungen, 2)
+        self.assertEqual(o.budget, 299)
+
+    def test_cache_gilt_auch_nach_der_frist(self):
+        hole = FakeHole()
+        cache = {"DE|ulm|roxy": {"lat": 1.5, "lon": 2.5, "land": "DE"}}
+        o = Ortung(cache, TABELLE, hole, HEUTE, 300, frist=0.0, uhr=lambda: 5.0)
+        t = o.orte(termin())
+        self.assertEqual((t.lat, t.genau, o.uebersprungen), (1.5, True, 0))
+
+    def test_ohne_frist_unveraendert(self):
+        hole = FakeHole()
+        o = Ortung({}, TABELLE, hole, HEUTE, 300, uhr=lambda: 1e9)
+        o.orte(termin())
+        self.assertEqual(len(hole.abfragen), 1)
+        self.assertEqual(o.uebersprungen, 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest import mock
 from datetime import date, timedelta
 
 from tools.konzerte import abholen
@@ -147,6 +148,63 @@ class AbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten)
         self.assertEqual(code, 0)
         self.assertEqual(lies(self.daten, "quellen-status.json")["knox"], {"ok_am": "2026-11-01", "fehler_seit": None})
+
+
+class FristTest(unittest.TestCase):
+    """--budget-sekunden mit künstlicher Uhr: nach Ablauf keine Nominatim-Abfragen mehr, alles wird geschrieben."""
+
+    def setUp(self):
+        self._t = tempfile.TemporaryDirectory()
+        self.daten = self._t.name
+        self.addCleanup(self._t.cleanup)
+
+    def starte(self, budget, hole_radar=None):
+        jetzt = [0.0]
+        abfragen = []
+
+        def suche(abfrage):
+            abfragen.append(abfrage)
+            jetzt[0] += 10.0  # jede Abfrage kostet zehn Sekunden
+            return []
+
+        argv = ["--daten", self.daten, "--tabelle", TABELLE, "--heute", "2026-11-01", "--knox-datei", FIXTURE,
+                "--budget-sekunden", str(budget)]
+        if not hole_radar:
+            argv.append("--ohne-radar")
+        ausgabe = io.StringIO()
+        with mock.patch.object(abholen, "nominatim_suche", suche), contextlib.redirect_stdout(ausgabe):
+            code = abholen.main(argv, hole_radar=hole_radar, uhr=lambda: jetzt[0])
+        return code, ausgabe.getvalue(), abfragen
+
+    def test_frist_stoppt_nominatim_und_schreibt_alles(self):
+        code, ausgabe, abfragen = self.starte(25)
+        self.assertEqual(len(abfragen), 3)  # bei 0, 10 und 20 s; ab 30 s ist die Frist von 25 s um
+        self.assertEqual(code, 0)  # die Frist allein macht den Lauf nicht rot
+        self.assertIn("Abfragen übersprungen", ausgabe)
+        k = lies(self.daten, "konzerte.json")
+        self.assertTrue(k["termine"])
+        self.assertTrue(all(t["lat"] is not None for t in k["termine"]))  # Rückfall auf die Tabelle
+        orte = lies(self.daten, "orte.json")
+        self.assertEqual(sum(1 for e in orte.values() if "nicht_gefunden" in e), 3)  # Fortschritt gesichert
+        self.assertEqual(lies(self.daten, "quellen-status.json"),
+                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None}})
+
+    def test_ohne_ablauf_keine_meldung(self):
+        _, ausgabe, abfragen = self.starte(1e9)
+        self.assertEqual(len(abfragen), 5)
+        self.assertNotIn("Abfragen übersprungen", ausgabe)
+
+    def test_radar_orte_enden_mit_der_frist(self):
+        orte = []
+
+        def hole(url):
+            if "/location/" in url:
+                orte.append(url)
+            return radar_ok(url)
+        code, ausgabe, _ = self.starte(0, hole_radar=hole)
+        self.assertEqual((code, orte), (0, []))
+        self.assertIn("radar: Zeitbudget aufgebraucht, 1 Orte nicht abgerufen", ausgabe.replace("WARNUNG ", ""))
+        self.assertTrue(os.path.exists(os.path.join(self.daten, "konzerte.json")))
 
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures")
