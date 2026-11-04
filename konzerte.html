@@ -6,12 +6,12 @@
   <title>Was geht? Konzerte · Fuck Off Fashion</title>
   <meta name="description" content="Punk, Ska, Hardcore in Deutschland, den Niederlanden und Belgien. Ohne Algorithmus, ohne Tracking. Du entscheidest.">
   <meta name="theme-color" content="#0b0a0a">
-  <link rel="icon" href="assets/img/favicon.svg?v=20" type="image/svg+xml">
-  <link rel="stylesheet" href="css/tokens.css?v=20">
-  <link rel="stylesheet" href="css/base.css?v=20">
-  <link rel="stylesheet" href="css/site.css?v=20">
-  <link rel="stylesheet" href="css/konzerte.css?v=20">
-  <script type="module" src="js/konzerte/app.js?v=20"></script>
+  <link rel="icon" href="assets/img/favicon.svg?v=21" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css?v=21">
+  <link rel="stylesheet" href="css/base.css?v=21">
+  <link rel="stylesheet" href="css/site.css?v=21">
+  <link rel="stylesheet" href="css/konzerte.css?v=21">
+  <script type="module" src="js/konzerte/app.js?v=21"></script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt springen</a>
@@ -41,6 +41,13 @@
     <!-- Filterleiste ------------------------------------------- -->
     <form class="kz-filter js-filter" role="search" aria-label="Konzerte filtern" novalidate>
       <span class="tape" aria-hidden="true"></span>
+
+      <fieldset class="kz-gruppe">
+        <legend class="kz-gruppe__titel">Was</legend>
+        <label class="kz-feld__label" for="kz-suche">Band, Event oder Laden</label>
+        <input class="kz-input js-suche" id="kz-suche" type="search" autocomplete="off" spellcheck="false"
+               enterkeyhint="search" placeholder="z. B. Slime oder Soli-Abend">
+      </fieldset>
 
       <fieldset class="kz-gruppe">
         <legend class="kz-gruppe__titel">Wo</legend>
@@ -127,6 +134,7 @@
         </div>
       </div>
 
+      <p class="kz-weiter js-weiter" hidden><span class="js-weiter-text"></span> <button class="kz-weiter__knopf js-weiter-knopf" type="button"></button></p>
       <p class="kz-leer js-leer" hidden></p>
       <ol class="kz-liste js-liste"></ol>
       <p class="kz-mehr"><button class="btn btn--ghost js-mehr" type="button" hidden>Mehr zeigen</button></p>
@@ -150,6 +158,6 @@
   <span>Fuck Off Fashion · keine Cookies, kein Tracking, kein Shop</span>
   <nav aria-label="Rechtliches"><a class="scrawl" href="impressum.html">Impressum</a><a class="scrawl" href="datenschutz.html">Datenschutz</a></nav>
 </footer>
-<script src="js/menu.js?v=20"></script>
+<script src="js/menu.js?v=21"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 // Datenschutz: Der Standort (Geolocation oder getippter Ort) bleibt im Speicher dieser Seite.
 // In localStorage stehen nur Umkreisstufe, Genre und die zwei Schalter.
 // Fremde Texte (Bands, Zusatz, Laden, Stadt) kommen ausschließlich per textContent ins DOM.
-import { filtern, sortieren } from "./filter.js?v=16";
+import { filtern, sortieren, normalisiere } from "./filter.js?v=21";
 import { STUFEN } from "./einheiten.js?v=16";
 import { SPRUECHE, spruch } from "./leer.js?v=16";
 import { ortsfeld } from "./ortsfeld.js?v=16";
@@ -55,6 +55,10 @@ function start(wurzel) {
   const $ = (s) => wurzel.querySelector(s);
   const el = {
     form: $(".js-filter"),
+    suche: $(".js-suche"),
+    weiter: $(".js-weiter"),
+    weiterText: $(".js-weiter-text"),
+    weiterKnopf: $(".js-weiter-knopf"),
     wo: $(".js-wo"),
     ort: $(".js-ort"),
     ortListe: $(".js-ort-liste"),
@@ -92,7 +96,10 @@ function start(wurzel) {
     von: heute(),
     bis: "",
     sortierung: "datum",
+    suche: new URLSearchParams(location.search).get("suche")?.slice(0, 80) ?? "", // teilbar per ?suche=
+    ueberall: false, // Suche ignoriert den Umkreis (nur solange gesucht wird)
   };
+  const sucht = () => normalisiere(z.suche) !== "";
 
   let daten = null;
   let treffer = [];
@@ -176,6 +183,12 @@ function start(wurzel) {
       el.leer.replaceChildren();
       return;
     }
+    if (sucht()) {
+      el.leer.replaceChildren(element("span", "kz-leer__spruch", `Nichts zu „${z.suche.trim()}“.`),
+        "Tippfehler? Oder die Band spielt gerade nicht. Andere Filter lockern hilft manchmal.");
+      el.leer.hidden = false;
+      return;
+    }
     const text = spruch(wechsel);
     el.leer.replaceChildren(element("span", "kz-leer__spruch", text));
     if (text === SPRUECHE[1]) el.leer.append(" ", link(KNOX_NEU, "Termin bei KNOX eintragen"));
@@ -185,15 +198,37 @@ function start(wurzel) {
   function zeigeZahl() {
     const n = treffer.length;
     let text = n === 0 ? "Keine Termine" : `${n.toLocaleString("de-DE")} ${n === 1 ? "Termin" : "Termine"}`;
-    if (z.mitte) text += ` in ${stufe().label} um ${z.mitte.um}`;
+    if (z.mitte) text += z.ueberall && sucht() ? " überall" : ` in ${stufe().label} um ${z.mitte.um}`;
     el.zahl.textContent = text;
+  }
+
+  // Bei einer Suche mit Umkreis: Hinweis auf Treffer außerhalb, bzw. zurück in den Umkreis
+  function zeigeWeiter(optionen) {
+    if (!sucht() || !z.mitte) {
+      el.weiter.hidden = true;
+      return;
+    }
+    if (z.ueberall) {
+      el.weiterText.textContent = "Die Suche ignoriert gerade deinen Umkreis.";
+      el.weiterKnopf.textContent = "Nur im Umkreis";
+      el.weiter.hidden = false;
+      return;
+    }
+    const aussen = filtern(daten.termine, { ...optionen, radiusKm: null }).length - treffer.length;
+    if (aussen <= 0) {
+      el.weiter.hidden = true;
+      return;
+    }
+    el.weiterText.textContent = `Noch ${aussen.toLocaleString("de-DE")} Treffer außerhalb deines Umkreises.`;
+    el.weiterKnopf.textContent = "Überall suchen";
+    el.weiter.hidden = false;
   }
 
   function aktualisiere() {
     zeigeMehrfilter();
     if (!daten) return;
-    const radiusKm = stufe().km;
-    const gefiltert = filtern(daten.termine, {
+    const radiusKm = z.ueberall && sucht() ? null : stufe().km;
+    const optionen = {
       mitte: z.mitte,
       radiusKm,
       von: z.von || null,
@@ -201,19 +236,23 @@ function start(wurzel) {
       genre: z.genre,
       nurFrei: z.nurFrei,
       ohneKommerz: z.ohneKommerz,
-    });
+      suche: z.suche,
+    };
+    const gefiltert = filtern(daten.termine, optionen);
     treffer = sortieren(gefiltert, z.mitte ? z.sortierung : "datum");
     el.liste.replaceChildren();
     gezeigt = 0;
     zeigeMehr();
     zeigeZahl();
     zeigeLeer();
+    zeigeWeiter(optionen);
     wechsel += 1;
     document.dispatchEvent(new CustomEvent("konzerte:treffer", { detail: { treffer, mitte: z.mitte, radiusKm } }));
   }
 
   function setzeMitte(mitte) {
     z.mitte = mitte;
+    z.ueberall = false;
     zeigeMitte();
     aktualisiere();
   }
@@ -279,7 +318,31 @@ function start(wurzel) {
     el.ort.focus(); // der Knopf verschwindet, der Fokus soll nicht ins Leere fallen
   });
 
+  // Suche: filtert beim Tippen (kurz gebremst), steht in der Adresse als ?suche=
+  let suchTakt = 0;
+  el.suche.addEventListener("input", () => {
+    clearTimeout(suchTakt);
+    suchTakt = setTimeout(() => {
+      z.suche = el.suche.value.slice(0, 80);
+      if (!sucht()) z.ueberall = false;
+      const url = new URL(location.href);
+      if (sucht()) url.searchParams.set("suche", z.suche.trim());
+      else url.searchParams.delete("suche");
+      history.replaceState(history.state, "", url);
+      aktualisiere();
+    }, 150);
+  });
+  el.suche.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") el.suche.blur(); // Handy: Tastatur weg, Liste sichtbar
+  });
+  el.weiterKnopf.addEventListener("click", () => {
+    z.ueberall = !z.ueberall;
+    aktualisiere();
+    el.weiterKnopf.focus();
+  });
+
   el.umkreis.addEventListener("input", () => {
+    z.ueberall = false;
     z.stufe = STUFEN[Number(el.umkreis.value)]?.id ?? "bahn";
     zeigeStufe();
     speichereEinstellungen(z);
@@ -364,6 +427,7 @@ function start(wurzel) {
 
   // Anfangszustand ---------------------------------------------------------
   zeigeStufe();
+  el.suche.value = z.suche;
   el.von.value = z.von;
   el.bis.value = z.bis;
   el.frei.checked = z.nurFrei;

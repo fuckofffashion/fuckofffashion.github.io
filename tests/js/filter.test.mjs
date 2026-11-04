@@ -98,3 +98,48 @@ test("sortieren liefert ein neues Array", () => {
   const ergebnis = sortieren(eingabe, "datum");
   assert.notEqual(ergebnis, eingabe);
 });
+
+// Textsuche: Band, Zusatz (Eventname), Laden, Stadt ---------------------------
+import { normalisiere } from "../../js/konzerte/filter.js";
+
+const S = [
+  { id: "S1", datum: "2026-11-10", zeit: null, bands: "Die Ärzte, Slime", zusatz: "Soli-Abend fürs AZ", laden: "AZ Mülheim", stadt: "Mülheim", lat: 51.43, lon: 6.88, genres: [], frei: false, kommerz: false, links: [] },
+  { id: "S2", datum: "2026-11-11", zeit: null, bands: ["Toxoplasma"], zusatz: "", laden: "Druckluft", stadt: "Oberhausen", lat: 51.47, lon: 6.85, genres: [], frei: false, kommerz: false, links: [] },
+  { id: "S3", datum: "2026-11-12", zeit: null, bands: "Rotz & Wasser", zusatz: "Punk im Park Festival", laden: "Stadtpark", stadt: "Kiel", lat: 54.32, lon: 10.12, genres: [], frei: false, kommerz: false, links: [] },
+];
+
+test("normalisiere: Kleinschreibung, Umlaute als ae/oe/ue, ß als ss, Satzzeichen weg", () => {
+  assert.equal(normalisiere("Die ÄRZTE!"), "die aerzte");
+  assert.equal(normalisiere("Straße  &  Soße"), "strasse sosse");
+  assert.equal(normalisiere("Motörhead"), "motoerhead");
+  assert.equal(normalisiere("  "), "");
+  assert.equal(normalisiere(null), "");
+});
+
+test("suche findet Band, egal ob mit Umlaut oder ausgeschrieben", () => {
+  assert.deepEqual(ids(filtern(S, { suche: "ärzte" })), ["S1"]);
+  assert.deepEqual(ids(filtern(S, { suche: "Aerzte" })), ["S1"]);
+  assert.deepEqual(ids(filtern(S, { suche: "toxo" })), ["S2"]);
+});
+
+test("suche findet Eventname (zusatz), Laden und Stadt", () => {
+  assert.deepEqual(ids(filtern(S, { suche: "punk im park" })), ["S3"]);
+  assert.deepEqual(ids(filtern(S, { suche: "druckluft" })), ["S2"]);
+  assert.deepEqual(ids(filtern(S, { suche: "kiel" })), ["S3"]);
+});
+
+test("mehrere Wörter müssen alle passen, Reihenfolge egal", () => {
+  assert.deepEqual(ids(filtern(S, { suche: "slime mülheim" })), ["S1"]);
+  assert.deepEqual(ids(filtern(S, { suche: "slime kiel" })), []);
+});
+
+test("leere oder nur aus Leerzeichen bestehende suche filtert nicht", () => {
+  assert.deepEqual(ids(filtern(S, { suche: "" })), ids(S));
+  assert.deepEqual(ids(filtern(S, { suche: "   " })), ids(S));
+});
+
+test("suche wirkt zusammen mit Umkreis", () => {
+  const MUELHEIM = { lat: 51.43, lon: 6.88 };
+  assert.deepEqual(ids(filtern(S, { suche: "punk", mitte: MUELHEIM, radiusKm: 25 })), []);
+  assert.deepEqual(ids(filtern(S, { suche: "punk", mitte: MUELHEIM, radiusKm: null })), ["S3"]);
+});

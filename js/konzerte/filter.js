@@ -3,8 +3,9 @@ import { km } from "./geo.js?v=16";
 
 // Liefert neue Objekte mit `km` (Entfernung zur Mitte oder null).
 // Die Eingabe bleibt unverändert. Fehlende Optionen heißen "kein Filter".
-export function filtern(termine, { mitte, radiusKm, von, bis, genre, nurFrei, ohneKommerz } = {}) {
+export function filtern(termine, { mitte, radiusKm, von, bis, genre, nurFrei, ohneKommerz, suche } = {}) {
   const ergebnis = [];
+  const woerter = normalisiere(suche).split(" ").filter(Boolean);
 
   for (const termin of termine) {
     // Umkreis: ohne Koordinaten fliegt der Termin raus, wenn eine Mitte gesetzt ist
@@ -23,10 +24,39 @@ export function filtern(termine, { mitte, radiusKm, von, bis, genre, nurFrei, oh
     if (nurFrei && termin.frei !== true) continue;
     if (ohneKommerz && termin.kommerz === true) continue;
 
+    // Textsuche: jedes Wort muss irgendwo in Band, Zusatz, Laden oder Stadt stehen
+    if (woerter.length) {
+      const text = suchtext(termin);
+      if (!woerter.every((w) => text.includes(w))) continue;
+    }
+
     ergebnis.push({ ...termin, km: entfernung });
   }
 
   return ergebnis;
+}
+
+// Für die Suche: klein, Umlaute als ae/oe/ue, ß als ss, übrige Akzente weg,
+// Satzzeichen zu Leerzeichen. So findet „Ärzte“ auch „AERZTE“ und umgekehrt.
+export function normalisiere(text) {
+  return String(text ?? "")
+    .toLowerCase()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+// Suchtext je Termin nur einmal bauen (über 7000 Termine, Suche läuft beim Tippen)
+const SUCHTEXTE = new WeakMap();
+function suchtext(termin) {
+  let t = SUCHTEXTE.get(termin);
+  if (t === undefined) {
+    const bands = Array.isArray(termin.bands) ? termin.bands.join(" ") : termin.bands;
+    t = " " + normalisiere([bands, termin.zusatz, termin.laden, termin.stadt].join(" ")) + " ";
+    SUCHTEXTE.set(termin, t);
+  }
+  return t;
 }
 
 // Vergleich für Zeiten und Entfernungen: null kommt ans Ende

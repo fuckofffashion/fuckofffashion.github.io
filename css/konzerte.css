@@ -270,3 +270,13 @@ select.kz-input { appearance: auto; }
   .kz-leiste { align-items: start; }
   .kz-karte__bild { height: min(46vh, 17rem); } /* kompakt: die Liste bleibt in Daumennähe */
 }
+
+/* Suche: Hinweis auf Treffer außerhalb des Umkreises */
+.kz-weiter { margin: var(--sp-3) 0 0; font: 700 var(--fs-small)/1.4 var(--font-zine); color: var(--paper-2); }
+.kz-weiter__knopf {
+  margin-left: .3rem; padding: .5rem .8rem; border: 2px solid var(--blood); background: var(--blood); color: var(--paper);
+  font: inherit; text-transform: uppercase; letter-spacing: var(--track-label); cursor: pointer; rotate: -1deg;
+}
+.kz-weiter__knopf:hover { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+.kz-weiter__knopf:focus-visible { outline: 3px solid var(--blood-hot); outline-offset: 3px; }
+.kz-input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
