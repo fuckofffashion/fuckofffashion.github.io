@@ -76,20 +76,22 @@ Tests:
 ## Täglicher Lauf und Veröffentlichung (GitHub)
 
 Die Seite liegt auf GitHub Pages, der tägliche Lauf auf GitHub Actions (`.github/workflows/konzerte.yml`).
+Aufbau: GitHub-Organisation `fuckofffashion`, Repo `fuckofffashion.github.io`, Adresse `https://fuckofffashion.github.io/` (an der Wurzel). Eine eigene Domain gibt es noch nicht.
 Der Lauf startet täglich um 04:00 UTC, bei jedem Push auf `main` (außer reinen `data/`-Änderungen) und von Hand (Actions > konzerte > Run workflow).
 Er testet, holt die Konzerte, committet geänderte `data/*.json` als `konzerte-bot` und stellt die Seite online.
 Lokal heißt der Branch `master`, auf GitHub `main` (`git push -u origin master:main`).
 
-- Veröffentlicht wird nur eine feste Dateiliste: `tools/veroeffentlichen.sh <leerer-ordner>`. Das Skript bricht ab, solange in den Rechtstexten `[bitte ausfüllen]` steht.
-- Eine Datei `CNAME` im Repo-Wurzelordner wird mitkopiert; bei Veröffentlichung per Actions zählt aber die Einstellung unter Settings > Pages > Custom domain.
-- Ein Projekt-Repo erscheint unter `https://<benutzer>.github.io/fuckofffashion/`. `404.html` hat ein `<base href="/">`; `tools/veroeffentlichen.sh` setzt es in der Kopie auf `/<repo>/` (aus `GITHUB_REPOSITORY`), mit `CNAME` im Repo-Wurzelordner auf `/`.
-- Einrichtung (Konto, Repo, Pages-Einstellung): `bash tools/github-einrichten.sh`.
+- Veröffentlicht wird nur eine feste Dateiliste: `tools/veroeffentlichen.sh <leerer-ordner>`. Das Skript bricht ab, solange in den Seiten `[bitte ausfüllen]` oder die Platzhalter-Adresse `fuckofffashion.example` steht (Meldung „Kontaktadresse fehlt noch“).
+- `404.html` hat ein `<base href="/">`, weil GitHub sie auch für verschachtelte Adressen ausliefert. Das Skript setzt die Basis in der Kopie: im Workflow aus `actions/configure-pages` (`PAGES_BASE_PATH`, berücksichtigt auch eine eingetragene eigene Domain), sonst aus `CNAME` bzw. `GITHUB_REPOSITORY`. Für ein Repo `<besitzer>.github.io` ist sie `/`, für jedes andere Repo (Projektseite unter `https://<besitzer>.github.io/<repo>/`) `/<repo>/`.
+- Eigene Domain später: Settings > Pages > Custom domain eintragen, DNS laut GitHub-Doku (`fuckofffashion.github.io` als Ziel). Eine Datei `CNAME` wird bei Actions-Veröffentlichung von GitHub ignoriert; sie wird nur mitkopiert, wenn sie existiert.
+- Geplante Läufe: In einem öffentlichen Repo schaltet GitHub Workflows mit `schedule` ab, wenn 60 Tage lang keine Aktivität im Repo war (docs.github.com, „Events that trigger workflows“, abgerufen 2026-11-04). Die täglichen Daten-Commits halten den Lauf normalerweise am Leben; stoppt er doch, unter Actions > konzerte „Enable workflow“ klicken.
+- Einrichtung (Organisation, Repo, Pages-Einstellung): `bash tools/github-einrichten.sh`.
 
 ## Platzhalter, die noch raus müssen
 
-- Domain `fuckofffashion.example` auf dem Flyer: Kit mit echter Domain neu drucken (siehe oben).
-- Mail-Adresse `hallo@fuckofffashion.example` im Knopf „Foto schicken“ (`index.html`, Sektion Mitmachen).
-- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]`.
+- Mail-Adresse `hallo@fuckofffashion.example` im Knopf „Foto schicken“ (`index.html`, Sektion Mitmachen). Das Veröffentlichungs-Skript bricht ab, solange sie noch drinsteht.
+- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]` (Name, Anschrift, E-Mail).
+- Verbreiten-Kit (Flyer, QR-Code, Sticker) mit der echten Adresse neu bauen: `python tools/build-kit.py` (Standard ist jetzt `fuckofffashion.github.io`).
 
 ## Eingeschickten Druck an die Wand „Von euch“ hängen
 
