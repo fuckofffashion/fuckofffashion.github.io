@@ -1355,7 +1355,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Archiv Potsdam"
+  "laden": "Archiv Potsdam",
+  "geholt": "2026-11-04"
  },
  "radar|b4c64e1e-f47b-4792-80b6-92dbc975b364": {
   "lat": null,
@@ -1363,7 +1364,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Trixxxter"
+  "laden": "Trixxxter",
+  "geholt": "2026-11-04"
  },
  "radar|8b8b63b2-64e5-4831-a91d-7f77bb510890": {
   "lat": 52.5131015,
@@ -1395,7 +1397,8 @@
   "plz": "13357",
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Alter Schwede"
+  "laden": "Alter Schwede",
+  "geholt": "2026-11-04"
  },
  "radar|cb9cb335-ecf5-4ed3-89dc-2c31375b4cf8": {
   "lat": null,
@@ -1403,7 +1406,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "in den Räumen des Subversiv e.V."
+  "laden": "in den Räumen des Subversiv e.V.",
+  "geholt": "2026-11-04"
  },
  "radar|c94d57d6-7ae5-4643-a257-c26e6448f182": {
   "lat": null,
@@ -1411,7 +1415,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "OGH Sonnenallee"
+  "laden": "OGH Sonnenallee",
+  "geholt": "2026-11-04"
  },
  "radar|78bc2fe2-fe96-400e-baff-f57bbd3594e5": {
   "lat": null,
@@ -1419,7 +1424,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "TRXXXTER"
+  "laden": "TRXXXTER",
+  "geholt": "2026-11-04"
  },
  "radar|71c6ddb0-dca5-4a9b-9963-9b2a8b9219cc": {
   "lat": null,
@@ -1427,7 +1433,8 @@
   "plz": "10247",
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Abstand"
+  "laden": "Abstand",
+  "geholt": "2026-11-04"
  },
  "radar|67ee5ca6-653f-445b-b4a3-9a68bde17d2b": {
   "lat": 52.517024,
@@ -1451,7 +1458,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "K"
+  "laden": "K",
+  "geholt": "2026-11-04"
  },
  "radar|04a6738e-60fa-40d5-ad5b-bba9391f140d": {
   "lat": null,
@@ -1459,7 +1467,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Lichtenberg"
+  "laden": "Lichtenberg",
+  "geholt": "2026-11-04"
  },
  "radar|3258931c-7c97-4fdb-bb67-5ca047bcf324": {
   "lat": null,
@@ -1467,7 +1476,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "across the Willy Brand Haus"
+  "laden": "across the Willy Brand Haus",
+  "geholt": "2026-11-04"
  },
  "radar|90f69361-e463-4b3d-ae75-7af7a2c9c348": {
   "lat": 52.5084129,
@@ -1491,7 +1501,8 @@
   "plz": null,
   "stadt": "Berlin",
   "land": "DE",
-  "laden": "Stressfaktor"
+  "laden": "Stressfaktor",
+  "geholt": "2026-11-04"
  },
  "radar|3319570f-69f6-4939-86f2-8f7b61032404": {
   "lat": 52.5095458,

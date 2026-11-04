@@ -64,8 +64,20 @@ class LeseRadarTest(unittest.TestCase):
 
     def test_ohne_ort_oder_koordinaten_faellt_raus(self):
         self.assertEqual(radar.lese_radar(EVENTS, {}, L), [])
-        self.assertEqual(radar.lese_radar(EVENTS, {KUBIZ: ohne_koordinaten()}, L), [])
         self.assertEqual(radar.lese_radar(mit_event(offline=[]), {KUBIZ: LOC}, L), [])
+        leer = ohne_koordinaten()
+        leer["address"].update(locality="", postal_code=None)
+        self.assertEqual(radar.lese_radar(EVENTS, {KUBIZ: leer}, L), [])
+
+    def test_ohne_koordinaten_bleibt_mit_adresse(self):
+        t = radar.lese_radar(EVENTS, {KUBIZ: ohne_koordinaten()}, L)
+        self.assertEqual(len(t), 1)
+        self.assertEqual((t[0].lat, t[0].lon, t[0].genau), (None, None, False))
+        self.assertEqual((t[0].laden, t[0].plz, t[0].stadt, t[0].land), ("KuBiZ", "13088", "Berlin", "DE"))
+
+    def test_ort_mit_koordinaten_hat_vorrang(self):
+        e = mit_event(offline=[{"id": "x1"}, {"id": KUBIZ}])
+        self.assertTrue(radar.lese_radar(e, {"x1": ohne_koordinaten(), KUBIZ: LOC}, L)[0].genau)
 
     def test_erster_ort_mit_koordinaten(self):
         e = mit_event(offline=[{"id": "x1"}, {"id": KUBIZ}])
@@ -177,8 +189,24 @@ class SammleRadarTest(unittest.TestCase):
                 return ohne_koordinaten()
             return EVENTS if "country][]=DE" in url else LEER
         (termine, _), cache = self.lauf(hole)
-        self.assertEqual(termine, [])
+        self.assertEqual([(t.lat, t.stadt) for t in termine], [(None, "Berlin")])
+        self.assertEqual(cache["radar|" + KUBIZ]["geholt"], "2026-11-01")
         self.assertIsNone(cache["radar|" + KUBIZ]["lat"])
+
+    def test_ort_ohne_koordinaten_nach_30_tagen_neu(self):
+        eintrag = radar.ort_kompakt(ohne_koordinaten())
+        for geholt, neu_abgerufen in (("2026-10-20", False), ("2026-10-02", True), (None, True)):
+            self.urls.clear()
+            cache = {"radar|" + KUBIZ: dict(eintrag, **({"geholt": geholt} if geholt else {}))}
+            (termine, _), cache = self.lauf(self.fake({"DE": EVENTS}), cache=cache)
+            self.assertEqual(any("/location/" in u for u in self.urls), neu_abgerufen, geholt)
+            self.assertEqual(termine[0].genau, neu_abgerufen, geholt)  # neu abgerufen hat Koordinaten
+            self.assertEqual("geholt" in cache["radar|" + KUBIZ], not neu_abgerufen, geholt)
+
+    def test_veralteter_ort_ohne_budget_bleibt_nutzbar(self):
+        cache = {"radar|" + KUBIZ: dict(radar.ort_kompakt(ohne_koordinaten()), geholt="2026-01-01")}
+        (termine, _), _ = self.lauf(self.fake({"DE": EVENTS}), cache=cache, budget=0)
+        self.assertEqual([t.genau for t in termine], [False])
 
     def test_events_fehler_wirft(self):
         def hole(url):

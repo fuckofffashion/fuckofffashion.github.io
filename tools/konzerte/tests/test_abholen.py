@@ -190,6 +190,17 @@ class RadarAbholenTest(unittest.TestCase):
                           "radar": {"ok_am": "2026-11-01", "fehler_seit": None}})
         self.assertIn("radar|5696c22e-aba7-493c-950d-51d175449055", lies(self.daten, "orte.json"))
 
+    def test_radar_ort_ohne_koordinaten_wird_geortet(self):
+        ohne = json.loads(json.dumps(RADAR_ORT))
+        ohne["map"] = {"lat": None, "lon": None}
+        hole = lambda url: ohne if "/location/" in url else radar_ok(url)
+        lauf(self.daten, hole_radar=hole)
+        radar = [t for t in lies(self.daten, "konzerte.json")["termine"] if t["quelle"] == "radar"]
+        self.assertEqual(len(radar), 1)
+        self.assertIsNotNone(radar[0]["lat"])  # über die Ortstabelle (PLZ/Stadt), nicht exakt
+        self.assertFalse(radar[0]["genau"])
+        self.assertEqual(radar[0]["genres"], ["Punk / Hardcore / Crust"])
+
     def test_radar_tot_behaelt_alte_knox_laeuft(self):
         schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [ALT_RADAR], "ohne_ort": 0})
         code, ausgabe = lauf(self.daten, hole_radar=radar_tot)

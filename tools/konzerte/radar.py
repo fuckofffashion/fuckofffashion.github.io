@@ -8,6 +8,7 @@ import json
 import re
 import time
 import urllib.request
+from datetime import date
 
 from tools.konzerte.merkmale import RUECKFALL_GENRE, genres, ist_kommerz
 from tools.konzerte.modell import Termin
@@ -20,6 +21,7 @@ ORT_URL = API + "/location/{uuid}.json"
 ORTE_BUDGET = 100
 SEITEN_JE_LAND = 5
 LIMIT = 500
+KOORDINATEN_NEU_TAGE = 30
 FREI_PREISE = ("free", "by donation")
 _ZEIT = re.compile(r"^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})")
 
@@ -125,22 +127,45 @@ def _ergebnis(antwort):
     return ergebnis
 
 
+def _hat_koordinaten(ort):
+    return ort["lat"] is not None and ort["lon"] is not None
+
+
+def _waehle_ort(uuids, orte):
+    """Erster Ort mit Koordinaten; sonst der erste mit Stadt oder PLZ (wird später wie bei KNOX geortet)."""
+    kompakt = [ort_kompakt(orte[u]) for u in uuids if u in orte]
+    return next((o for o in kompakt if _hat_koordinaten(o)), next((o for o in kompakt if o["stadt"] or o["plz"]), None))
+
+
 def lese_radar(events_json, orte, listen):
-    """Event-Antwort + Orte (uuid -> Location-JSON) -> Termine. Ohne Genre, Zeit oder Koordinaten fällt ein Event raus."""
+    """Event-Antwort + Orte (uuid -> Location-JSON) -> Termine.
+
+    Ohne Genre, Zeit oder Ort fällt ein Event raus. Ohne Koordinaten bleibt es mit lat/lon None und
+    Adresse stehen (genau=False); Stadt oder PLZ genügen, den Rest erledigt die Ortung.
+    """
     termine = []
     for ereignis in _ergebnis(events_json).values():
         e = _lies_ereignis(ereignis, listen)
-        ort = next((o for o in (ort_kompakt(orte[u]) for u in e["orte"] if u in orte) if o["lat"] is not None
-                    and o["lon"] is not None), None) if e else None
+        ort = _waehle_ort(e["orte"], orte) if e else None
         if not ort:
             continue
         termine.append(Termin(
             id=f"radar-{e['uuid']}", quelle="radar", datum=e["datum"], zeit=e["zeit"],
             bands=e["titel"], zusatz="", laden=ort["laden"], plz=ort["plz"], stadt=ort["stadt"],
             land=ort["land"] if ort["land"] in LAENDER else ("X" if ort["land"] else None),
-            lat=ort["lat"], lon=ort["lon"], genau=True, genres=e["genres"], frei=e["frei"], kommerz=e["kommerz"],
-            links=[{"quelle": "radar", "url": e["url"]}] if e["url"] else []))
+            lat=ort["lat"], lon=ort["lon"], genau=_hat_koordinaten(ort), genres=e["genres"], frei=e["frei"],
+            kommerz=e["kommerz"], links=[{"quelle": "radar", "url": e["url"]}] if e["url"] else []))
     return termine
+
+
+def _ohne_koordinaten_veraltet(eintrag, heute):
+    """Ort ohne Koordinaten wird nach 30 Tagen (oder ohne Abrufdatum) neu abgerufen."""
+    if eintrag.get("lat") is not None and eintrag.get("lon") is not None:
+        return False
+    try:
+        return (date.fromisoformat(heute) - date.fromisoformat(eintrag["geholt"])).days >= KOORDINATEN_NEU_TAGE
+    except (KeyError, TypeError, ValueError):
+        return True
 
 
 def _hole_land(hole, land, limit, seiten):
@@ -181,19 +206,21 @@ def sammle_radar(hole, cache, listen, von, bis, budget=ORTE_BUDGET, limit=LIMIT,
         zahlen["im_fenster"] += 1
         for uuid in e["orte"]:
             schluessel = f"radar|{uuid}"
-            if not isinstance(cache.get(schluessel), dict):
-                if budget <= 0:
-                    continue
+            alt = cache.get(schluessel) if isinstance(cache.get(schluessel), dict) else None
+            if (alt is None or _ohne_koordinaten_veraltet(alt, von)) and budget > 0:
                 budget -= 1
                 zahlen["orte_geholt"] += 1
                 try:
-                    cache[schluessel] = ort_kompakt(hole(ORT_URL.format(uuid=uuid)))
+                    neu = ort_kompakt(hole(ORT_URL.format(uuid=uuid)))
+                    if neu["lat"] is None or neu["lon"] is None:
+                        neu["geholt"] = von
+                    cache[schluessel] = neu
                 except Exception:
                     zahlen["orte_fehler"] += 1
-                    continue
-            orte[uuid] = cache[schluessel]
-            if orte[uuid].get("lat") is not None and orte[uuid].get("lon") is not None:
-                break
+            if isinstance(cache.get(schluessel), dict):
+                orte[uuid] = cache[schluessel]
+                if orte[uuid].get("lat") is not None and orte[uuid].get("lon") is not None:
+                    break
     termine = lese_radar({"result": ereignisse}, orte, listen)
     zahlen["behalten"] = len(termine)
     return termine, zahlen
