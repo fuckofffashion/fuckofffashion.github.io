@@ -22,8 +22,11 @@ class Termin:
     kommerz: bool = False
     links: list[dict] = field(default_factory=list)
     text: str = ""  # Sonstiges + Preis, nur intern (roh, die Seite escaped)
+    quellen: list[str] = field(default_factory=list)  # nur bei zusammengeführten Terminen gefüllt
 
     def to_dict(self) -> dict:
         d = asdict(self)
         d.pop("text")
+        if not d["quellen"]:
+            d.pop("quellen")
         return d

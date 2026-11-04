@@ -1,0 +1,30 @@
+{
+ "result": {
+  "602683": {
+   "category": [{"uri": "https://radar.squat.net/api/1.2/taxonomy_term/ff3e2872-6140-4645-98f0-784d656a9c5c", "id": "ff3e2872-6140-4645-98f0-784d656a9c5c", "resource": "taxonomy_term", "name": "music/concert"}],
+   "date_time": [{"value": "1793831400", "value2": "1793845800", "duration": 14400, "time_start": "2026-11-04T23:30:00+01:00", "time_end": "2026-11-05T03:30:00+01:00", "rrule": null}],
+   "price": "by donation",
+   "offline": [{"uri": "https://radar.squat.net/api/1.2/location/5696c22e-aba7-493c-950d-51d175449055", "id": "5696c22e-aba7-493c-950d-51d175449055", "resource": "location", "title": "KuBiZ Bernkasteler Str. 78  Berlin Deutschland"}],
+   "topic": [
+    {"uri": "https://radar.squat.net/api/1.2/taxonomy_term/82e2bd4a-883d-43a6-9b37-3fd3c02b5c5d", "id": "82e2bd4a-883d-43a6-9b37-3fd3c02b5c5d", "resource": "taxonomy_term", "name": "Punk / Hardcore / Crust"},
+    {"uri": "https://radar.squat.net/api/1.2/taxonomy_term/d0d0db22-707d-45fd-92ab-cd3b29ecebf6", "id": "d0d0db22-707d-45fd-92ab-cd3b29ecebf6", "resource": "taxonomy_term", "name": "akustik"}
+   ],
+   "title": "Punk im KuBiZ",
+   "url": "https://radar.squat.net/en/node/602683",
+   "uuid": "719ebc00-8235-401d-ab34-70208064a554"
+  },
+  "603001": {
+   "category": [{"uri": "https://radar.squat.net/api/1.2/taxonomy_term/ff3e2872-6140-4645-98f0-784d656a9c5c", "id": "ff3e2872-6140-4645-98f0-784d656a9c5c", "resource": "taxonomy_term", "name": "music/concert"}],
+   "date_time": [{"value": "1793815200", "value2": "1793815200", "duration": 0, "time_start": "2026-11-04T19:00:00+01:00", "time_end": "2026-11-04T19:00:00+01:00", "rrule": null}],
+   "price": null,
+   "offline": [{"uri": "https://radar.squat.net/api/1.2/location/a1a36ff1-eb8f-4c87-be13-6af347af039b", "id": "a1a36ff1-eb8f-4c87-be13-6af347af039b", "resource": "location", "title": "Schokoladen Ackerstrasse 169  Berlin Deutschland"}],
+   "topic": [
+    {"uri": "https://radar.squat.net/api/1.2/taxonomy_term/aaaaaaaa-0000-4000-8000-000000000001", "id": "aaaaaaaa-0000-4000-8000-000000000001", "resource": "taxonomy_term", "name": "Comedy"}
+   ],
+   "title": "Stand-up Comedy Abend",
+   "url": "https://radar.squat.net/en/node/603001",
+   "uuid": "c0ffee00-0000-4000-8000-000000000002"
+  }
+ },
+ "count": 2
+}

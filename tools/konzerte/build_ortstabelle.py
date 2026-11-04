@@ -1,21 +1,48 @@
 """Baut data/orte-tabelle.json aus den GeoNames-Postleitzahl-Dumps (DE, NL, BE).
 
 Lizenz: GeoNames, Creative Commons Attribution 4.0 (siehe readme.txt im Download).
-Aufruf: python -m tools.konzerte.build_ortstabelle
+Aufruf: python -m tools.konzerte.build_ortstabelle [--nachbearbeiten]
+  ohne Flag:        lädt GeoNames und baut die Tabelle neu (inkl. Nachbearbeitung)
+  --nachbearbeiten: wendet nur die Nachbearbeitung (Großempfänger entfernen, dann Aliasse)
+                    auf die vorhandene Tabelle an; idempotent, ohne Download
 """
 import io
 import json
 import math
 import os
+import re
+import sys
 import urllib.request
 import zipfile
 
-from tools.konzerte.ortstabelle import basisform, normalisiere
+from tools.konzerte.ortstabelle import basisform, basisnamen, normalisiere
 
 LAENDER = ("DE", "NL", "BE")
 URL = "https://download.geonames.org/export/zip/{}.zip"
 URL_STAEDTE = "https://download.geonames.org/export/dump/cities1000.zip"  # ebenfalls CC BY 4.0
 RADIUS_KM = 15
+
+# Gängige Ortsnamen, die GeoNames nicht führt: (Land, Alias) -> amtlicher Name in der Tabelle.
+ALIASE = {
+    ("NL", "Den Haag"): "'s-Gravenhage",
+    ("NL", "The Hague"): "'s-Gravenhage",
+    ("NL", "Den Bosch"): "'s-Hertogenbosch",
+    ("BE", "Brussel"): "Bruxelles",
+    ("BE", "Brussels"): "Bruxelles",
+    ("BE", "Brüssel"): "Bruxelles",
+    ("BE", "Antwerp"): "Antwerpen",
+    ("BE", "Bruges"): "Brugge",
+    ("BE", "Ghent"): "Gent",
+    ("BE", "Gand"): "Gent",
+    ("BE", "Lüttich"): "Liège",
+    ("BE", "Luik"): "Liège",
+    ("BE", "Liege"): "Liège",
+    ("BE", "Löwen"): "Leuven",
+    ("BE", "Louvain"): "Leuven",
+    ("DE", "Cologne"): "Köln",
+    ("DE", "Munich"): "München",
+    ("DE", "Nuremberg"): "Nürnberg",
+}
 AUSGABE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "orte-tabelle.json")
 
 
@@ -82,6 +109,210 @@ def einwohner(zeile, staedte):
     return beste
 
 
+def wende_aliase_an(orte, aliase=None):
+    """Hängt je Alias eine Zeile an: Kopie der Zielzeile mit den meisten Einwohnern (Gleichstand: erste),
+    nur der Name ist der Alias. Existiert der Alias (normalisiert) im Land schon, wird er übersprungen.
+    Fehlt das Ziel, wird eine Ausnahme geworfen (sonst bliebe Datendrift unbemerkt). Ändert `orte` in place."""
+    for (land, alias), ziel in (ALIASE if aliase is None else aliase).items():
+        vorhandene = {normalisiere(z[2]) for z in orte if z[0] == land}
+        if normalisiere(alias) in vorhandene:
+            continue
+        kandidaten = [z for z in orte if z[0] == land and z[2] == ziel]
+        if not kandidaten:
+            raise ValueError("Alias-Ziel fehlt in der Ortstabelle: %s %s (für %s)" % (land, ziel, alias))
+        beste = kandidaten[0]
+        for z in kandidaten[1:]:
+            if (z[5] if len(z) > 5 else 0) > (beste[5] if len(beste) > 5 else 0):
+                beste = z
+        orte.append([beste[0], beste[1], alias, *beste[3:]])
+    return orte
+
+
+# --- Großempfänger ---------------------------------------------------------------------------
+# GeoNames führt für Firmen und Behörden mit eigener Postleitzahl (Großempfänger) den Namen des
+# Empfängers als "Ort". Solche Zeilen gehören nicht in die Ortssuche. Die Muster sind absichtlich
+# großzügig; das Sicherheitsnetz in entferne_grossempfaenger() schützt Namen, die auch ein echter
+# Ort (einw > 0) trägt. Jede Ergänzung wurde gegen alle Namen mit einw > 0 geprüft (0 Treffer).
+
+# Rechtsformen und Firmenzusätze (Groß-/Kleinschreibung zählt: "SE" nur groß, "eG"/"mbH" exakt).
+_RECHTSFORMEN = re.compile(
+    r"(?<![\w])(?:"
+    r"AG|SE|KG|KGaA|OHG|GbR|UG|eG|eK|e\.\s?K\.|e\.\s?V\.|eV|"  # Kürzel
+    r"g?GmbH|GMBH|mbH|LLP|SAS|SRL|GmbH&Co|Co\.?\s?KG|Co\.|Inc\.?|Ltd\.?|S\.A\.|B\.V\.|"
+    r"Aktiengesellschaft|Gesellschaft|Gesellschaften|Handelsgesellschaft|Stiftung"
+    r")(?![\w])|&\s?Co\b|\bu\.\s?Co\b"
+    r"|\s&\s|\s\+\s?Co\b|\s\+\s|\su\.\s"  # "Mey & Edlich", "Reichwald + Co", "Becker u. Kries"
+)
+
+# Firmen-/Behördenwörter, Groß-/Kleinschreibung egal. Das Wort darf am ENDE eines Kompositums
+# stehen (Volksbank, Kreissparkasse), aber nicht am Anfang eines anderen Worts: "Bankholzen" und
+# "Postbauer-Heng" bleiben. Kurze, mehrdeutige Wörter (amt, kasse, gericht, kammer, studio,
+# gruppe, abteilung) stehen hier NICHT als Endung, sondern ausgeschrieben oder als ganzes Wort.
+_WOERTER_ENDE = (
+    "bank", "sparkasse", "sparkassen", "versicherung", "versicherungen", "versicherungsanstalt",
+    "versicherungsanstalten", "anstalt", "anstalten", "finanzamt", "verlag", "verlagsgesellschaft",
+    "verleger", "ministerium", "bundesamt", "landesamt", "landratsamt", "bezirksamt", "jugendamt",
+    "sozialamt", "ordnungsamt", "zollamt", "gesundheitsamt", "vermessungsamt", "patentamt",
+    "kriminalamt", "forstamt", "bürgeramt", "ortsamt", "versorgungsamt", "bauamt", "schulamt",
+    "standesamt", "untersuchungsamt", "verwaltungsamt", "grundbuchamt", "postamt", "hauptamt",
+    "amtsgericht", "landgericht", "arbeitsgericht", "sozialgericht", "verwaltungsgericht",
+    "finanzgericht", "kammergericht", "verfassungsgericht", "anwaltsgericht", "familiengericht",
+    "mahngericht", "staatsanwaltschaft", "polizeipräsidium", "regierungspräsidium",
+    "justizvollzugsanstalt", "kreisverwaltung", "stadtverwaltung", "gemeindeverwaltung",
+    "hauptverwaltung", "behörde", "krankenkasse", "krankenkassen", "gesundheitskasse",
+    "ersatzkasse", "erzatzkasse", "staatskasse", "unfallkasse", "pflegekasse", "ausgleichskasse",
+    "gerichtskasse", "bundeskasse", "landeskasse", "justizkasse", "oberkasse", "brandkasse",
+    "alterskasse", "tierseuchenkasse", "familienkasse", "krankenversicherung", "rentenversicherung",
+    "berufsgenossenschaft", "handelskammer", "handwerkskammer", "ärztekammer", "landwirtschaftskammer",
+    "versicherungskammer", "versorgungskammer", "rechtsanwaltskammer", "rundfunk", "stadtwerke",
+    "klinikum", "krankenhaus", "kliniken", "klinik", "hochschule", "holding", "niederlassung",
+    "zweigniederlassung", "zentrale", "geschäftsstelle", "filiale", "zustellstützpunkt",
+    "postfach", "versand", "logistik", "telekom", "landtag", "regierung", "magistrat", "landrat",
+    "ordinariat", "rechtsanwälte", "bundeswehr", "verwaltung", "bezirksdirektion", "dienststelle",
+    "redaktion", "lotterieeinnahme", "lotterie-einnahme", "knappschaft", "rathaus", "archiv",
+    "zeitungsgruppe", "unternehmensgruppe", "firmengruppe", "verlagsgruppe", "versicherungsgruppe",
+    "fernsehstudio", "kochstudio", "landesstudio", "hauptstadtstudio",
+    "oberlandesgericht", "streitkräfteamt", "kreiswehrersatzamt", "wehrbereichsgebührnisamt",
+    "gewerbeaufsichtsamt", "integrationsamt", "baurechtsamt", "umweltschutzamt", "kirchensteueramt",
+    "wasserwirtschaftsamt", "materialprüfungsamt", "schiffahrtsamt", "bürgermeisteramt",
+    "bürgermeister", "jobcenter", "versorgungskasse", "bankengruppe", "landkreis", "landeshauptstadt",
+    "sozialabteilung", "anzeigenabteilung", "referat", "staatskanzlei", "minsterium", "botschaft",
+    "eigenbetrieb", "betrieb", "vorstand", "gemeinschaftspraxis", "laboratorium", "museum", "bibliothek",
+    "akademie", "verband", "bevollmächtigte", "bergakademie", "direktion", "zentrum", "staatsanwalt",
+    "staatsminister", "fachbereich", "bezirksstelle", "annahmestelle", "lohnstelle", "gesellschaft",
+    "arbeitsgemeinschaft", "förderkreis",
+)
+_WOERTER_ENDE_RE = re.compile(r"(?<![\w])\w*(?:" + "|".join(_WOERTER_ENDE) + r")(?![\w])", re.IGNORECASE)
+
+# Wörter, die irgendwo im Wort vorkommen dürfen: "Universität" (im Rohdatensatz teils doppelt kodiert),
+# Bundes-/Landes-Einrichtungen. "Landesbergen" ist ein echter Ort.
+_ENTHALTEN_RE = re.compile(
+    r"universit|(?<![\w])bundes\w+|(?<![\w])landes(?!bergen)\w+|helmholtz|max-planck|fraunhofer|leibniz",
+    re.IGNORECASE,
+)
+
+# Ganze Wörter (keine Komposita), Groß-/Kleinschreibung egal. Sehr allgemeine Wörter (post, group,
+# center, partner ...) verlassen sich auf das Sicherheitsnetz für Orte, die so heißen könnten.
+_WOERTER_GANZ_RE = re.compile(
+    r"(?<![\w])(?:service|services|center|centre|zentrum|marketing|management|systems|solutions|group|"
+    r"international|europe|germany|deutschland|brief|agentur|arbeit|direktion|regionaldirektion|"
+    r"abt\.|abteilung|institut|zeitung|medien|konzern|werke|vertrieb|kundenservice|postbank|"
+    r"aok|bkk|ikk|dak|barmer|adac|huk|zdf|ard|rbb|swr|wdr|ndr|bmw|amazon|ikea|partner|"
+    r"deutsche|deutscher|deutsches|deutschen|post|"
+    r"verband|vereinigung|amt|kasse|gericht|kammer|studio|gruppe|referat|provinzial|reha|ihk|radio|kunden|labor)(?![\w])",
+    re.IGNORECASE,
+)
+
+# Behörden-Namenszusatz vor dem Ort: "Stadt Leipzig Neues Rathaus", "Kreis Paderborn".
+_VORSATZ_RE = re.compile(
+    r"^(?:Stadt|Gemeinde|Kreis|Hansestadt|Verbandsgemeinde|Samtgemeinde)\s+(\S.*)$"
+)
+
+# "Amt Neuhaus", "Amt Güstrow-Land": Amt als Gemeindeverband ist ein Ort; "Amt für Soziales" nicht.
+_AMT_ORT_RE = re.compile(r"^Amt\s+(?!für\b|f\.|der\b|des\b|zur\b|zum\b|und\b)\S")
+
+# Name ganz in Großbuchstaben (IHK, GEZ, NORD/LB) oder mit Großbuchstaben-Kürzel (>= 3 Buchstaben)
+# am Anfang ("BMW Vincita", "IHK Halle-Dessau").
+_KUERZEL_RE = re.compile(r"^[A-ZÄÖÜ]{3,}(?![a-zäöüß])")
+_NUR_GROSS_RE = re.compile(r"^[A-ZÄÖÜ][A-ZÄÖÜ /.\-]*[A-ZÄÖÜ]$")
+# Kurzpräfix aus zwei Buchstaben (FH Weihenstephan, TU Bergakademie, IG Metall) und Kürzel mitten im Namen
+# (Europäisches Laboratorium ... EMBL, "(ABB)"); römische Ziffern (II, III) zählen nicht.
+_KUERZEL2_RE = re.compile(r"^(?:FH|TU|AK|IG|DB|BG|PS|TH|HS|FU)\b")
+_KUERZEL_MITTE_RE = re.compile(r"(?<![\w])(?![IVX]+(?![\w]))[A-ZÄÖÜ]{3,}(?![\w])")
+
+# Interne Kennungen wie "KS-542" oder "BMGMT-603".
+_KENNUNG_RE = re.compile(r"^[A-Z]{2,6}-\d{3}$")
+
+# Echte Gemeinden, die auf ein Behördenwort enden und deshalb nie als Großempfänger gelten.
+_ORTE_AUSNAHMEN = {"freiamt", "freigericht", "linsengericht", "maikammer", "hohenkammer"}
+
+
+def _repariere(name):
+    """Im Rohdatensatz stehen einzelne doppelt kodierte Namen ('UniversitÃ¤t'): zurück nach UTF-8."""
+    if "Ã" in name or "Â" in name:
+        try:
+            return name.encode("latin-1").decode("utf-8")
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            pass
+    return name
+
+
+def ist_grossempfaenger(name):
+    """True, wenn der Ortsname eher eine Firma/Behörde (Großempfänger-Postleitzahl) als ein Ort ist."""
+    name = _repariere(name).strip()
+    if name.lower() in _ORTE_AUSNAHMEN:
+        return False
+    if _KENNUNG_RE.match(name) or _RECHTSFORMEN.search(name):
+        return True
+    if _AMT_ORT_RE.match(name):
+        return False
+    if _KUERZEL_RE.match(name) or _NUR_GROSS_RE.match(name) or _KUERZEL2_RE.match(name) or _KUERZEL_MITTE_RE.search(name):
+        return True
+    m = _VORSATZ_RE.match(name)
+    if m and len(m.group(1).split()) >= 2:  # "Stadt Leipzig Neues Rathaus"; "Stadt Wehlen" bleibt
+        return True
+    return bool(_WOERTER_ENDE_RE.search(name) or _ENTHALTEN_RE.search(name) or _WOERTER_GANZ_RE.search(name))
+
+
+def _ist_vorsatz_mit_ort(zeile, namen_je_plz, echte_orte):
+    """'Kreis Paderborn' / 'Gemeinde Eching': Vorsatz plus Name, der in derselben PLZ als eigener Ort steht
+    oder als Ort mit Einwohnern im Land existiert (dann ist die Zeile nur die Verwaltung dieses Orts)."""
+    m = _VORSATZ_RE.match(zeile[2])
+    if not m:
+        return False
+    rest = normalisiere(m.group(1))
+    return rest in namen_je_plz.get((zeile[0], zeile[1]), ()) or (zeile[0], rest) in echte_orte
+
+
+def entferne_grossempfaenger(orte):
+    """Löscht DE-Zeilen mit Firmen-/Behördennamen (in place). Sicherheitsnetz: Ein Name, den eine Zeile
+    desselben Landes mit Einwohnern > 0 trägt (also ein cities1000-Ort, die Einwohner stammen von dort),
+    bleibt immer erhalten. Andere Länder bleiben unberührt (NL/BE haben solche Zeilen nicht)."""
+    echte = {(z[0], normalisiere(z[2])) for z in orte if len(z) > 5 and z[5] > 0}
+    echte_orte = set(echte)
+    for z in orte:
+        if len(z) > 5 and z[5] > 0:
+            echte_orte.update((z[0], k) for k in basisnamen(z[2]))
+    namen_je_plz = {}
+    for z in orte:
+        if z[0] == "DE" and not ist_grossempfaenger(z[2]):
+            namen_je_plz.setdefault((z[0], z[1]), set()).update(basisnamen(z[2]) | {normalisiere(z[2])})
+    behalten = [
+        z for z in orte
+        if z[0] != "DE"
+        or (z[0], normalisiere(z[2])) in echte
+        or not (ist_grossempfaenger(z[2]) or _ist_vorsatz_mit_ort(z, namen_je_plz, echte_orte))
+    ]
+    orte[:] = behalten
+    return orte
+
+
+def nachbearbeiten(orte, aliase=None):
+    """Gemeinsamer Nachbearbeitungsschritt für Vollbau und --nachbearbeiten: erst Großempfänger
+    entfernen, dann Aliasse ergänzen (Aliasziele sind Orte, nie Großempfänger). Idempotent."""
+    entferne_grossempfaenger(orte)
+    wende_aliase_an(orte, aliase)
+    return orte
+
+
+def schreibe(orte, pfad):
+    os.makedirs(os.path.dirname(pfad), exist_ok=True)
+    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"quelle": "GeoNames (CC BY 4.0)", "orte": orte}, f, ensure_ascii=False, separators=(",", ":"))
+    print(pfad, os.path.getsize(pfad), "Bytes")
+
+
+def nachbearbeite_datei():
+    """Wendet die Nachbearbeitung auf die vorhandene Tabelle an (idempotent, ohne Download)."""
+    pfad = os.path.normpath(AUSGABE)
+    with open(pfad, encoding="utf-8") as f:
+        daten = json.load(f)
+    vorher = len(daten["orte"])
+    nachbearbeiten(daten["orte"])
+    print(vorher, "->", len(daten["orte"]), "Zeilen")
+    schreibe(daten["orte"], pfad)
+
+
 def hole(url):
     anfrage = urllib.request.Request(url, headers={"User-Agent": "FuckOffFashion-Konzerte/1.0"})
     with urllib.request.urlopen(anfrage, timeout=120) as antwort:
@@ -89,6 +320,9 @@ def hole(url):
 
 
 def main():
+    if "--nachbearbeiten" in sys.argv[1:]:
+        nachbearbeite_datei()
+        return
     staedte = lese_staedte(hole(URL_STAEDTE))
     orte = []
     for land in LAENDER:
@@ -97,11 +331,8 @@ def main():
             z.append(einwohner(z, staedte))
         print(land, len(zeilen), "Einträge")
         orte.extend(zeilen)
-    pfad = os.path.normpath(AUSGABE)
-    os.makedirs(os.path.dirname(pfad), exist_ok=True)
-    with open(pfad, "w", encoding="utf-8", newline="\n") as f:
-        json.dump({"quelle": "GeoNames (CC BY 4.0)", "orte": orte}, f, ensure_ascii=False, separators=(",", ":"))
-    print(pfad, os.path.getsize(pfad), "Bytes")
+    nachbearbeiten(orte)
+    schreibe(orte, os.path.normpath(AUSGABE))
 
 
 if __name__ == "__main__":

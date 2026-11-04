@@ -1,0 +1,35 @@
+{
+ "address": {
+  "country": "DE",
+  "name_line": "KuBiZ",
+  "first_name": "KuBiZ",
+  "last_name": "",
+  "organisation_name": null,
+  "administrative_area": null,
+  "sub_administrative_area": null,
+  "locality": "Berlin",
+  "dependent_locality": null,
+  "postal_code": "13088",
+  "thoroughfare": "Bernkasteler Str. 78",
+  "premise": ""
+ },
+ "directions": "Tram 4, 12, 13, 27",
+ "map": {
+  "geom": "POINT (13.4700005 52.5571858)",
+  "geo_type": "point",
+  "lat": "52.557185800000",
+  "lon": "13.470000500000",
+  "left": "13.470000500000",
+  "top": "52.557185800000",
+  "right": "13.470000500000",
+  "bottom": "52.557185800000",
+  "srid": null,
+  "latlon": "52.557185800000,13.470000500000",
+  "schemaorg_shape": ""
+ },
+ "timezone": "Europe/Berlin",
+ "id": "42",
+ "type": "location",
+ "title": "KuBiZ Bernkasteler Str. 78  Berlin Deutschland",
+ "uuid": "5696c22e-aba7-493c-950d-51d175449055"
+}

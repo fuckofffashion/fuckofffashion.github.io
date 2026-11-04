@@ -35,6 +35,12 @@ def basisnamen(name):
     return alle
 
 
+def stadtschluessel(name):
+    """Alle normalisierten Namensformen einer Stadt (voll und Basisform); zwei Städte
+    gelten als gleich, wenn sich ihre Schlüsselmengen schneiden."""
+    return {normalisiere(name)} | basisnamen(name)
+
+
 def _mittel(punkte):
     return (sum(p[0] for p in punkte) / len(punkte), sum(p[1] for p in punkte) / len(punkte))
 
@@ -83,10 +89,12 @@ class Ortstabelle:
         return self._plz.get((land, plz))
 
     def nach_name(self, name, land=None):
-        schluessel = normalisiere(name)
         kandidaten = [land] if land else list(REIHENFOLGE)
-        # Volltreffer vor Basisform-Treffer; je Stufe meiste Einwohner, Gleichstand: DE, NL, BE
-        for index in (self._namen, self._basis):
+        # Volltreffer vor Basisform-Treffer; zuletzt die Basisform der Anfrage selbst
+        # ('Halle (Saale)' -> 'halle'). Je Stufe meiste Einwohner, Gleichstand: DE, NL, BE
+        stufen = [(self._namen, normalisiere(name)), (self._basis, normalisiere(name))]
+        stufen += [(index, k) for k in sorted(basisnamen(name)) for index in (self._namen, self._basis)]
+        for index, schluessel in stufen:
             laender = index.get(schluessel, {})
             treffer = [(laender[k][0], -i, k) for i, k in enumerate(kandidaten) if k in laender]
             if treffer:
