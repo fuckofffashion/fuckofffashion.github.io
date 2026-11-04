@@ -8,15 +8,23 @@ fehler() { echo "veroeffentlichen.sh: $*" >&2; exit 1; }
 
 [ $# -eq 1 ] && [ -n "$1" ] || fehler "Aufruf: $0 <zielordner>"
 [ -d "$1" ] || fehler "Zielordner existiert nicht: $1"
-ziel=$(cd "$1" && pwd -P)
+ziel=$(CDPATH= cd -- "$1" && pwd -P)
 
 # Immer vom Repo-Wurzelordner aus arbeiten, egal von wo aufgerufen.
-cd "$(dirname "$0")/.."
-wurzel=$(pwd -P)
+cd -- "$(dirname -- "$0")/.."
+wurzel=$(CDPATH= cd -- . && pwd -P)
 
 [ "$ziel" != "$wurzel" ] || fehler "Ziel ist das eigene Repo ($wurzel), Abbruch"
 case "$wurzel/" in "$ziel"/*) fehler "Ziel enthält das eigene Repo, Abbruch" ;; esac
 case "$ziel/" in "$wurzel"/*) fehler "Ziel liegt im eigenen Repo, Abbruch" ;; esac
+
+# Erst prüfen, dass alle Quellen da sind, dann erst das Ziel leeren.
+for datei in index.html konzerte.html 404.html impressum.html datenschutz.html              data/konzerte.json data/karte.json data/orte-tabelle.json; do
+  [ -f "$datei" ] || fehler "Quelle fehlt: $datei, Abbruch"
+done
+for ordner in css js assets; do
+  [ -d "$ordner" ] || fehler "Quellordner fehlt: $ordner, Abbruch"
+done
 
 # Ohne .git darf das Ziel nur leer sein (Schutz vor dem Leeren falscher Ordner).
 if [ ! -e "$ziel/.git" ] && [ -n "$(ls -A "$ziel")" ]; then

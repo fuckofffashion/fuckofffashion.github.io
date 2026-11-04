@@ -24,6 +24,7 @@ concurrency:
 
 env:
   PAGES_REPO_URL: https://codeberg.org/fuckofffashion/pages.git
+  PAGES_BRANCH: main
 
 jobs:
   konzerte:
@@ -32,6 +33,9 @@ jobs:
       # actions/* löst Codeberg über code.forgejo.org auf.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Immer der aktuelle main-Stand, auch wenn der Lauf hinter concurrency gewartet hat.
+          ref: main
 
       - name: Werkzeuge prüfen
         run: |
@@ -48,12 +52,16 @@ jobs:
       - name: JS-Tests
         run: |
           if command -v node >/dev/null 2>&1; then
-            node --test "tests/js/*.test.mjs"
+            node --version
+            # Ohne Anführungszeichen: die Shell expandiert das Muster (Node 20 kann es nicht selbst).
+            node --test tests/js/*.test.mjs
           else
             echo "ÜBERSPRUNGEN: node ist im Image nicht vorhanden, JS-Tests nicht gelaufen."
           fi
 
       # abholen schreibt bei Ausfall einer Quelle die übrigen Daten trotzdem (Exit 1).
+      # Exit 1 kommt auch bei einer unbehandelten Exception; dann liegt noch der alte, gültige
+      # Stand vor (atomares Schreiben) und wird unverändert veröffentlicht, was harmlos ist.
       # Darum merkt dieser Schritt nur den Exit-Code; committet und veröffentlicht wird
       # danach, und der letzte Schritt beendet den Lauf mit dem gemerkten Code.
       - name: Konzerte abholen
@@ -89,7 +97,7 @@ jobs:
             echo "FEHLER: Secret PAGES_TOKEN ist nicht gesetzt." >&2
             exit 1
           fi
-          ziel="$RUNNER_TEMP/pages"
+          ziel="${RUNNER_TEMP:-/tmp}/pages"
           rm -rf "$ziel"
           # Token nur im Header, nie in der URL, damit er weder im Log noch in .git/config steht.
           git -c http.extraHeader="Authorization: token $PAGES_TOKEN" clone "$PAGES_REPO_URL" "$ziel"
@@ -103,7 +111,7 @@ jobs:
           git config user.name "konzerte-bot"
           git config user.email "konzerte-bot@users.noreply.codeberg.org"
           git commit -m "Veröffentlicht $(date -u +%Y-%m-%dT%H:%MZ)"
-          git -c http.extraHeader="Authorization: token $PAGES_TOKEN" push origin HEAD:main
+          git -c http.extraHeader="Authorization: token $PAGES_TOKEN" push origin "HEAD:$PAGES_BRANCH"
 
       # Läuft immer: bei gemerktem Fehlercode (1 = Quelle ausgefallen, 124 = Timeout) wird der Lauf rot,
       # damit Codeberg Mark eine Mail schickt.
