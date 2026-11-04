@@ -12,9 +12,9 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/tokens.css?v=11">
-  <link rel="stylesheet" href="css/base.css?v=11">
-  <link rel="stylesheet" href="css/site.css?v=11">
+  <link rel="stylesheet" href="css/tokens.css?v=12">
+  <link rel="stylesheet" href="css/base.css?v=12">
+  <link rel="stylesheet" href="css/site.css?v=12">
   <!-- Intro: entscheidet vor dem ersten Bild, ob es läuft -->
   <script>
     (function (d) {
@@ -163,6 +163,15 @@
         <div><dt class="shout shout--3">Teilen, weil wir wollen.</dt>
           <dd>Wir verschenken alles. Nicht aus Pflicht oder Moral, sondern weil wir es so entschieden haben.</dd></div>
       </dl>
+
+      <!-- Loop aus clip/loop (HyperFrames): läuft nur im Bild, bei reduzierter Bewegung nur das Standbild -->
+      <div class="anarchy__film" aria-hidden="true">
+        <video class="js-loop" muted loop playsinline preload="none" width="1280" height="720"
+               data-poster="assets/video/fof-anarchie-loop-poster.webp">
+          <source src="assets/video/fof-anarchie-loop.webm" type="video/webm">
+          <source src="assets/video/fof-anarchie-loop.mp4" type="video/mp4">
+        </video>
+      </div>
 
       <figure class="anarchy__quote js-quote">
         <blockquote><p>„Du sollst der werden, der du bist.“</p></blockquote>
@@ -472,10 +481,10 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <script src="assets/vendor/ScrollTrigger.min.js"></script>
 <script src="assets/vendor/lenis.min.js"></script>
-<script src="js/motion.js?v=11"></script>
-<script src="js/intro.js?v=11"></script>
-<script src="js/main.js?v=11"></script>
-<script src="js/tragen.js?v=11"></script>
-<script type="module" src="js/faden.js?v=11"></script>
+<script src="js/motion.js?v=12"></script>
+<script src="js/intro.js?v=12"></script>
+<script src="js/main.js?v=12"></script>
+<script src="js/tragen.js?v=12"></script>
+<script type="module" src="js/faden.js?v=12"></script>
 </body>
 </html>

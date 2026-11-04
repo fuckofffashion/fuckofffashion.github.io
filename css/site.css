@@ -103,7 +103,15 @@
   .anarchy__points { grid-template-columns: 1fr; }
   .anarchy__points > div { border-right: 0 !important; padding-left: 0 !important; }
 }
+/* Loop-Band: randlos, Kanten laufen in die Sektionsfarbe aus, das Zitat legt sich unten drauf */
+.anarchy__film { grid-column: 1 / -1; position: relative; margin: var(--sp-6) calc(var(--gutter) * -1) 0; }
+.anarchy__film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: var(--ink); }
+.anarchy__film::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(var(--ink), transparent 16%, transparent 78%, var(--ink)),
+              linear-gradient(90deg, var(--ink), transparent 12%, transparent 88%, var(--ink)); }
+@media (max-width: 700px) { .anarchy__film video { aspect-ratio: 4 / 3; } }
 .anarchy__quote { grid-column: 2 / span 10; margin: var(--sp-7) 0 0; }
+.anarchy__film + .anarchy__quote { position: relative; margin-top: clamp(-5rem, -6vw, -2rem); }
 .anarchy__quote blockquote { margin: 0; }
 .anarchy__quote p {
   margin: 0 0 var(--sp-2); font: 700 clamp(2rem, 5.2vw, 4.75rem)/1.08 var(--font-zine); letter-spacing: -.02em; color: var(--paper);

@@ -26,6 +26,22 @@
     onLeaveBack: () => head.classList.remove("is-hidden"),
   });
 
+  // Anarchie-Loop: Standbild kurz vor der Sektion, Video läuft nur im Bild und pausiert außerhalb.
+  // Reduzierte Bewegung oder Datensparmodus: nur das Standbild.
+  const loop = document.querySelector(".js-loop");
+  if (loop) {
+    const still = MOTION.reduced || navigator.connection?.saveData;
+    new IntersectionObserver(([e], io) => {
+      if (!e.isIntersecting) return;
+      loop.poster = loop.dataset.poster;
+      io.disconnect();
+    }, { rootMargin: "1200px 0px" }).observe(loop);
+    if (!still) new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) loop.play().catch(() => {});
+      else loop.pause();
+    }, { rootMargin: "200px 0px" }).observe(loop);
+  }
+
   gsap.context(() => {
     /* Hero – wartet auf das Intro */
     const heroTitle = document.querySelector(".js-hero-title");

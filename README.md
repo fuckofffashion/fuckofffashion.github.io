@@ -15,6 +15,7 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 | `js/tragen.js` | Vorne/Hinten-Vorschau (Sektion Tragen) |
 | `js/faden.js` | Roter Faden: 3D-Faden (Three.js) am rechten Rand, knotet sich an den Überschriften in `anchors` zum Anarchie-A. Lädt Three.js erst nach dem Intro, bei Reduced Motion gar nicht |
 | `tools/build-anarchie.py` | Zeichnet Motiv 008 (rotes A) als PNG neu |
+| `assets/video/` | Anarchie-Loop (WebM, MP4, Standbild) für die Anarchie-Sektion. Quelle: HyperFrames-Projekt `D:/claude/fof/clip/loop`, siehe unten |
 | `kit/` | Druckvorlagen für Sticker-Bogen und Flyer, `tools/build-kit.py` macht daraus die PDFs in `assets/kit/` |
 | `styleguide.html` | Vorschau des Design-Systems (nicht verlinkt, `noindex`) |
 
@@ -29,6 +30,20 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 ## Nach Änderungen an CSS/JS
 
 Den Versionsparameter in allen HTML-Dateien hochzählen (`?v=3` → `?v=4`), sonst zeigen Browser die alte Datei aus dem Cache.
+
+## Anarchie-Loop neu ausgeben
+
+Der Loop kommt aus dem HyperFrames-Projekt `D:/claude/fof/clip/loop` (das Reel für Instagram liegt daneben in `clip/reel`).
+Nach einer Änderung dort:
+
+1. `npx hyperframes render loop -q delivery -o renders/fof-loop-anarchie-16x9.mp4` (im Ordner `D:/claude/fof/clip`)
+2. Für die Website verkleinern (aus `site/`):
+   - `ffmpeg -i ../clip/renders/fof-loop-anarchie-16x9.mp4 -vf scale=1280:-2 -c:v libvpx-vp9 -b:v 0 -crf 36 -row-mt 1 -an assets/video/fof-anarchie-loop.webm`
+   - `ffmpeg -i ../clip/renders/fof-loop-anarchie-16x9.mp4 -vf scale=1280:-2 -c:v libx264 -crf 24 -preset slow -pix_fmt yuv420p -movflags +faststart -an assets/video/fof-anarchie-loop.mp4`
+   - Standbild: ein Bild als PNG ziehen (`-ss 3 -frames:v 1`) und mit Pillow als WebP speichern. Direkt mit ffmpeg nach WebP wird das Rot rosastichig.
+3. Versionsparameter hochzählen.
+
+Das Standbild lädt erst kurz vor der Sektion, das Video erst, wenn es ins Bild kommt (`js/main.js`). Bei reduzierter Bewegung und im Datensparmodus bleibt es beim Standbild.
 
 ## Verbreiten-Kit neu drucken
 
