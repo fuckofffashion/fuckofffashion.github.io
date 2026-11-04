@@ -14,9 +14,25 @@ def normalisiere(text):
     return re.sub(r"[\s\-_]+", " ", text).strip()
 
 
+_LAGE = re.compile(r"^(.+?) (?:am|an der|an dem|im|in der|in|ob der|bei|vor der) .+$")
+
+
 def basisform(name):
     """'Frankfurt (Main)' -> 'Frankfurt', 'Neustadt, Stadt' -> 'Neustadt'."""
     return re.split(r"\s*[(,]", name, maxsplit=1)[0].strip()
+
+
+def basisnamen(name):
+    """Zusätzliche normalisierte Suchschlüssel: ohne Klammer-/Kommazusatz und ohne
+    Lagezusatz ('Frankfurt am Main' -> 'frankfurt', 'Neustadt an der Weinstraße' -> 'neustadt')."""
+    alle = set()
+    for n in (normalisiere(name), normalisiere(basisform(name))):
+        alle.add(n)
+        m = _LAGE.match(n)
+        if m:
+            alle.add(m.group(1))
+    alle.discard(normalisiere(name))
+    return alle
 
 
 def _mittel(punkte):
@@ -41,16 +57,22 @@ class Ortstabelle:
     def __init__(self, zeilen):
         plz = {}
         namen = {}
+        basis = {}
         for zeile in zeilen:
             land, code, name, lat, lon = zeile[:5]
             einw = zeile[5] if len(zeile) > 5 else 0
             plz.setdefault((land, code), []).append((lat, lon))
-            for schluessel in {normalisiere(name), normalisiere(basisform(name))}:
-                namen.setdefault(schluessel, {}).setdefault(land, []).append((lat, lon, einw))
+            punkt = (lat, lon, einw)
+            namen.setdefault(normalisiere(name), {}).setdefault(land, []).append(punkt)
+            for schluessel in basisnamen(name):
+                basis.setdefault(schluessel, {}).setdefault(land, []).append(punkt)
         self._plz = {k: _mittel(v) for k, v in plz.items()}
-        self._namen = {
-            n: {land: _haupt_cluster(p) for land, p in laender.items()} for n, laender in namen.items()
-        }
+        self._namen = self._clustern(namen)
+        self._basis = self._clustern(basis)
+
+    @staticmethod
+    def _clustern(namen):
+        return {n: {land: _haupt_cluster(p) for land, p in laender.items()} for n, laender in namen.items()}
 
     @classmethod
     def laden(cls, pfad):
@@ -61,12 +83,13 @@ class Ortstabelle:
         return self._plz.get((land, plz))
 
     def nach_name(self, name, land=None):
-        laender = self._namen.get(normalisiere(name))
-        if not laender:
-            return None
+        schluessel = normalisiere(name)
         kandidaten = [land] if land else list(REIHENFOLGE)
-        treffer = [(laender[k][0], -i, k) for i, k in enumerate(kandidaten) if k in laender]
-        if not treffer:
-            return None
-        _, _, k = max(treffer)  # meiste Einwohner, Gleichstand: DE, NL, BE
-        return (k, laender[k][1], laender[k][2])
+        # Volltreffer vor Basisform-Treffer; je Stufe meiste Einwohner, Gleichstand: DE, NL, BE
+        for index in (self._namen, self._basis):
+            laender = index.get(schluessel, {})
+            treffer = [(laender[k][0], -i, k) for i, k in enumerate(kandidaten) if k in laender]
+            if treffer:
+                k = max(treffer)[2]
+                return (k, laender[k][1], laender[k][2])
+        return None

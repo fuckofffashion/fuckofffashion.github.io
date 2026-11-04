@@ -16,7 +16,9 @@ TABELLE = [
     ["DE", "47533", "Kleve", 51.788, 6.139, 50000],
     ["DE", "25832", "Brugge", 54.0, 9.5, 0],
     ["BE", "8000", "Brugge", 51.209, 3.225, 118000],
-    ["DE", "60311", "Frankfurt (Main)", 50.11, 8.68, 750000],
+    ["DE", "60311", "Frankfurt am Main", 50.11, 8.68, 750000],
+    ["DE", "15230", "Frankfurt (Oder)", 52.347, 14.554, 57000],
+    ["DE", "67433", "Neustadt an der Weinstraße", 49.35, 8.14, 53000],
 ]
 
 
@@ -63,7 +65,15 @@ class OrtstabelleTest(unittest.TestCase):
 
     def test_name_basisform(self):
         self.assertEqual(self.t.nach_name("Frankfurt")[0], "DE")
-        self.assertIsNotNone(self.t.nach_name("Frankfurt (Main)"))
+
+    def test_name_lagezusatz_frankfurt(self):
+        self.assertAlmostEqual(self.t.nach_name("Frankfurt")[1], 50.11, delta=0.05)
+
+    def test_name_volltreffer_vor_basisform(self):
+        self.assertAlmostEqual(self.t.nach_name("Frankfurt (Oder)")[1], 52.35, delta=0.05)
+
+    def test_name_lagezusatz_neustadt(self):
+        self.assertEqual(self.t.nach_name("Neustadt")[0], "DE")
 
     def test_name_falsches_land(self):
         self.assertIsNone(self.t.nach_name("Kleve", "NL"))
