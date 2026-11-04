@@ -11,7 +11,7 @@ Ausnahme: assets/vendor/* sind Fremdbibliotheken. Für sie gelten die jeweils ei
 - assets/vendor/gsap.min.js und assets/vendor/ScrollTrigger.min.js: GreenSock Standard
   License (https://gsap.com/standard-license), Copyright GreenSock.
 - assets/vendor/three.module.min.js: MIT, Lizenztext in assets/vendor/three.LICENSE.txt.
-- assets/vendor/lenis.min.js: keine Lizenzangabe im Dateikopf; Lizenz vor Veröffentlichung prüfen.
+- assets/vendor/lenis.min.js (Lenis 1.3.27): MIT, Lizenztext in assets/vendor/lenis.LICENSE.txt.
 
 Der englische Originaltext der CC0-Lizenz folgt unverändert (Quelle:
 https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt).
