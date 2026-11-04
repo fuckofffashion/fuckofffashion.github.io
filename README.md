@@ -89,9 +89,7 @@ Lokal heißt der Branch `master`, auf GitHub `main` (`git push -u origin master:
 
 ## Platzhalter, die noch raus müssen
 
-- Mail-Adresse `hallo@fuckofffashion.example` im Knopf „Foto schicken“ (`index.html`, Sektion Mitmachen). Das Veröffentlichungs-Skript bricht ab, solange sie noch drinsteht.
-- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]` (Name, Anschrift, E-Mail).
-- Verbreiten-Kit (Flyer, QR-Code, Sticker) mit der echten Adresse neu bauen: `python tools/build-kit.py` (Standard ist jetzt `fuckofffashion.github.io`).
+- Impressum und Datenschutz: alle Stellen mit `[bitte ausfüllen]` (Name, Anschrift). Kontaktmail ist fuckofffashion@proton.me.
 
 ## Eingeschickten Druck an die Wand „Von euch“ hängen
 
