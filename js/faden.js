@@ -17,14 +17,71 @@ function start(THREE) {
   const R = 10;         // Segmente rund um den Faden
   const RED = "#ff1a1a";
 
-  /* Anarchie-A als ein durchgehender Fadenweg (1000er-Raster wie Motiv 008).
-     Der Faden kommt von oben in die Spitze und läuft am rechten Bein wieder hinaus. */
+  /* Anarchie-A als ein durchgehender Fadenweg: das eingekreiste A aus Motiv 007 „Skate or Die“
+     (dasselbe Zeichen wie Logo, Intro, Laufschrift, Favicon und Kartenmarker).
+     Die Zahlen sind die Mittellinien des Pinselzeichens im Raster von assets/img/anarchie-a.svg
+     (viewBox 0 0 626 541), gemessen mit `python tools/messe-a-faden.py`:
+     Ring fast exakt rund (Ellipsen-Fit rx 225,7 / ry 226,6), die Beine kreuzen sich knapp über dem
+     Ring und stehen oben über, unten laufen sie über den Ring hinaus; der Balken liegt auf
+     Ringmitte, steigt nach rechts um 7,4° und steht links und rechts weit über.
+     Ein Seil hat keine Pinselkante, darum nur das Skelett. */
+  const A_SKELETT = {
+    ring: [305, 282, 226],                // Mitte x, y, Radius
+    beinL: [[324, 11], [128, 516]],       // Spitze (überstehend) -> Fuß
+    beinR: [[304, 12], [478, 528]],
+    balken: [[11, 324], [612, 246]],      // links -> rechts
+  };
+  const VORLAUF = 40; // Einlauf über der linken Spitze, in Rasterpixeln
+  const RING_R = .3; // Ringradius als Anteil der Knotengröße (das ganze A ist damit 0,80 breit und 0,69 hoch)
+
+  /* Ein Weg ohne Absetzen: Der Faden kommt von oben in die linke Beinspitze, läuft das linke Bein
+     hinunter, zieht Ring, Balken und die zweite Spitze nach und geht am rechten Fuß wieder hinaus.
+     Sechs freie Enden lassen sich nicht in einem Zug ziehen; wo nötig läuft der Faden auf sich
+     selbst zurück (Fußstummel links, Balkenenden, Ringbögen bei Balken und Spitze).
+     Wird einmal beim Start gerechnet, nicht pro Bild. */
   const A_UNIT = (() => {
-    const raw = [[500, 95], [235, 905], [274, 761]];
-    const cx = 500, cy = 535, r = 320, a0 = Math.atan2(761 - cy, 274 - cx);
-    for (let k = 1; k <= 72; k++) { const a = a0 + (k / 72) * Math.PI * 2; raw.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
-    raw.push([327, 625], [110, 625], [890, 590], [667, 605], [500, 95], [765, 905]);
-    return raw.map(([x, y]) => [(x - 500) / 1000, (y - 500) / 1000]);
+    const { ring: [cx, cy, r], beinL, beinR, balken } = A_SKELETT;
+    const schnitt = ([p, q], [s, t]) => {
+      const dx = q[0] - p[0], dy = q[1] - p[1], ex = t[0] - s[0], ey = t[1] - s[1];
+      const u = ((s[0] - p[0]) * ey - (s[1] - p[1]) * ex) / (dx * ey - dy * ex);
+      return [p[0] + dx * u, p[1] + dy * u];
+    };
+    const amRing = ([p, q]) => { // beide Schnittpunkte der Geraden mit dem Ring, in Laufrichtung
+      const dx = q[0] - p[0], dy = q[1] - p[1], fx = p[0] - cx, fy = p[1] - cy;
+      const a = dx * dx + dy * dy, b = 2 * (fx * dx + fy * dy), c = fx * fx + fy * fy - r * r;
+      const w = Math.sqrt(b * b - 4 * a * c);
+      return [(-b - w) / (2 * a), (-b + w) / (2 * a)].map(u => [p[0] + dx * u, p[1] + dy * u]);
+    };
+    const X = schnitt(beinL, beinR);
+    const [QL, PL] = amRing(beinL), [QR, PR] = amRing(beinR), [RL, RR] = amRing(balken);
+    const BL = schnitt(balken, beinL), BR = schnitt(balken, beinR);
+    const [tipL, footL] = beinL, [tipR, footR] = beinR, [barL, barR] = balken;
+    // Jeder Punkt trägt eine Lage: 0 = erster Lauf, 1 = Rücklauf über schon gelegten Faden.
+    // Der Rücklauf liegt ein Stück höher (z), sonst flimmern zwei deckungsgleiche Röhren ineinander.
+    const raw = [];
+    let z = 0;
+    const zu = (...p) => p.forEach(([x, y]) => raw.push([x, y, z]));
+    const lage = n => { if (n !== z) { z = n; zu(raw[raw.length - 1]); } }; // Wendepunkt doppelt, Sprung in z
+    const bogen = (p, q) => { // kürzerer Ringbogen von p nach q, alle 5°
+      const a0 = Math.atan2(p[1] - cy, p[0] - cx);
+      let d = Math.atan2(q[1] - cy, q[0] - cx) - a0;
+      d -= Math.round(d / (2 * Math.PI)) * 2 * Math.PI;
+      const n = Math.max(1, Math.ceil(Math.abs(d) / (Math.PI / 36)));
+      for (let k = 1; k <= n; k++) zu([cx + r * Math.cos(a0 + d * k / n), cy + r * Math.sin(a0 + d * k / n)]);
+    };
+    // Der ankommende Faden läuft die letzten Pixel in Verlängerung des linken Beins ein, so kreuzen
+    // sich oben wie im Zeichen zwei überstehende Spitzen statt eines Hakens
+    const ein = Math.hypot(tipL[0] - X[0], tipL[1] - X[1]);
+    zu([tipL[0] + (tipL[0] - X[0]) / ein * VORLAUF, tipL[1] + (tipL[1] - X[1]) / ein * VORLAUF]);
+    zu(tipL, X, QL, BL, PL, footL); lage(1); zu(PL); lage(0);         // linkes Bein, Fuß zurück
+    bogen(PL, RL); zu(barL); lage(1); zu(RL); bogen(RL, PL); lage(0); // Balken links
+    bogen(PL, PR); bogen(PR, RR); zu(barR); lage(1); zu(RR); lage(0); // unten rum, Balken rechts
+    bogen(RR, QR); zu(X, tipR); lage(1); zu(X, QR); bogen(QR, RR); lage(0); // zweite Spitze
+    zu(BR, BL, RL);                                                    // Balken durch den Ring
+    bogen(RL, QL); bogen(QL, QR);                                      // Ring oben schließen
+    zu(BR, PR, footR);                                                 // rechtes Bein hinaus
+    const s = RING_R / r;
+    return raw.map(([x, y, z]) => [(x - cx) * s, (y - cy) * s, z]);
   })();
   const APEX = A_UNIT[0], EXIT = A_UNIT[A_UNIT.length - 1];
 
@@ -97,9 +154,11 @@ function start(THREE) {
 
   /* Formen */
   const cur = new Float32Array(N * 2), target = new Float32Array(N * 2), line = new Float32Array(N * 2), shaped = new Float32Array(N * 2);
+  const lift = new Float32Array(N), liftShaped = new Float32Array(N); // Lage des Rücklaufs (0/1), siehe A_UNIT
+  const HUB = .5; // so viele Fadenradien liegt der Rücklauf höher
   let vw = innerWidth, vh = innerHeight, radius = 3, reveal = 0, first = true;
 
-  function resample(poly, out) {
+  function resample(poly, out, outZ) {
     const len = [0];
     for (let i = 1; i < poly.length; i++) len.push(len[i - 1] + Math.hypot(poly[i][0] - poly[i - 1][0], poly[i][1] - poly[i - 1][1]));
     const total = len[len.length - 1] || 1;
@@ -109,6 +168,7 @@ function start(THREE) {
       const t = (d - len[s]) / ((len[s + 1] - len[s]) || 1);
       out[j * 2] = poly[s][0] + (poly[s + 1][0] - poly[s][0]) * t;
       out[j * 2 + 1] = poly[s][1] + (poly[s + 1][1] - poly[s][1]) * t;
+      if (outZ) outZ[j] = (poly[s][2] || 0) + ((poly[s + 1][2] || 0) - (poly[s][2] || 0)) * t;
     }
   }
 
@@ -131,9 +191,9 @@ function start(THREE) {
     const ex = k.cx + EXIT[0] * k.size, ey = k.cy + EXIT[1] * k.size;
     const poly = [];
     for (let y = -60; y < ay; y += 16) poly.push([lineX(y, time) + (ax - lineX(y, time)) * smooth(ay - 220, ay, y), y]);
-    for (const [x, y] of A_UNIT) poly.push([k.cx + x * k.size, k.cy + y * k.size]);
+    for (const [x, y, z] of A_UNIT) poly.push([k.cx + x * k.size, k.cy + y * k.size, z]);
     for (let y = ey + 16; y <= Math.max(ey + 16, vh + 60); y += 16) poly.push([ex + (lineX(y, time) - ex) * smooth(ey, ey + 220, y), y]);
-    resample(poly, shaped);
+    resample(poly, shaped, liftShaped);
   }
 
   function pickAnchor() {
@@ -160,7 +220,7 @@ function start(THREE) {
         const a = (k / R) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
         const o = (i * (R + 1) + k) * 3;
         nor[o] = nx * c; nor[o + 1] = ny * c; nor[o + 2] = s;
-        pos[o] = x + nor[o] * radius; pos[o + 1] = y + nor[o + 1] * radius; pos[o + 2] = nor[o + 2] * radius;
+        pos[o] = x + nor[o] * radius; pos[o + 1] = y + nor[o + 1] * radius; pos[o + 2] = (nor[o + 2] + lift[i] * HUB) * radius;
         const u = (i * (R + 1) + k) * 2;
         uv[u] = arc / (radius * 9); uv[u + 1] = k / R;
       }
@@ -195,12 +255,14 @@ function start(THREE) {
     if (k && e > .001) {
       buildKnot(k, time);
       for (let i = 0; i < N * 2; i++) target[i] = line[i] + (shaped[i] - line[i]) * e;
-    } else target.set(line);
+      for (let i = 0; i < N; i++) liftShaped[i] *= e;
+    } else { target.set(line); liftShaped.fill(0); }
     const rLine = mobile() ? 2 : 3.4;
     const rT = rLine + ((k ? k.radius : rLine) - rLine) * e;
     // weich nachziehen, damit Wechsel zwischen Wegmarken nicht springen
     const f = first ? 1 : .16;
     for (let i = 0; i < N * 2; i++) cur[i] += (target[i] - cur[i]) * f;
+    for (let i = 0; i < N; i++) lift[i] += (liftShaped[i] - lift[i]) * f;
     radius += (rT - radius) * f;
     first = false;
     tex.offset.y = time * .15;
