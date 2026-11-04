@@ -14,27 +14,39 @@ def normalisiere(text):
     return re.sub(r"[\s\-_]+", " ", text).strip()
 
 
+def basisform(name):
+    """'Frankfurt (Main)' -> 'Frankfurt', 'Neustadt, Stadt' -> 'Neustadt'."""
+    return re.split(r"\s*[(,]", name, maxsplit=1)[0].strip()
+
+
 def _mittel(punkte):
     return (sum(p[0] for p in punkte) / len(punkte), sum(p[1] for p in punkte) / len(punkte))
 
 
 def _haupt_cluster(punkte, radius=0.2):
-    """Gleichnamige Orte liegen oft weit auseinander (Kleve in SH und NRW).
-    Mittelwert nur über den größten Haufen (Radius ca. 20 km in Grad), bei Gleichstand der erste."""
+    """Punkte (lat, lon, einw) zu Haufen (Radius ca. 20 km in Grad) bündeln.
+    Gleichnamige Orte liegen oft weit auseinander (Kleve in SH und NRW).
+    Der Haufen mit der höchsten Einwohnerzahl (Maximum der einw im Haufen) gewinnt,
+    bei Gleichstand der größere Haufen, dann der erste.
+    Rückgabe: (einw, lat, lon)."""
     beste = max(
         ([q for q in punkte if abs(q[0] - p[0]) <= radius and abs(q[1] - p[1]) <= radius] for p in punkte),
-        key=len,
+        key=lambda c: (max(q[2] for q in c), len(c)),
     )
-    return _mittel(beste)
+    lat, lon = _mittel(beste)
+    return (max(q[2] for q in beste), lat, lon)
 
 
 class Ortstabelle:
     def __init__(self, zeilen):
         plz = {}
         namen = {}
-        for land, code, name, lat, lon in zeilen:
+        for zeile in zeilen:
+            land, code, name, lat, lon = zeile[:5]
+            einw = zeile[5] if len(zeile) > 5 else 0
             plz.setdefault((land, code), []).append((lat, lon))
-            namen.setdefault(normalisiere(name), {}).setdefault(land, []).append((lat, lon))
+            for schluessel in {normalisiere(name), normalisiere(basisform(name))}:
+                namen.setdefault(schluessel, {}).setdefault(land, []).append((lat, lon, einw))
         self._plz = {k: _mittel(v) for k, v in plz.items()}
         self._namen = {
             n: {land: _haupt_cluster(p) for land, p in laender.items()} for n, laender in namen.items()
@@ -52,8 +64,9 @@ class Ortstabelle:
         laender = self._namen.get(normalisiere(name))
         if not laender:
             return None
-        for kandidat in (land,) if land else REIHENFOLGE:
-            if kandidat in laender:
-                lat, lon = laender[kandidat]
-                return (kandidat, lat, lon)
-        return None
+        kandidaten = [land] if land else list(REIHENFOLGE)
+        treffer = [(laender[k][0], -i, k) for i, k in enumerate(kandidaten) if k in laender]
+        if not treffer:
+            return None
+        _, _, k = max(treffer)  # meiste Einwohner, Gleichstand: DE, NL, BE
+        return (k, laender[k][1], laender[k][2])

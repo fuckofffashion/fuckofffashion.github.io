@@ -8,12 +8,15 @@ TABELLE = [
     ["DE", "41061", "Mönchengladbach", 51.19, 6.44],
     ["NL", "6525", "Nijmegen", 51.82, 5.86],
     ["NL", "1012", "Amsterdam", 52.373, 4.893],
-    ["DE", "10115", "Amsterdam", 52.0, 13.0],
     ["BE", "4000", "Liège", 50.633, 5.567],
     ["BE", "2000", "Antwerpen", 51.22, 4.4],
     ["DE", "47533", "Kleve", 51.79, 6.14],
-    ["DE", "47534", "Kleve", 51.80, 6.15],
-    ["DE", "25554", "Kleve", 53.967, 9.4],
+    ["DE", "25554", "Kleve", 53.967, 9.4, 300],
+    ["DE", "25779", "Kleve", 54.295, 9.124, 200],
+    ["DE", "47533", "Kleve", 51.788, 6.139, 50000],
+    ["DE", "25832", "Brugge", 54.0, 9.5, 0],
+    ["BE", "8000", "Brugge", 51.209, 3.225, 118000],
+    ["DE", "60311", "Frankfurt (Main)", 50.11, 8.68, 750000],
 ]
 
 
@@ -35,9 +38,7 @@ class OrtstabelleTest(unittest.TestCase):
         self.assertIsNone(self.t.nach_plz("DE", "00000"))
 
     def test_name_ohne_land_findet_nl(self):
-        # Reihenfolge DE, NL, BE: Amsterdam gibt es hier auch in DE -> DE zuerst
-        self.assertEqual(self.t.nach_name("Amsterdam")[0], "DE")
-        self.assertEqual(self.t.nach_name("Amsterdam", "NL")[0], "NL")
+        self.assertEqual(self.t.nach_name("Amsterdam")[0], "NL")
 
     def test_name_nl_ohne_de_treffer(self):
         self.assertEqual(self.t.nach_name("Nijmegen")[0], "NL")
@@ -50,8 +51,19 @@ class OrtstabelleTest(unittest.TestCase):
 
     def test_name_gleichnamige_orte_kein_mittelwert(self):
         _, lat, lon = self.t.nach_name("Kleve")
-        self.assertAlmostEqual(lat, 51.795, delta=0.05)
-        self.assertAlmostEqual(lon, 6.145, delta=0.05)
+        self.assertAlmostEqual(lat, 51.79, delta=0.05)
+        self.assertAlmostEqual(lon, 6.14, delta=0.05)
+
+    def test_name_ohne_land_bevorzugt_groesseren_ort(self):
+        self.assertEqual(self.t.nach_name("Brugge")[0], "BE")
+
+    def test_name_gleiche_einwohner_de_zuerst(self):
+        t = Ortstabelle([["BE", "1", "Xdorf", 51.0, 4.0], ["DE", "2", "Xdorf", 51.0, 8.0]])
+        self.assertEqual(t.nach_name("Xdorf")[0], "DE")
+
+    def test_name_basisform(self):
+        self.assertEqual(self.t.nach_name("Frankfurt")[0], "DE")
+        self.assertIsNotNone(self.t.nach_name("Frankfurt (Main)"))
 
     def test_name_falsches_land(self):
         self.assertIsNone(self.t.nach_name("Kleve", "NL"))
