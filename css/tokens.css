@@ -21,6 +21,7 @@
   --ash-dark:   #5b5650;   /* Sekundärtext auf Papier (6,4:1) */
   --blood:      #d4161b;   /* Logo-Rot – Flächen, große Schrift */
   --blood-hot:  #ff3b3b;   /* Rot für kleinen Text auf Schwarz (5,6:1) */
+  --spray:      #ff1a1a;   /* Sprührot von Motiv 008 (gesprühtes A); Tiefschwarz darauf 5,1:1 */
   --tape:       rgba(226, 214, 182, .78); /* Klebeband */
 
   /* Typografie ------------------------------------------- */

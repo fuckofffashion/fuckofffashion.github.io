@@ -130,6 +130,8 @@ select.kz-input { appearance: auto; }
   touch-action: pan-x pan-y; /* ein Finger scrollt die Seite, zwei Finger gehören der Karte */
 }
 .kz-karte__bild.is-ziehen { cursor: grabbing; }
+/* Beim Ziehen und Zoomen ohne Kopierer- und Sprühfilter: spart je Bild das Neuberechnen der Filterfläche */
+.kz-karte__bild.is-bewegt .kz-karte__kopie, .kz-karte__bild.is-bewegt .kz-karte__spray { filter: none; }
 .kz-karte__land path { fill: var(--paper); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .kz-karte__regionen { fill: none; stroke: var(--ink); stroke-width: .8; stroke-opacity: .5; vector-effect: non-scaling-stroke; }
 .kz-karte__staedte rect { fill: var(--ink); }
@@ -138,14 +140,16 @@ select.kz-input { appearance: auto; }
   paint-order: stroke; stroke: var(--paper); stroke-width: .25em; stroke-linejoin: round;
 }
 .kz-karte__kreis { fill: var(--ink); fill-opacity: .06; stroke: var(--ink); }
-.kz-karte__mitte { fill: var(--ink); stroke: var(--blood); }
+.kz-karte__mitte { fill: var(--ink); stroke: var(--spray); }
 .kz-karte__schild { fill: var(--ink); }
 .kz-karte__satz { fill: var(--paper); font-family: var(--font-zine); font-weight: 700; }
-.kz-karte__a { color: var(--blood); cursor: pointer; }
+.kz-karte__a { color: var(--spray); cursor: pointer; }
 .kz-karte__haufen { cursor: pointer; }
-.kz-karte__haufen circle { fill: var(--blood); stroke: var(--ink); }
-.kz-karte__haufen text { fill: var(--paper); font-family: var(--font-shout); pointer-events: none; }
-.kz-karte .is-ungefaehr { opacity: .45; } /* nur ungefähr geortet: blasser gedruckt */
+.kz-karte__haufen circle { fill: var(--spray); stroke: var(--ink); }
+.kz-karte__haufen text { fill: var(--ink); font-family: var(--font-shout); pointer-events: none; } /* Schwarz auf Sprührot: 5,1:1 */
+/* Nur ungefähr geortet: blasser gedruckt. Beim Haufen nur die Fläche, die Zahl bleibt schwarz (≥ 4,5:1). */
+.kz-karte__a.is-ungefaehr { opacity: .45; }
+.kz-karte__haufen.is-ungefaehr circle { fill: color-mix(in srgb, var(--spray) 45%, var(--paper)); stroke-opacity: .55; }
 .kz-karte__hilfe { margin: .5rem 0 0; max-width: none; font: 400 var(--fs-label)/1.4 var(--font-zine); color: var(--ash); letter-spacing: .04em; }
 .kz-karte__hilfe-finger { display: none; }
 @media (pointer: coarse) {

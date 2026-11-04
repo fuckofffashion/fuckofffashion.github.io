@@ -4,17 +4,13 @@
 // der Kartengrund unter dem Kopierer-Filter (Korn in Pixeln, bleibt beim Zoomen gleich grob) und die Marker
 // ohne Filter. Zoomen und Verschieben ändern nur die viewBox; die Haufen werden je Zoomstufe einmal gebildet.
 
-const R = 6371.0088; // mittlerer Erdradius in km
-const KM_JE_GRAD = (R * Math.PI) / 180;
-const KOS51 = Math.cos((51 * Math.PI) / 180);
+import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, zoomUm } from "./kartenansicht.js?v=13";
 
-// Abstandstreu-zylindrisch um 10°O/51°N. x nach Osten, y nach Süden (wie SVG), beides in km.
-export function projiziere(lat, lon) {
-  return [(lon - 10) * KM_JE_GRAD * KOS51, (51 - lat) * KM_JE_GRAD];
-}
+export { projiziere }; // Projektion und Ansichtsrechnung liegen in kartenansicht.js
 
 // Gierige Haufen in Reihenfolge der Punkte: Ein Punkt schließt sich dem nächsten Gründer an, der höchstens
 // radiusPx entfernt liegt (massstab = Pixel je km), sonst gründet er einen eigenen Haufen.
+// Ein Haufen liegt am Gründer; Gründer liegen mehr als radiusPx auseinander, Kreise überlappen so kaum.
 // Ein Gitter mit Zellen von Radiusgröße hält das bei 8.000 Punkten linear.
 export function haufen(punkte, radiusPx, massstab) {
   const r = radiusPx / massstab;
@@ -30,33 +26,32 @@ export function haufen(punkte, radiusPx, massstab) {
     for (let di = -1; di <= 1; di++) {
       for (let dj = -1; dj <= 1; dj++) {
         for (const h of gitter.get(zelle(i + di, j + dj)) ?? []) {
-          const d = (h.gx - p.x) ** 2 + (h.gy - p.y) ** 2;
+          const d = (h.x - p.x) ** 2 + (h.y - p.y) ** 2;
           if (d <= r2 && d < best) { best = d; ziel = h; }
         }
       }
     }
     if (!ziel) {
-      ziel = { gx: p.x, gy: p.y, sx: 0, sy: 0, ids: [] };
+      ziel = { x: p.x, y: p.y, ids: [] };
       const k = zelle(i, j);
       if (!gitter.has(k)) gitter.set(k, []);
       gitter.get(k).push(ziel);
       alle.push(ziel);
     }
-    ziel.sx += p.x;
-    ziel.sy += p.y;
     ziel.ids.push(p.id);
   }
-  return alle.map((h) => ({ x: h.sx / h.ids.length, y: h.sy / h.ids.length, ids: h.ids }));
+  return alle;
 }
 
 // Zeichnen ------------------------------------------------------------------
 const NS = "http://www.w3.org/2000/svg";
 const KARTE_URL = "data/karte.json";
-const MIN_BREITE = 60; // km: enger als Regionsebene wird nicht gezoomt
 const HAUFEN_PX = 38; // Fangradius eines Haufens auf dem Bildschirm (größer als der Kreis, damit wenig überlappt)
 const MARKER_PX = 28;
 const STADT_PX = 70; // Mindestabstand zwischen zwei Stadtnamen
 const FAHRT_MS = 320;
+const RUHE_MS = 200; // so lange nach der letzten Bewegung bleiben die Filter aus
+const SCROLL_SPERRE_MS = 400; // Rad kurz nach Seitenscrollen gehört noch der Seite
 // Stadtnamen, die bei Platzmangel gewinnen; der Rest folgt alphabetisch
 const VORRANG = ["Berlin", "Hamburg", "München", "Köln", "Frankfurt", "Amsterdam", "Brüssel", "Stuttgart", "Leipzig",
   "Dresden", "Hannover", "Bremen", "Rotterdam", "Nürnberg", "Düsseldorf", "Dortmund", "Antwerpen", "Kiel", "Rostock"];
@@ -88,21 +83,36 @@ function aufbauen(svg, karte) {
   knoten("feDisplacementMap", { in: "SourceGraphic", in2: "welle", scale: "5", xChannelSelector: "R", yChannelSelector: "G", result: "kante" }, filter);
   knoten("feTurbulence", { type: "fractalNoise", baseFrequency: ".8", numOctaves: "1", seed: "3", result: "korn" }, filter);
   knoten("feDisplacementMap", { in: "kante", in2: "korn", scale: "2.5", xChannelSelector: "R", yChannelSelector: "G" }, filter);
+  // Sprühkante fürs A: feines Korn verschiebt die Kante, darum ein körniger Sprühnebel. Ein Filter für
+  // die ganze A-Ebene, in Pixeln, fester Seed.
+  const spray = knoten("filter", { id: "kz-spray", filterUnits: "userSpaceOnUse", x: "0", y: "0", width: "100%", height: "100%" }, defs);
+  knoten("feTurbulence", { type: "fractalNoise", baseFrequency: ".7", numOctaves: "1", seed: "8", result: "korn" }, spray);
+  knoten("feDisplacementMap", { in: "SourceGraphic", in2: "korn", scale: "2.2", xChannelSelector: "R", yChannelSelector: "G", result: "kante" }, spray);
+  knoten("feGaussianBlur", { in: "kante", stdDeviation: "2.2", result: "nebel" }, spray);
+  knoten("feColorMatrix", { in: "korn", type: "matrix", values: "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.2 0 0 0 -1.5", result: "staub" }, spray);
+  knoten("feComposite", { in: "nebel", in2: "staub", operator: "in", result: "hauch" }, spray);
+  const merge = knoten("feMerge", {}, spray);
+  knoten("feMergeNode", { in: "hauch" }, merge);
+  knoten("feMergeNode", { in: "kante" }, merge);
   // Rotes gesprühtes A; der unsichtbare Kreis macht die ganze Fläche anklickbar
   const a = knoten("symbol", { id: "kz-a", viewBox: "0 0 100 100" }, defs);
   knoten("circle", { cx: "50", cy: "53", r: "46", fill: "transparent" }, a);
   knoten("path", { d: A_PFAD, fill: "none", stroke: "currentColor", "stroke-width": "11", "stroke-linejoin": "miter" }, a);
 
   const welt = (eltern) => knoten("svg", { width: "100%", height: "100%", preserveAspectRatio: "none", overflow: "hidden" }, eltern);
-  const grund = welt(knoten("g", { filter: "url(#kz-kopie)" }, svg));
+  // Filter hängen an <g> im Pixelraum; während einer Bewegung schaltet .is-bewegt sie ab (CSS)
+  const grund = welt(knoten("g", { class: "kz-karte__kopie", filter: "url(#kz-kopie)" }, svg));
   const oben = welt(svg);
+  const sprueh = welt(knoten("g", { class: "kz-karte__spray", filter: "url(#kz-spray)" }, svg));
+  const haufenWelt = welt(svg);
   const land = knoten("g", { class: "kz-karte__land" }, grund);
   for (const l of karte.laender ?? []) knoten("path", { d: (l.ringe ?? []).map((r) => `${linie(r)}Z`).join("") }, land);
   knoten("path", { class: "kz-karte__regionen", d: (karte.regionen ?? []).map(linie).join("") }, grund);
   // Städte ohne Filter: die Namen sollen lesbar bleiben
   const staedte = knoten("g", { class: "kz-karte__staedte" }, oben);
   const umkreis = knoten("g", { class: "kz-karte__umkreis" }, oben);
-  const marker = knoten("g", { class: "kz-karte__marker" }, oben);
+  const marker = knoten("g", { class: "kz-karte__marker" }, sprueh);
+  const stapel = knoten("g", { class: "kz-karte__stapel" }, haufenWelt);
 
   const [x0, y0] = projiziere(karte.bbox[3], karte.bbox[0]);
   const [x1, y1] = projiziere(karte.bbox[1], karte.bbox[2]);
@@ -112,34 +122,22 @@ function aufbauen(svg, karte) {
     .sort((p, q) => rang(p.id) - rang(q.id));
 
   return {
-    svg, welten: [grund, oben], ebenen: { staedte, umkreis, marker }, orte,
+    svg, welten: [grund, oben, sprueh, haufenWelt], ebenen: { staedte, umkreis, marker, stapel }, orte,
     gebiet: { x0, y0, x1, y1 }, W: 1, H: 1, ansicht: null,
     treffer: [], nachId: new Map(), punkte: [], cache: new Map(), stadtCache: new Map(),
-    mitte: null, radiusKm: null, mitteSchluessel: "", gezeichnet: [], geplant: false, fahrt: 0,
+    mitte: null, radiusKm: null, mitteSchluessel: "", gezeichnet: [], geplant: false, fahrt: 0, ruhe: 0,
   };
 }
 
-// Ansicht {cx, cy, w}: Mitte und Breite in km. Höhe folgt dem Seitenverhältnis des Elements.
-const hoehe = (s, w) => (w * s.H) / s.W;
+// Der Zustand s dient zugleich als Rahmen {W, H, gebiet} für kartenansicht.js
 const massstab = (s) => s.W / s.ansicht.w;
-function maxBreite(s) {
-  const g = s.gebiet;
-  return Math.max(g.x1 - g.x0, ((g.y1 - g.y0) * s.W) / s.H) * 1.04;
-}
-function begrenze(s, a) {
-  const g = s.gebiet;
-  const w = Math.min(Math.max(a.w, MIN_BREITE), maxBreite(s));
-  const zw = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
-  return { w, cx: zw(a.cx, g.x0, g.x1), cy: zw(a.cy, g.y0, g.y1) };
-}
-function passend(s) {
-  const g = s.gebiet;
-  if (s.mitte && s.radiusKm) {
-    const [cx, cy] = projiziere(s.mitte.lat, s.mitte.lon);
-    const d = s.radiusKm * 2.3;
-    return begrenze(s, { cx, cy, w: Math.max(d, (d * s.W) / s.H) });
-  }
-  return begrenze(s, { cx: (g.x0 + g.x1) / 2, cy: (g.y0 + g.y1) / 2, w: Infinity });
+const radiusPx = (n) => (n === 1 ? MARKER_PX / 2 : 11 + 2.5 * Math.log10(n));
+
+// Während Ziehen, Zoomen und Fahrten sind die teuren Filter aus; nach kurzer Ruhe kommen sie zurück
+function bewegt(s) {
+  s.svg.classList.add("is-bewegt");
+  clearTimeout(s.ruhe);
+  s.ruhe = setTimeout(() => s.svg.classList.remove("is-bewegt"), RUHE_MS);
 }
 
 function plane(s) {
@@ -149,12 +147,6 @@ function plane(s) {
     s.geplant = false;
     render(s);
   });
-}
-
-// Zoomstufen in halben Oktaven: innerhalb einer Stufe bleiben Haufen und Stadtnamen gleich
-function stufeVon(m) {
-  const stufe = Math.round(2 * Math.log2(m));
-  return { stufe, mq: 2 ** (stufe / 2) };
 }
 
 function render(s) {
@@ -170,15 +162,41 @@ function render(s) {
   const rand = MARKER_PX / m;
   const sichtbar = (p) => p.x > vx - rand && p.x < vx + w + rand && p.y > vy - rand && p.y < vy + h + rand;
 
-  // Städte: Punkt immer, Name nur, wenn er auf dieser Stufe Platz hat
+  // Marker: Haufen dieser Zoomstufe, nur was im Bild liegt. Einzelne A in die Sprühebene, Haufen darüber.
+  if (!s.cache.has(stufe)) s.cache.set(stufe, haufen(s.punkte, HAUFEN_PX, mq));
+  s.gezeichnet = s.cache.get(stufe).filter(sichtbar);
+  const marker = document.createDocumentFragment();
+  const stapel = document.createDocumentFragment();
+  s.gezeichnet.forEach((k, i) => {
+    const ungefaehr = k.ids.every((id) => s.nachId.get(id)?.genau === false);
+    const klasse = ungefaehr ? " is-ungefaehr" : "";
+    if (k.ids.length === 1) {
+      knoten("use", { href: "#kz-a", class: `kz-karte__a${klasse}`, "data-i": i, x: k.x - MARKER_PX / 2 / m, y: k.y - MARKER_PX / 2 / m, width: px(MARKER_PX), height: px(MARKER_PX) }, marker);
+      return;
+    }
+    const g = knoten("g", { class: `kz-karte__haufen${klasse}`, "data-i": i }, stapel);
+    knoten("circle", { cx: k.x, cy: k.y, r: px(radiusPx(k.ids.length)), "stroke-width": px(2.5) }, g);
+    const t = knoten("text", { x: k.x, y: k.y, dy: ".36em", "text-anchor": "middle", "font-size": px(k.ids.length > 99 ? 11 : 13) }, g);
+    t.textContent = k.ids.length.toLocaleString("de-DE");
+  });
+  s.ebenen.marker.replaceChildren(marker);
+  s.ebenen.stapel.replaceChildren(stapel);
+
+  // Städte: Punkt immer, Name nur, wenn er auf dieser Stufe Platz hat und kein Marker darauf liegt
   if (!s.stadtCache.has(stufe)) s.stadtCache.set(stufe, new Set(haufen(s.orte, STADT_PX, mq).map((k) => k.ids[0])));
   const benannt = s.stadtCache.get(stufe);
+  const verdeckt = (x0, y0, x1, y1) => s.gezeichnet.some((k) => {
+    const dx = k.x - Math.min(Math.max(k.x, x0), x1);
+    const dy = k.y - Math.min(Math.max(k.y, y0), y1);
+    return Math.hypot(dx, dy) < (radiusPx(k.ids.length) + 2) / m;
+  });
   const staedte = document.createDocumentFragment();
   for (const o of s.orte) {
     if (!sichtbar(o)) continue;
     knoten("rect", { x: o.x - 2.5 / m, y: o.y - 2.5 / m, width: px(5), height: px(5) }, staedte);
-    if (benannt.has(o.id)) {
-      const t = knoten("text", { x: o.x + 6 / m, y: o.y + 4 / m, "font-size": px(12) }, staedte);
+    const x = o.x + 6 / m;
+    if (benannt.has(o.id) && !verdeckt(x, o.y - 9 / m, x + (o.id.length * 7.2) / m, o.y + 4 / m)) {
+      const t = knoten("text", { x, y: o.y + 4 / m, "font-size": px(12) }, staedte);
       t.textContent = o.id;
     }
   }
@@ -202,24 +220,6 @@ function render(s) {
     }
   }
   s.ebenen.umkreis.replaceChildren(kreis);
-
-  // Marker: Haufen dieser Zoomstufe, nur was im Bild liegt
-  if (!s.cache.has(stufe)) s.cache.set(stufe, haufen(s.punkte, HAUFEN_PX, mq));
-  s.gezeichnet = s.cache.get(stufe).filter(sichtbar);
-  const marker = document.createDocumentFragment();
-  s.gezeichnet.forEach((k, i) => {
-    const ungefaehr = k.ids.every((id) => s.nachId.get(id)?.genau === false);
-    const klasse = ungefaehr ? " is-ungefaehr" : "";
-    if (k.ids.length === 1) {
-      knoten("use", { href: "#kz-a", class: `kz-karte__a${klasse}`, "data-i": i, x: k.x - MARKER_PX / 2 / m, y: k.y - MARKER_PX / 2 / m, width: px(MARKER_PX), height: px(MARKER_PX) }, marker);
-      return;
-    }
-    const g = knoten("g", { class: `kz-karte__haufen${klasse}`, "data-i": i }, marker);
-    knoten("circle", { cx: k.x, cy: k.y, r: px(11 + 2.5 * Math.log10(k.ids.length)), "stroke-width": px(2.5) }, g);
-    const t = knoten("text", { x: k.x, y: k.y, dy: ".36em", "text-anchor": "middle", "font-size": px(k.ids.length > 99 ? 11 : 13) }, g);
-    t.textContent = k.ids.length.toLocaleString("de-DE");
-  });
-  s.ebenen.marker.replaceChildren(marker);
 }
 
 // Ansicht setzen, auf Wunsch mit kurzer Fahrt (bei reduzierter Bewegung immer sofort)
@@ -241,19 +241,11 @@ function fahre(s, ziel, weich = true) {
       cy: von.cy + (ziel.cy - von.cy) * e,
       w: von.w * (ziel.w / von.w) ** e,
     };
+    bewegt(s);
     render(s);
     if (t < 1) s.fahrt = requestAnimationFrame(schritt);
   };
   s.fahrt = requestAnimationFrame(schritt);
-}
-
-// Zoom um einen Bildschirmpunkt (px, py): der km-Punkt darunter bleibt stehen
-function zoomUm(s, px, py, faktor, basis = s.ansicht) {
-  const m = s.W / basis.w;
-  const kx = basis.cx - basis.w / 2 + px / m;
-  const ky = basis.cy - hoehe(s, basis.w) / 2 + py / m;
-  const w = Math.min(Math.max(basis.w * faktor, MIN_BREITE), maxBreite(s));
-  return { w, cx: kx - px * (w / s.W) + w / 2, cy: ky - py * (w / s.W) + hoehe(s, w) / 2 };
 }
 
 const zeige = (id) => document.dispatchEvent(new CustomEvent("konzerte:zeige", { detail: { id } }));
@@ -262,8 +254,12 @@ function bedienung(s) {
   const svg = s.svg;
   const lage = (x, y) => { const r = svg.getBoundingClientRect(); return [x - r.left, y - r.top]; };
 
-  // Mausrad zoomt nur über der Karte. Am Zoomrand bleibt das Rad bei der Seite (kein Festhalten).
+  // Mausrad zoomt nur über der Karte. Am Zoomrand bleibt das Rad bei der Seite (kein Festhalten),
+  // ebenso kurz nach Seitenscrollen: wer über die Karte hinweg scrollt, bleibt nicht in ihr hängen.
+  let gescrollt = -Infinity;
+  addEventListener("scroll", () => { gescrollt = performance.now(); }, { passive: true });
   svg.addEventListener("wheel", (e) => {
+    if (performance.now() - gescrollt < SCROLL_SPERRE_MS) return;
     const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1);
     if (!dy) return;
     const faktor = Math.exp(Math.max(-300, Math.min(300, dy)) * 0.0018);
@@ -271,7 +267,8 @@ function bedienung(s) {
     if ((faktor > 1 && w >= maxBreite(s) - 1e-6) || (faktor < 1 && w <= MIN_BREITE + 1e-6)) return;
     e.preventDefault();
     cancelAnimationFrame(s.fahrt);
-    s.ansicht = begrenze(s, zoomUm(s, ...lage(e.clientX, e.clientY), faktor));
+    s.ansicht = begrenze(s, zoomUm(s, ...lage(e.clientX, e.clientY), faktor, s.ansicht));
+    bewegt(s);
     plane(s);
   }, { passive: false });
 
@@ -296,6 +293,7 @@ function bedienung(s) {
     }
     const m = s.W / zug.a.w;
     s.ansicht = begrenze(s, { ...zug.a, cx: zug.a.cx - dx / m, cy: zug.a.cy - dy / m });
+    bewegt(s);
     plane(s);
   });
   const loslassen = () => { zug = null; svg.classList.remove("is-ziehen"); };
@@ -321,6 +319,7 @@ function bedienung(s) {
     const z = zoomUm(s, px, py, griff.d / Math.max(jetzt.d, 1), griff.a);
     const m = s.W / z.w;
     s.ansicht = begrenze(s, { ...z, cx: z.cx - (jetzt.mx - griff.mx) / m, cy: z.cy - (jetzt.my - griff.my) / m });
+    bewegt(s);
     plane(s);
   }, { passive: false });
   const ende = (e) => { if (e.touches.length < 2) griff = null; };
@@ -378,13 +377,13 @@ export function zeichneKarte(svg, karte, { treffer, mitte, radiusKm }) {
   }
   s.cache.clear();
 
-  s.mitte = mitte ?? null;
-  s.radiusKm = mitte && Number.isFinite(radiusKm) ? radiusKm : null;
+  s.mitte = mitte && Number.isFinite(mitte.lat) && Number.isFinite(mitte.lon) ? mitte : null;
+  s.radiusKm = s.mitte && Number.isFinite(radiusKm) ? radiusKm : null;
   const schluessel = s.mitte ? `${s.mitte.lat},${s.mitte.lon},${s.radiusKm}` : "";
   // Neue Mitte oder neuer Umkreis: passend einrahmen. Sonst bleibt die Ansicht, wo sie war.
   if (!s.ansicht || schluessel !== s.mitteSchluessel) {
     cancelAnimationFrame(s.fahrt);
-    s.ansicht = passend(s);
+    s.ansicht = passend(s, s.mitte, s.radiusKm);
   }
   s.mitteSchluessel = schluessel;
   plane(s);
