@@ -13,6 +13,8 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 | `js/intro.js` | Intro (einmal pro Session, überspringbar, bei Reduced Motion aus) |
 | `js/main.js` | Was wann auf der Startseite passiert |
 | `js/tragen.js` | Vorne/Hinten-Vorschau (Sektion Tragen) |
+| `js/faden.js` | Roter Faden: 3D-Faden (Three.js) am rechten Rand, knotet sich an den Überschriften in `anchors` zum Anarchie-A. Lädt Three.js erst nach dem Intro, bei Reduced Motion gar nicht |
+| `tools/build-anarchie.py` | Zeichnet Motiv 008 (rotes A) als PNG neu |
 | `kit/` | Druckvorlagen für Sticker-Bogen und Flyer, `tools/build-kit.py` macht daraus die PDFs in `assets/kit/` |
 | `styleguide.html` | Vorschau des Design-Systems (nicht verlinkt, `noindex`) |
 
