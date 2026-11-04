@@ -73,6 +73,18 @@ Tests:
 - Browser-Module: `node --test "tests/js/*.test.mjs"`
 - Python: `python -m unittest discover -s tools/konzerte/tests -t .`
 
+## Täglicher Lauf und Veröffentlichung (GitHub)
+
+Die Seite liegt auf GitHub Pages, der tägliche Lauf auf GitHub Actions (`.github/workflows/konzerte.yml`).
+Der Lauf startet täglich um 04:00 UTC, bei jedem Push auf `main` (außer reinen `data/`-Änderungen) und von Hand (Actions > konzerte > Run workflow).
+Er testet, holt die Konzerte, committet geänderte `data/*.json` als `konzerte-bot` und stellt die Seite online.
+Lokal heißt der Branch `master`, auf GitHub `main` (`git push -u origin master:main`).
+
+- Veröffentlicht wird nur eine feste Dateiliste: `tools/veroeffentlichen.sh <leerer-ordner>`. Das Skript bricht ab, solange in den Rechtstexten `[bitte ausfüllen]` steht.
+- Eine Datei `CNAME` im Repo-Wurzelordner wird mitkopiert; bei Veröffentlichung per Actions zählt aber die Einstellung unter Settings > Pages > Custom domain.
+- Ein Projekt-Repo erscheint unter `https://<benutzer>.github.io/fuckofffashion/`. `404.html` hat ein `<base href="/">`; `tools/veroeffentlichen.sh` setzt es in der Kopie auf `/<repo>/` (aus `GITHUB_REPOSITORY`), mit `CNAME` im Repo-Wurzelordner auf `/`.
+- Einrichtung (Konto, Repo, Pages-Einstellung): `bash tools/github-einrichten.sh`.
+
 ## Platzhalter, die noch raus müssen
 
 - Domain `fuckofffashion.example` auf dem Flyer: Kit mit echter Domain neu drucken (siehe oben).
