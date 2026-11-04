@@ -1,12 +1,16 @@
 """Baut data/orte-tabelle.json aus den GeoNames-Postleitzahl-Dumps (DE, NL, BE).
 
 Lizenz: GeoNames, Creative Commons Attribution 4.0 (siehe readme.txt im Download).
-Aufruf: python -m tools.konzerte.build_ortstabelle [--nur-aliase]
+Aufruf: python -m tools.konzerte.build_ortstabelle [--nachbearbeiten]
+  ohne Flag:        lädt GeoNames und baut die Tabelle neu (inkl. Nachbearbeitung)
+  --nachbearbeiten: wendet nur die Nachbearbeitung (Großempfänger entfernen, dann Aliasse)
+                    auf die vorhandene Tabelle an; idempotent, ohne Download
 """
 import io
 import json
 import math
 import os
+import re
 import sys
 import urllib.request
 import zipfile
@@ -124,6 +128,89 @@ def wende_aliase_an(orte, aliase=None):
     return orte
 
 
+# --- Großempfänger ---------------------------------------------------------------------------
+# GeoNames führt für Firmen und Behörden mit eigener Postleitzahl (Großempfänger) den Namen des
+# Empfängers als "Ort". Solche Zeilen gehören nicht in die Ortssuche.
+
+# Rechtsformen: Groß-/Kleinschreibung zählt ("SE" nur groß; "eG", "mbH" exakt so).
+_RECHTSFORMEN = re.compile(
+    r"(?<![\w])(?:"
+    r"AG|SE|KG|KGaA|OHG|GbR|UG|eG|eK|e\.\s?K\.|e\.\s?V\.|eV|"  # Kürzel
+    r"g?GmbH|GMBH|mbH|LLP|SAS|SRL|GmbH&Co|Co\.?\s?KG|Co\.|Inc\.?|Ltd\.?|S\.A\.|B\.V\.|"
+    r"Aktiengesellschaft|Gesellschaft|Handelsgesellschaft|Stiftung"
+    r")(?![\w])|&\s?Co|u\.\s?Co"
+)
+
+# Firmen-/Behördenwörter, ohne Rücksicht auf Groß-/Kleinschreibung. Das Wort darf am Ende eines
+# Kompositums stehen (Volksbank, Kreissparkasse, Universitätsklinikum), aber nicht am Anfang eines
+# anderen Worts: "Bankholzen" bleibt, "Postbauer-Heng" bleibt.
+_WOERTER_ENDE = (
+    "bank", "sparkasse", "versicherung", "versicherungen", "finanzamt", "verlag", "verlagsgesellschaft",
+    "ministerium", "bundesamt", "landesamt", "landratsamt", "bezirksamt", "amtsgericht", "landgericht",
+    "staatsanwaltschaft", "polizeipräsidium", "regierungspräsidium", "justizvollzugsanstalt",
+    "kreisverwaltung", "stadtverwaltung", "gemeindeverwaltung", "hauptverwaltung", "behörde",
+    "krankenkasse", "gesundheitskasse", "krankenversicherung", "rentenversicherung", "familienkasse",
+    "berufsgenossenschaft", "handelskammer", "rundfunk", "stadtwerke", "klinikum", "krankenhaus",
+    "kliniken", "universität", "universitätsklinikum", "universitätsbibliothek", "hochschule",
+    "holding", "niederlassung", "zweigniederlassung", "zentrale", "geschäftsstelle", "filiale",
+    "zustellstützpunkt", "postfach", "versand", "logistik", "telekom",
+    "gericht", "kammer", "kasse", "amt", "landtag", "regierung", "magistrat", "landrat", "ordinariat",
+    "klinik", "rechtsanwälte", "bundeswehr", "verwaltung", "landeshauptstadt", "landkreis",
+    "hansestadt", "bezirksdirektion", "dienststelle", "referat", "abteilung", "redaktion", "studio",
+    "lotterieeinnahme", "lotterie-einnahme", "gruppe",
+)
+_WOERTER_ENDE_RE = re.compile(r"(?<![\w])\w*(?:" + "|".join(_WOERTER_ENDE) + r")(?![\w])", re.IGNORECASE)
+
+# Ganze Wörter (keine Komposita), Groß-/Kleinschreibung egal.
+_WOERTER_GANZ_RE = re.compile(
+    r"(?<![\w])(?:service|services|center|centre|marketing|management|systems|solutions|group|"
+    r"international|europe|germany|deutschland|brief|agentur|arbeit|direktion|regionaldirektion|"
+    r"abt\.|institut|zeitung|medien|konzern|werke|vertrieb|kundenservice|postbank|"
+    r"aok|bkk|ikk|dak|barmer|adac|huk|zdf|ard|rbb|swr|wdr|ndr|bmw|amazon|ikea|partner|"
+    r"deutsche|deutscher|deutsches|deutschen|post)(?![\w])",
+    re.IGNORECASE,
+)
+
+
+# Echte Gemeinden, die auf ein Behördenwort enden und deshalb nie als Großempfänger gelten.
+_ORTE_AUSNAHMEN = {"freiamt", "freigericht", "linsengericht", "maikammer", "hohenkammer"}
+
+# Interne Kennungen wie "KS-542" oder "BMGMT-603".
+_KENNUNG_RE = re.compile(r"^[A-Z]{2,6}-\d{3}$")
+
+
+def ist_grossempfaenger(name):
+    """True, wenn der Ortsname eher eine Firma/Behörde (Großempfänger-Postleitzahl) als ein Ort ist."""
+    if name.strip().lower() in _ORTE_AUSNAHMEN:
+        return False
+    if _KENNUNG_RE.match(name) or _RECHTSFORMEN.search(name):
+        return True
+    if _WOERTER_ENDE_RE.search(name):
+        return True
+    return bool(_WOERTER_GANZ_RE.search(name))
+
+
+def entferne_grossempfaenger(orte):
+    """Löscht DE-Zeilen mit Firmen-/Behördennamen (in place). Sicherheitsnetz: Ein Name, den eine Zeile
+    desselben Landes mit Einwohnern > 0 trägt (also ein cities1000-Ort, die Einwohner stammen von dort),
+    bleibt immer erhalten. Andere Länder bleiben unberührt (NL/BE haben solche Zeilen nicht)."""
+    echte = {(z[0], normalisiere(z[2])) for z in orte if len(z) > 5 and z[5] > 0}
+    behalten = [
+        z for z in orte
+        if z[0] != "DE" or (z[0], normalisiere(z[2])) in echte or not ist_grossempfaenger(z[2])
+    ]
+    orte[:] = behalten
+    return orte
+
+
+def nachbearbeiten(orte, aliase=None):
+    """Gemeinsamer Nachbearbeitungsschritt für Vollbau und --nachbearbeiten: erst Großempfänger
+    entfernen, dann Aliasse ergänzen (Aliasziele sind Orte, nie Großempfänger). Idempotent."""
+    entferne_grossempfaenger(orte)
+    wende_aliase_an(orte, aliase)
+    return orte
+
+
 def schreibe(orte, pfad):
     os.makedirs(os.path.dirname(pfad), exist_ok=True)
     with open(pfad, "w", encoding="utf-8", newline="\n") as f:
@@ -131,14 +218,14 @@ def schreibe(orte, pfad):
     print(pfad, os.path.getsize(pfad), "Bytes")
 
 
-def nur_aliase():
-    """Wendet die Aliasse auf die vorhandene Tabelle an (idempotent, ohne Download)."""
+def nachbearbeite_datei():
+    """Wendet die Nachbearbeitung auf die vorhandene Tabelle an (idempotent, ohne Download)."""
     pfad = os.path.normpath(AUSGABE)
     with open(pfad, encoding="utf-8") as f:
         daten = json.load(f)
     vorher = len(daten["orte"])
-    wende_aliase_an(daten["orte"])
-    print(len(daten["orte"]) - vorher, "Aliasse ergänzt")
+    nachbearbeiten(daten["orte"])
+    print(vorher, "->", len(daten["orte"]), "Zeilen")
     schreibe(daten["orte"], pfad)
 
 
@@ -149,8 +236,8 @@ def hole(url):
 
 
 def main():
-    if "--nur-aliase" in sys.argv[1:]:
-        nur_aliase()
+    if "--nachbearbeiten" in sys.argv[1:]:
+        nachbearbeite_datei()
         return
     staedte = lese_staedte(hole(URL_STAEDTE))
     orte = []
@@ -160,7 +247,7 @@ def main():
             z.append(einwohner(z, staedte))
         print(land, len(zeilen), "Einträge")
         orte.extend(zeilen)
-    wende_aliase_an(orte)
+    nachbearbeiten(orte)
     schreibe(orte, os.path.normpath(AUSGABE))
 
 
