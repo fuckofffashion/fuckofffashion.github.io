@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Kopiert die veröffentlichbaren Dateien in einen Klon des Pages-Repos.
+# Kopiert die veröffentlichbaren Dateien (Allowlist) in einen Zielordner.
 # Aufruf: tools/veroeffentlichen.sh <zielordner>
-# Leert vorher den Zielordner (außer .git und .domains), damit gelöschte Dateien verschwinden.
+# Im GitHub-Workflow ist das Ziel ein frischer, leerer Ordner außerhalb des Repos, aus dem
+# der Pages-Artefakt-Schritt die Seite hochlädt. Lokal darf es auch ein Ordner mit .git sein.
+# Leert vorher den Zielordner (außer .git), damit gelöschte Dateien verschwinden.
+# Eine Datei CNAME im Repo-Wurzelordner (eigene Domain) wird mitkopiert, wenn sie existiert.
 set -eu
 
 fehler() { echo "veroeffentlichen.sh: $*" >&2; exit 1; }
@@ -26,6 +29,8 @@ for ordner in css js assets; do
   [ -d "$ordner" ] || fehler "Quellordner fehlt: $ordner, Abbruch"
 done
 
+grep -q -F '<base href="/">' 404.html || fehler "404.html enthält kein <base href=\"/\">, Abbruch"
+
 # Go-live-Schutz: Platzhalter in den Rechtstexten dürfen nicht veröffentlicht werden.
 offen=$(grep -l -F '[bitte ausfüllen]' index.html konzerte.html 404.html impressum.html datenschutz.html || true)
 [ -z "$offen" ] || fehler "Platzhalter [bitte ausfüllen] noch in: $(echo $offen), erst ausfüllen, Abbruch"
@@ -35,7 +40,7 @@ if [ ! -e "$ziel/.git" ] && [ -n "$(ls -A "$ziel")" ]; then
   fehler "Ziel $ziel hat kein .git, ist aber nicht leer, Abbruch"
 fi
 
-find "$ziel" -mindepth 1 -maxdepth 1 ! -name .git ! -name .domains -exec rm -rf {} +
+find "$ziel" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
 
 for datei in index.html konzerte.html 404.html impressum.html datenschutz.html; do
   cp "$datei" "$ziel/$datei"
@@ -47,8 +52,27 @@ mkdir -p "$ziel/data"
 for datei in konzerte.json karte.json orte-tabelle.json; do
   cp "data/$datei" "$ziel/data/$datei"
 done
-if [ -f .domains ]; then
-  cp .domains "$ziel/.domains"
+if [ -f CNAME ]; then
+  cp CNAME "$ziel/CNAME"
 fi
 
-echo "Veröffentlicht nach $ziel"
+# 404.html liefert GitHub auch für verschachtelte Adressen aus (/a/b), darum nutzt die Datei
+# <base href="/"> und Pfade ab dieser Basis. Nur die Kopie im Ziel wird angepasst, nie die Quelle:
+#   CNAME im Repo-Wurzelordner (eigene Domain)  -> "/"
+#   sonst GITHUB_REPOSITORY=besitzer/name        -> "/name/" (Projektseite; Repo "<x>.github.io" -> "/")
+#   weder noch (lokal)                           -> "/"
+basis="/"
+if [ ! -f CNAME ] && [ -n "${GITHUB_REPOSITORY:-}" ]; then
+  repo=${GITHUB_REPOSITORY#*/}
+  case "$repo" in
+    ""|*[!A-Za-z0-9._-]*) fehler "GITHUB_REPOSITORY hat keinen brauchbaren Repo-Namen: $GITHUB_REPOSITORY, Abbruch" ;;
+  esac
+  case "$repo" in
+    *.github.io) ;;
+    *) basis="/$repo/" ;;
+  esac
+fi
+sed "s|<base href=\"/\">|<base href=\"$basis\">|" "$ziel/404.html" > "$ziel/404.html.neu"
+mv "$ziel/404.html.neu" "$ziel/404.html"
+
+echo "Veröffentlicht nach $ziel (404.html-Basis: $basis)"

@@ -1,7 +1,8 @@
-"""Test für tools/veroeffentlichen.sh (Allowlist-Kopie in den Pages-Klon).
+"""Test für tools/veroeffentlichen.sh (Allowlist-Kopie in den Zielordner für GitHub Pages).
 
 Alle Tests laufen gegen eine Attrappe des Repos in einem Temp-Ordner, nie gegen das echte Repo.
 """
+import os
 import shutil
 import subprocess
 import tempfile
@@ -20,6 +21,9 @@ AUSGESCHLOSSEN = {
     "docs/plan.md", "tools/x.py", "tests/t.mjs", "kit/k.txt", "styleguide.html", "README.md",
     "data/orte.json", "data/quellen-status.json", ".gitignore", "redesign/r.html",
 }
+
+
+BASIS_404 = '<head>\n  <base href="/">\n</head>\n<a href="index.html#wand">x</a>\n'
 
 
 def schreibe(wurzel: Path, rel: str, inhalt="x"):
@@ -42,16 +46,19 @@ class VeroeffentlichenTest(unittest.TestCase):
         self.wurzel = self.tmp / "repo"
         for rel in ALLOWLIST | AUSGESCHLOSSEN:
             schreibe(self.wurzel, rel, rel)
+        schreibe(self.wurzel, "404.html", BASIS_404)
         (self.wurzel / "tools").mkdir(exist_ok=True)
         shutil.copy(ECHTES_SKRIPT, self.wurzel / "tools" / "veroeffentlichen.sh")
         self.ziel = self.tmp / "pages"
         self.ziel.mkdir()
 
-    def lauf(self, *args, cwd=None):
+    def lauf(self, *args, cwd=None, env_zusatz=None):
+        env = {k: v for k, v in os.environ.items() if k != "GITHUB_REPOSITORY"}
+        env.update(env_zusatz or {})
         return subprocess.run(
             [BASH, (self.wurzel / "tools" / "veroeffentlichen.sh").as_posix(),
              *(Path(a).as_posix() for a in args)],
-            cwd=cwd or self.tmp, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            cwd=cwd or self.tmp, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
 
     def wurzel_unveraendert(self):
         self.assertEqual(dateien(self.wurzel), ALLOWLIST | AUSGESCHLOSSEN | {"tools/veroeffentlichen.sh"})
@@ -79,20 +86,52 @@ class VeroeffentlichenTest(unittest.TestCase):
         self.assertEqual((self.ziel / ".git/HEAD").read_text(), "ref: refs/heads/main\n")
         self.assertEqual(dateien(self.ziel), ALLOWLIST)
 
-    def test_domains_im_ziel_bleibt_ohne_quelle_unveraendert(self):
-        (self.ziel / ".git").mkdir()
-        (self.ziel / ".domains").write_bytes(b"fuckofffashion.example\r\n\x00ende")
+    def test_ohne_cname_wird_keine_cname_angelegt(self):
         r = self.lauf(self.ziel)
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual((self.ziel / ".domains").read_bytes(), b"fuckofffashion.example\r\n\x00ende")
+        self.assertFalse((self.ziel / "CNAME").exists())
 
-    def test_domains_aus_quelle_wird_kopiert(self):
-        schreibe(self.wurzel, ".domains", "neu.example\n")
+    def test_cname_aus_quelle_wird_kopiert(self):
+        schreibe(self.wurzel, "CNAME", "neu.example\n")
         (self.ziel / ".git").mkdir()
-        (self.ziel / ".domains").write_text("alt.example\n")
+        schreibe(self.ziel, "CNAME", "alt.example\n")
         r = self.lauf(self.ziel)
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual((self.ziel / ".domains").read_text(), "neu.example\n")
+        self.assertEqual((self.ziel / "CNAME").read_text(), "neu.example\n")
+
+    def basis_der_404(self):
+        return (self.ziel / "404.html").read_text(encoding="utf-8")
+
+    def test_404_basis_lokal_ohne_cname_und_repo_bleibt_wurzel(self):
+        r = self.lauf(self.ziel)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.basis_der_404(), BASIS_404)
+
+    def test_404_basis_projektseite_aus_github_repository(self):
+        r = self.lauf(self.ziel, env_zusatz={"GITHUB_REPOSITORY": "mark/fuckofffashion"})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.basis_der_404(), BASIS_404.replace('href="/"', 'href="/fuckofffashion/"'))
+        # Quelle bleibt unverändert
+        self.assertEqual((self.wurzel / "404.html").read_text(encoding="utf-8"), BASIS_404)
+
+    def test_404_basis_mit_cname_ist_wurzel(self):
+        schreibe(self.wurzel, "CNAME", "example.org")
+        r = self.lauf(self.ziel, env_zusatz={"GITHUB_REPOSITORY": "mark/fuckofffashion"})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.basis_der_404(), BASIS_404)
+
+    def test_404_basis_nutzerseite_github_io_ist_wurzel(self):
+        r = self.lauf(self.ziel, env_zusatz={"GITHUB_REPOSITORY": "mark/mark.github.io"})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.basis_der_404(), BASIS_404)
+
+    def test_404_ohne_base_in_quelle_bricht_ab_ohne_das_ziel_zu_leeren(self):
+        schreibe(self.wurzel, "404.html", "<head></head>")
+        schreibe(self.ziel, "alt.html", "bleibt")
+        r = self.lauf(self.ziel)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("base", r.stderr)
+        self.assertEqual((self.ziel / "alt.html").read_text(), "bleibt")
 
     def test_ohne_argument_bricht_ab(self):
         r = subprocess.run([BASH, (self.wurzel / "tools" / "veroeffentlichen.sh").as_posix()],
