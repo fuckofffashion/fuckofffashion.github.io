@@ -1,0 +1,13 @@
+{
+ "genres": {
+  "Ska / Reggae": ["ska", "reggae", "rocksteady"],
+  "Oi!": ["oi!", " oi "],
+  "Hardcore": ["hardcore", "hc"],
+  "Crust / D-Beat": ["crust", "d-beat", "dbeat"],
+  "Psychobilly / Rockabilly": ["psychobilly", "rockabilly"],
+  "Punk": ["punk"]
+ },
+ "radar_tags": ["Punk / Hardcore / Crust", "Ska / Reggae", "Grind Dbeat Death"],
+ "kommerz": ["eventim", "ticketmaster", "livenation", "myticket", "ticketcorner", "oeticket"],
+ "frei": ["eintritt frei", "free entry", "spende", "soli", "umsonst", "kostenlos", "by donation", "free"]
+}
