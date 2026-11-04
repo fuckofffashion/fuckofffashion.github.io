@@ -14,6 +14,7 @@
 .head nav { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
 .head nav a { font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); text-decoration: none; padding-block: .5rem; }
 @media (max-width: 560px) { .head__mark span { display: none; } .head nav .nav--wide { display: none; } }
+@media (max-width: 370px) { .head nav .nav--mid { display: none; } } /* Startseite: vier Punkte passen erst ab 371 px */
 
 /* Hero --------------------------------------------------- */
 .hero { min-height: 100svh; display: grid; align-content: end; padding-block: 7rem 4rem; }

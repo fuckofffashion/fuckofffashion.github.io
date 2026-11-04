@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Was geht? Konzerte · Fuck Off Fashion</title>
+  <meta name="description" content="Punk, Ska, Hardcore in Deutschland, den Niederlanden und Belgien. Ohne Algorithmus, ohne Tracking. Du entscheidest.">
+  <meta name="theme-color" content="#0b0a0a">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css?v=13">
+  <link rel="stylesheet" href="css/base.css?v=13">
+  <link rel="stylesheet" href="css/site.css?v=13">
+  <link rel="stylesheet" href="css/konzerte.css?v=13">
+  <script type="module" src="js/konzerte/app.js?v=13"></script>
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<header class="head">
+  <a class="head__mark" href="./" aria-label="Fuck Off Fashion – Startseite">
+    <svg viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="104" r="76"/><path d="M48 176 100 20 152 176"/><path d="M14 124 188 112"/></g></svg>
+    <span>Fuck Off Fashion</span>
+  </a>
+  <nav aria-label="Hauptnavigation">
+    <a class="scrawl" href="./#anarchie">Anarchie</a>
+    <a class="scrawl" href="./#wand">Motive</a>
+    <a class="scrawl nav--wide" href="./#selbermachen">Selbermachen</a>
+    <a class="scrawl" href="konzerte.html" aria-current="page">Konzerte</a>
+  </nav>
+</header>
+
+<main id="main" class="page wrap kz js-konzerte">
+  <div class="kz__kopf">
+    <p class="label label--red">Konzertkalender · DE · NL · BE</p>
+    <h1 class="shout shout--1">Was geht?</h1>
+    <p class="lead kz__sub">Wir empfehlen dir nichts. Du entscheidest.</p>
+  </div>
+
+  <div class="kz-layout">
+    <!-- Filterleiste ------------------------------------------- -->
+    <form class="kz-filter js-filter" role="search" aria-label="Konzerte filtern" novalidate>
+      <span class="tape" aria-hidden="true"></span>
+
+      <fieldset class="kz-gruppe">
+        <legend class="kz-gruppe__titel">Wo</legend>
+        <button class="btn kz-wo js-wo" type="button">Wo bin ich? <span class="btn__icon" aria-hidden="true">⌖</span></button>
+        <div class="kz-ort">
+          <label class="kz-feld__label" for="kz-ort">PLZ / Ort</label>
+          <input class="kz-input js-ort" id="kz-ort" type="text" autocomplete="off" spellcheck="false"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="kz-ort-liste"
+                 aria-describedby="kz-hinweis" placeholder="z. B. 47533 oder Kleve">
+          <ul class="kz-vorschlaege js-ort-liste" id="kz-ort-liste" role="listbox" aria-label="Vorschläge" hidden></ul>
+        </div>
+        <p class="kz-hinweis js-hinweis" id="kz-hinweis" role="status"></p>
+        <p class="kz-mitte js-mitte" hidden>
+          <span>Mitte: <strong class="js-mitte-name"></strong></span>
+          <button class="kz-mitte__weg js-mitte-weg" type="button">Vergessen</button>
+        </p>
+      </fieldset>
+
+      <fieldset class="kz-gruppe">
+        <legend class="kz-gruppe__titel">Umkreis</legend>
+        <label class="visually-hidden" for="kz-umkreis">Umkreis</label>
+        <input class="kz-regler js-umkreis" id="kz-umkreis" type="range" min="0" max="3" step="1" value="2">
+        <p class="kz-stufe" aria-hidden="true"><output class="js-stufe" for="kz-umkreis">Bahnweite · 100 km</output></p>
+        <p class="kz-klein js-umkreis-hinweis">Greift, sobald du einen Ort hast.</p>
+      </fieldset>
+
+      <fieldset class="kz-gruppe">
+        <legend class="kz-gruppe__titel">Wann</legend>
+        <div class="kz-chips" role="group" aria-label="Schnellwahl Datum">
+          <button class="kz-chip js-schnell" type="button" data-wahl="heute" aria-pressed="false">Heute</button>
+          <button class="kz-chip js-schnell" type="button" data-wahl="wochenende" aria-pressed="false">Wochenende</button>
+          <button class="kz-chip js-schnell" type="button" data-wahl="alles" aria-pressed="false">Alles</button>
+        </div>
+        <div class="kz-daten">
+          <label class="kz-feld"><span class="kz-feld__label">von</span><input class="kz-input js-von" type="date"></label>
+          <label class="kz-feld"><span class="kz-feld__label">bis</span><input class="kz-input js-bis" type="date"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="kz-gruppe">
+        <legend class="kz-gruppe__titel">Was</legend>
+        <label class="kz-feld">
+          <span class="kz-feld__label">Genre</span>
+          <select class="kz-input js-genre" aria-describedby="kz-genre-hinweis"><option value="">Alle</option></select>
+        </label>
+        <p class="kz-klein" id="kz-genre-hinweis">Genres raten wir. Wenn's nicht passt: Pogo trotzdem.</p>
+        <label class="kz-schalter"><input class="js-frei" type="checkbox"> <span>Nur Eintritt frei / auf Spende</span></label>
+        <label class="kz-schalter"><input class="js-kommerz" type="checkbox"> <span>Kommerz ausblenden</span></label>
+      </fieldset>
+    </form>
+
+    <!-- Ergebnisse --------------------------------------------- -->
+    <section class="kz-ergebnis" aria-labelledby="kz-zahl">
+      <svg class="js-karte" aria-hidden="true"></svg>
+
+      <div class="kz-leiste">
+        <h2 class="kz-zahl js-zahl" id="kz-zahl" aria-live="polite">Lade Termine …</h2>
+        <div class="kz-sort" role="radiogroup" aria-label="Sortieren nach">
+          <span class="kz-feld__label" aria-hidden="true">Sortieren</span>
+          <label class="kz-sort__wahl"><input type="radio" name="sortierung" value="datum" class="js-sort" checked> <span>Datum</span></label>
+          <label class="kz-sort__wahl"><input type="radio" name="sortierung" value="entfernung" class="js-sort" disabled> <span>Entfernung</span></label>
+        </div>
+      </div>
+
+      <p class="kz-leer js-leer" hidden></p>
+      <ol class="kz-liste js-liste"></ol>
+      <p class="kz-mehr"><button class="btn btn--ghost js-mehr" type="button" hidden>Mehr zeigen</button></p>
+
+      <div class="kz-quellen">
+        <p class="js-ohne-ort" hidden></p>
+        <p class="js-stand" hidden></p>
+        <ul>
+          <li><a href="https://knox.p-u-n-k.de/db/" rel="noopener noreferrer" target="_blank">Konzerttermine bereitgestellt von Knox Punkkonzerte Datenbank</a></li>
+          <li><a href="https://radar.squat.net/" rel="noopener noreferrer" target="_blank">Radar – radar.squat.net</a></li>
+          <li>Kartendaten: Natural Earth (gemeinfrei)</li>
+          <li><a href="https://www.geonames.org/" rel="noopener noreferrer" target="_blank">Orte: GeoNames (CC BY 4.0)</a></li>
+          <li><a href="https://www.openstreetmap.org/copyright" rel="noopener noreferrer" target="_blank">Ortung der Läden © OpenStreetMap-Mitwirkende</a></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot label">
+  <span>Fuck Off Fashion · keine Cookies, kein Tracking, kein Shop</span>
+  <nav aria-label="Rechtliches"><a class="scrawl" href="impressum.html">Impressum</a><a class="scrawl" href="datenschutz.html">Datenschutz</a></nav>
+</footer>
+</body>
+</html>

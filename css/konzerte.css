@@ -1,0 +1,190 @@
+/* =========================================================
+   FUCK OFF FASHION – Konzertkalender (konzerte.html)
+   Copyshop-Flyer: Filter auf Kopierpapier, Liste auf Schwarz.
+   Schnell zu überfliegen, auch am Telefon.
+   ========================================================= */
+
+.kz { padding-top: clamp(6rem, 12vw, 9rem); }
+.kz [hidden] { display: none !important; } /* .btn, Flex-Zeilen u. a. setzen display und würden hidden sonst überstimmen */
+.kz__kopf { margin-bottom: var(--sp-4); }
+.page.kz h1 { margin: .2em 0 .25em; }
+.kz__sub { max-width: none; font-weight: 600; }
+.kz__sub::after {
+  content: ""; display: block; width: min(16rem, 60%); height: .35em; margin-top: .3em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6 C20 2 30 9 50 5 S80 2 99 6' fill='none' stroke='%23d4161b' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%;
+}
+
+.kz-layout {
+  display: grid; grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: var(--sp-4) clamp(1.5rem, 4vw, 4rem); align-items: start;
+}
+@media (max-width: 900px) { .kz-layout { grid-template-columns: minmax(0, 1fr); } }
+
+/* Filterleiste: ein Zettel Kopierpapier mit Klebeband ------ */
+.kz-filter {
+  position: relative; background: var(--paper); color: var(--ink);
+  padding: 1.6rem 1.25rem 1.25rem; display: grid; gap: 1.25rem;
+  box-shadow: 0 18px 40px -22px #000;
+  clip-path: polygon(0 0, 100% .6%, 99.4% 100%, .5% 99.3%);
+}
+.kz-filter .tape { top: -.7rem; left: 50%; transform: translateX(-50%) rotate(-3deg); width: 6rem; height: 1.5rem; }
+@media (min-width: 901px) and (min-height: 860px) {
+  .kz-filter { position: sticky; top: 5rem; }
+}
+
+.kz-gruppe { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: .55rem; }
+.kz-gruppe + .kz-gruppe { border-top: 2px dashed var(--paper-2); padding-top: 1.1rem; }
+.kz-gruppe__titel {
+  padding: 0; margin-bottom: .45rem; float: left; width: 100%;
+  font: 400 1.5rem/1 var(--font-shout); text-transform: uppercase;
+}
+
+.kz-feld { display: grid; gap: .25rem; min-width: 0; }
+.kz-feld__label {
+  font: 700 var(--fs-label)/1.2 var(--font-zine); text-transform: uppercase;
+  letter-spacing: var(--track-label); color: var(--ash-dark);
+}
+.kz-input {
+  width: 100%; min-width: 0; min-height: 2.75rem; padding: .55rem .7rem;
+  font: 400 1rem/1.2 var(--font-body); color: var(--ink); background: #fff;
+  border: 2px solid var(--ink); border-radius: 0;
+}
+.kz-input:focus-visible { outline: 3px solid var(--blood); outline-offset: 2px; }
+select.kz-input { appearance: auto; }
+.kz-filter :focus-visible { outline-color: var(--blood); }
+
+.kz-wo { justify-self: start; }
+.kz-wo[aria-busy="true"] { opacity: .7; cursor: progress; }
+
+/* Ort mit Vorschlagsliste */
+.kz-ort { position: relative; display: grid; gap: .25rem; }
+.kz-vorschlaege {
+  position: absolute; z-index: 5; left: 0; right: 0; top: 100%; margin: 0; padding: 0; list-style: none;
+  background: var(--ink); color: var(--paper); max-height: 16rem; overflow-y: auto;
+  box-shadow: 0 14px 30px -12px #000;
+}
+.kz-vorschlag { padding: .65rem .75rem; cursor: pointer; border-bottom: 1px solid var(--ink-3); font-weight: 600; }
+.kz-vorschlag:hover, .kz-vorschlag[aria-selected="true"] { background: var(--blood); color: var(--paper); }
+.kz-vorschlag__land { font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); }
+
+.kz-hinweis:empty { display: none; }
+.kz-hinweis { margin: 0; padding: .45rem .6rem; background: var(--ink); color: var(--paper); font: 700 var(--fs-small)/1.35 var(--font-zine); }
+.kz-mitte { margin: 0; display: flex; flex-wrap: wrap; gap: .4rem .8rem; align-items: baseline; font-size: var(--fs-small); }
+.kz-mitte__weg {
+  border: 0; background: none; padding: .2rem 0; cursor: pointer; color: var(--blood);
+  font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
+  text-decoration: underline; text-underline-offset: .2em;
+}
+
+/* Umkreis-Regler */
+.kz-regler { width: 100%; accent-color: var(--blood); margin: .3rem 0 0; min-height: 1.75rem; }
+.kz-stufe { margin: 0; font: 400 1.35rem/1 var(--font-shout); text-transform: uppercase; }
+.kz-klein { margin: 0; font-size: var(--fs-small); line-height: 1.4; color: var(--ash-dark); }
+
+/* Datum */
+.kz-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.kz-chip {
+  min-height: 2.5rem; padding: .5rem .8rem; cursor: pointer;
+  font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
+  color: var(--ink); background: transparent; border: 2px solid var(--ink);
+}
+.kz-chip:nth-child(1) { rotate: -1deg; }
+.kz-chip:nth-child(3) { rotate: .8deg; }
+.kz-chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.kz-chip:hover { background: var(--blood); border-color: var(--blood); color: var(--paper); }
+.kz-daten { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+
+/* Schalter: viereckige Kippschalter */
+.kz-schalter { display: flex; gap: .7rem; align-items: center; cursor: pointer; font-weight: 600; line-height: 1.3; min-height: 2.5rem; }
+.kz-schalter input {
+  appearance: none; flex: none; width: 2.9rem; height: 1.55rem; margin: 0; cursor: pointer;
+  border: 2px solid var(--ink); background: var(--paper);
+  background-image: linear-gradient(var(--ink), var(--ink)); background-repeat: no-repeat;
+  background-size: 1.05rem 1.05rem; background-position: .15rem 50%;
+  transition: background-position var(--dur-fast) var(--ease-out);
+}
+.kz-schalter input:checked {
+  background-color: var(--blood); border-color: var(--blood);
+  background-image: linear-gradient(var(--paper), var(--paper)); background-position: calc(100% - .15rem) 50%;
+}
+.kz-schalter input:focus-visible { outline: 3px solid var(--blood); outline-offset: 3px; }
+
+/* Ergebnisse ---------------------------------------------- */
+.kz-ergebnis { min-width: 0; }
+.js-karte:empty { display: none; } /* Platzhalter für die Karte (Task 9) */
+
+.kz-leiste {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: .8rem 1.5rem;
+  padding-bottom: .9rem; border-bottom: 3px solid var(--paper);
+}
+.page .kz-zahl { margin: 0; font: 400 var(--fs-3)/1.05 var(--font-shout); text-transform: uppercase; max-width: 26ch; }
+.kz-sort { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; }
+.kz-sort .kz-feld__label { color: var(--ash); }
+.kz-sort__wahl { position: relative; cursor: pointer; }
+.kz-sort__wahl input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.kz-sort__wahl span {
+  display: inline-block; padding: .55rem .75rem; border: 2px solid var(--ink-3);
+  font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
+}
+.kz-sort__wahl input:checked + span { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.kz-sort__wahl input:focus-visible + span { outline: 3px solid var(--blood-hot); outline-offset: 3px; }
+.kz-sort__wahl input:disabled, .kz-sort__wahl input:disabled + span { cursor: not-allowed; }
+.kz-sort__wahl input:disabled + span { color: var(--ash-dark); border-style: dashed; }
+
+/* Liste */
+.kz-liste { list-style: none; margin: 0; padding: 0; }
+.page .kz-termin { max-width: none; }
+.kz-termin {
+  display: grid; grid-template-columns: 5.25rem minmax(0, 1fr); gap: .2rem 1.1rem;
+  padding: 1.05rem 0; border-bottom: 1px dashed var(--ink-3);
+}
+.kz-termin__wann { margin: 0; display: grid; align-content: start; gap: .2rem; }
+.kz-termin__wann time { display: grid; }
+.kz-termin__tag { font: 700 var(--fs-label)/1.2 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ash); }
+.kz-termin__tag.is-heute { color: var(--paper); background: var(--blood); justify-self: start; padding: .15em .4em; rotate: -3deg; }
+.kz-termin__datum { font: 400 1.75rem/1 var(--font-shout); }
+.kz-termin__jahr, .kz-termin__zeit { font: 700 var(--fs-label)/1.2 var(--font-zine); color: var(--ash); letter-spacing: .06em; }
+
+.kz-termin__was { min-width: 0; display: grid; gap: .3rem; justify-items: start; }
+.kz-termin__was > * { margin: 0; max-width: none; }
+.page .kz-termin__bands { margin: 0; font: 800 1.15rem/1.25 var(--font-body); text-transform: none; overflow-wrap: anywhere; }
+.kz-termin__zusatz { font-size: var(--fs-small); line-height: 1.45; color: var(--paper-2); overflow-wrap: anywhere; }
+.kz-termin__ort { font: 700 var(--fs-small)/1.35 var(--font-zine); overflow-wrap: anywhere; }
+.kz-termin__weg { font: 700 var(--fs-small)/1.35 var(--font-zine); color: var(--blood-hot); }
+.kz-termin__marken { display: flex; flex-wrap: wrap; gap: .5rem .9rem; align-items: center; padding-block: .25rem; }
+.kz-frei {
+  font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
+  border: 2px dashed var(--paper); padding: .35em .5em; rotate: 1.5deg;
+}
+.kz-stempel { font-size: 1.05rem; border-width: 3px; color: var(--blood-hot); border-color: var(--blood-hot); padding: .25em .45em .15em; }
+.kz-termin__links { display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; font: 700 var(--fs-label)/1.3 var(--font-zine); letter-spacing: .06em; }
+.kz-link { color: var(--paper); text-decoration-color: var(--blood); text-decoration-thickness: 2px; text-underline-offset: .2em; overflow-wrap: anywhere; }
+.kz-link:hover { color: var(--blood-hot); }
+.kz-termin__links .kz-link { padding-block: .35rem; }
+.kz-termin__links .kz-link::after { content: " ↗"; }
+
+/* Leere Liste: ein Spruch statt „0 Ergebnisse“ */
+.kz-leer { margin: var(--sp-4) 0; max-width: 32ch; }
+.kz-leer__spruch { display: block; font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; margin-bottom: .6rem; }
+.kz-leer .kz-link { font: 700 var(--fs-small)/1.4 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); }
+
+.kz-mehr { margin: var(--sp-3) 0 0; text-align: center; max-width: none; }
+
+/* Quellen */
+.kz-quellen {
+  margin-top: var(--sp-5); padding-top: var(--sp-2); border-top: 1px solid var(--ink-3);
+  font: 400 var(--fs-small)/1.5 var(--font-zine); color: var(--ash);
+}
+.kz-quellen p { margin: 0 0 .6rem; }
+.kz-quellen ul { margin: .4rem 0 0; padding: 0; list-style: none; display: grid; gap: .25rem; }
+.kz-quellen a { color: var(--paper-2); text-decoration-color: var(--ash-dark); text-underline-offset: .2em; }
+.kz-quellen a:hover { color: var(--paper); }
+
+@media (max-width: 560px) {
+  .kz-termin { grid-template-columns: 4.1rem minmax(0, 1fr); gap: .2rem .8rem; }
+  .kz-termin__datum { font-size: 1.45rem; }
+  .kz-filter { padding-inline: 1rem; gap: 1rem; }
+  .kz-gruppe + .kz-gruppe { padding-top: .9rem; }
+  .kz-gruppe__titel { font-size: 1.3rem; margin-bottom: .2rem; }
+  .kz-leiste { align-items: start; }
+}
