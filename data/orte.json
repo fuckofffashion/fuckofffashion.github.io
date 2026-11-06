@@ -4112,5 +4112,10 @@
   "lat": 53.8062514,
   "lon": 10.3851746,
   "land": "DE"
+ },
+ "DE|bielefeld|ajz bielefeld": {
+  "lat": 52.0218959,
+  "lon": 8.5562582,
+  "land": "DE"
  }
 }
