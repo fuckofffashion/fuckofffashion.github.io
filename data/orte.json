@@ -4138,5 +4138,15 @@
   "lat": 51.5116033,
   "lon": 7.4473085,
   "land": "DE"
+ },
+ "BE|mol|tydeeh,": {
+  "lat": 51.1829179,
+  "lon": 5.1133343,
+  "land": "BE"
+ },
+ "DE|dusseldorf|kultur schlachthof": {
+  "lat": 51.2515339,
+  "lon": 6.7907603,
+  "land": "DE"
  }
 }
