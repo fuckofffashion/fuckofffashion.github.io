@@ -52,3 +52,16 @@ export function stufeVon(m) {
   const stufe = Math.round(2 * Math.log2(m)) || 0; // -0 vermeiden
   return { stufe, mq: 2 ** (stufe / 2) };
 }
+
+export const UMGEBUNG_KM = 150; // ein einzelner Treffer: so viel Umgebung bleibt sichtbar
+
+// Suche: alle Treffer ins Bild, mit Rand (× 1,3). Ohne Treffer das ganze Gebiet.
+export function umfasse(r, punkte) {
+  if (!punkte.length) return passend(r, null, null);
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const p of punkte) {
+    [x0, y0, x1, y1] = [Math.min(x0, p.x), Math.min(y0, p.y), Math.max(x1, p.x), Math.max(y1, p.y)];
+  }
+  const w = Math.max((x1 - x0) * 1.3, ((y1 - y0) * 1.3 * r.W) / r.H, UMGEBUNG_KM);
+  return begrenze(r, { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w });
+}

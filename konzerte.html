@@ -120,9 +120,14 @@
       <div class="kz-karte js-karte" aria-hidden="true" hidden>
         <span class="tape"></span>
         <svg class="kz-karte__bild"></svg>
+        <div class="kz-karte__knoepfe">
+          <button type="button" class="kz-karte__knopf js-karte-rein" tabindex="-1" aria-label="Hineinzoomen">+</button>
+          <button type="button" class="kz-karte__knopf js-karte-raus" tabindex="-1" aria-label="Herauszoomen">−</button>
+          <button type="button" class="kz-karte__knopf kz-karte__gross js-karte-gross" tabindex="-1" aria-pressed="false">⤢ Groß</button>
+        </div>
         <p class="kz-karte__hilfe">
-          <span class="kz-karte__hilfe-maus">Rad zoomt · Ziehen schiebt · Klick auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
-          <span class="kz-karte__hilfe-finger">Zwei Finger zoomen · Tipp auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
+          <span class="kz-karte__hilfe-maus">Rad oder + / − zoomt · Ziehen schiebt · „Groß“ füllt den Bildschirm · Klick auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
+          <span class="kz-karte__hilfe-finger">Zwei Finger oder + / − zoomen · „Groß“ füllt den Bildschirm · Tipp auf eine Zahl zoomt rein, aufs A springt zum Termin</span>
         </p>
       </div>
 

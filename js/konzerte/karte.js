@@ -4,7 +4,7 @@
 // der Kartengrund unter dem Kopierer-Filter (Korn in Pixeln, bleibt beim Zoomen gleich grob) und die Marker
 // ohne Filter. Zoomen und Verschieben ändern nur die viewBox; die Haufen werden je Zoomstufe einmal gebildet.
 
-import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, zoomUm } from "./kartenansicht.js?v=16";
+import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, umfasse, zoomUm } from "./kartenansicht.js?v=25";
 
 export { projiziere }; // Projektion und Ansichtsrechnung liegen in kartenansicht.js
 
@@ -249,7 +249,10 @@ function fahre(s, ziel, weich = true) {
   s.fahrt = requestAnimationFrame(schritt);
 }
 
-const zeige = (id) => document.dispatchEvent(new CustomEvent("konzerte:zeige", { detail: { id } }));
+const zeige = (id) => {
+  document.dispatchEvent(new CustomEvent("konzerte:gross", { detail: { an: false } })); // erst klein, dann zur Liste
+  document.dispatchEvent(new CustomEvent("konzerte:zeige", { detail: { id } }));
+};
 
 function bedienung(s) {
   const svg = s.svg;
@@ -278,7 +281,7 @@ function bedienung(s) {
   s.gezogen = false;
   svg.addEventListener("pointerdown", (e) => {
     s.gezogen = false; // auch bei Fingern: ein altes Mausziehen darf keinen Tipp schlucken
-    if (e.pointerType === "touch" || e.button !== 0) return;
+    if ((e.pointerType === "touch" && !s.gross) || e.button !== 0) return; // in der Großansicht schiebt ein Finger
     zug = { id: e.pointerId, x: e.clientX, y: e.clientY, a: s.ansicht };
   });
   svg.addEventListener("pointermove", (e) => {
@@ -309,6 +312,7 @@ function bedienung(s) {
   };
   svg.addEventListener("touchstart", (e) => {
     if (e.touches.length !== 2) return;
+    loslassen(); // der zweite Finger übernimmt vom Ein-Finger-Ziehen
     cancelAnimationFrame(s.fahrt);
     griff = { ...zwei(e), a: s.ansicht };
   }, { passive: true });
@@ -326,6 +330,28 @@ function bedienung(s) {
   const ende = (e) => { if (e.touches.length < 2) griff = null; };
   svg.addEventListener("touchend", ende);
   svg.addEventListener("touchcancel", ende);
+
+  // Knöpfe: Plus und Minus zoomen um die Mitte, „Groß“ legt die Karte über die ganze Seite
+  const rahmen = svg.closest(".kz-karte");
+  const knopf = (wahl) => rahmen?.querySelector(wahl);
+  const zoome = (faktor) => fahre(s, zoomUm(s, s.W / 2, s.H / 2, faktor, s.ansicht));
+  knopf(".js-karte-rein")?.addEventListener("click", () => zoome(0.5));
+  knopf(".js-karte-raus")?.addEventListener("click", () => zoome(2));
+  const gross = knopf(".js-karte-gross");
+  s.gross = false;
+  const setzeGross = (an) => {
+    if (!rahmen || s.gross === an) return;
+    s.gross = an;
+    rahmen.classList.toggle("is-gross", an);
+    document.documentElement.classList.toggle("kz-karte-offen", an);
+    if (gross) {
+      gross.setAttribute("aria-pressed", String(an));
+      gross.textContent = an ? "✕ Klein" : "⤢ Groß";
+    }
+  };
+  gross?.addEventListener("click", () => setzeGross(!s.gross));
+  document.addEventListener("konzerte:gross", (e) => setzeGross(Boolean(e.detail?.an)));
+  addEventListener("keydown", (e) => { if (e.key === "Escape") setzeGross(false); });
 
   // Klick: Haufen zoomt hinein, ein A springt zum Listeneintrag
   svg.addEventListener("click", (e) => {
@@ -356,7 +382,7 @@ function bedienung(s) {
   }
 }
 
-export function zeichneKarte(svg, karte, { treffer, mitte, radiusKm }) {
+export function zeichneKarte(svg, karte, { treffer, mitte, radiusKm, suche = "" }) {
   let s = zustaende.get(svg);
   if (!s) {
     s = aufbauen(svg, karte);
@@ -380,11 +406,14 @@ export function zeichneKarte(svg, karte, { treffer, mitte, radiusKm }) {
 
   s.mitte = mitte && Number.isFinite(mitte.lat) && Number.isFinite(mitte.lon) ? mitte : null;
   s.radiusKm = s.mitte && Number.isFinite(radiusKm) ? radiusKm : null;
-  const schluessel = s.mitte ? `${s.mitte.lat},${s.mitte.lon},${s.radiusKm}` : "";
-  // Neue Mitte oder neuer Umkreis: passend einrahmen. Sonst bleibt die Ansicht, wo sie war.
+  const ort = s.mitte ? `${s.mitte.lat},${s.mitte.lon},${s.radiusKm}` : "";
+  const schluessel = `${ort}|${suche}`;
+  // Neue Mitte, neuer Umkreis oder neue Suche: neu einrahmen. Bei einer Suche rahmen die Treffer das Bild,
+  // sonst der Umkreis. Andere Filter lassen die Ansicht, wo sie war.
   if (!s.ansicht || schluessel !== s.mitteSchluessel) {
-    cancelAnimationFrame(s.fahrt);
-    s.ansicht = passend(s, s.mitte, s.radiusKm);
+    const ziel = suche && s.punkte.length ? umfasse(s, s.punkte) : passend(s, s.mitte, s.radiusKm);
+    if (s.ansicht) fahre(s, ziel);
+    else s.ansicht = ziel;
   }
   s.mitteSchluessel = schluessel;
   plane(s);

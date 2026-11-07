@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { projiziere, haufen } from "../../js/konzerte/karte.js";
-import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, stufeVon, zoomUm } from "../../js/konzerte/kartenansicht.js";
+import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, stufeVon, umfasse, zoomUm } from "../../js/konzerte/kartenansicht.js";
 
 test("10°O/51°N ist der Nullpunkt", () => {
   const [x0, y0] = projiziere(51, 10);
@@ -103,4 +103,34 @@ test("Zoomstufen in halben Oktaven", () => {
   assert.deepEqual(stufeVon(1), { stufe: 0, mq: 1 });
   assert.deepEqual(stufeVon(2), { stufe: 2, mq: 2 });
   assert.equal(stufeVon(1.1).stufe, stufeVon(0.95).stufe);
+});
+
+// Einpassen auf die Treffer (Suche) ------------------------------------------------
+const BREIT = { W: 800, H: 400, gebiet: { x0: -500, y0: -600, x1: 600, y1: 500 } };
+
+test("umfasse: alle Treffer liegen im Bild, mit Rand", () => {
+  const punkte = [{ x: -100, y: 0 }, { x: 100, y: 50 }, { x: 0, y: -40 }];
+  const a = umfasse(BREIT, punkte);
+  const h = hoehe(BREIT, a.w);
+  for (const p of punkte) {
+    assert.ok(Math.abs(p.x - a.cx) < a.w / 2, `x ${p.x}`);
+    assert.ok(Math.abs(p.y - a.cy) < h / 2, `y ${p.y}`);
+  }
+  assert.ok(a.w > 200, "etwas Rand um die äußeren Punkte");
+});
+
+test("umfasse: hohe Punktwolke richtet sich nach der Höhe des Rahmens", () => {
+  const a = umfasse(BREIT, [{ x: 0, y: -150 }, { x: 0, y: 150 }]);
+  assert.ok(hoehe(BREIT, a.w) > 300);
+});
+
+test("umfasse: ein einzelner Treffer zoomt nicht enger als die Mindestumgebung", () => {
+  const a = umfasse(BREIT, [{ x: 10, y: 20 }]);
+  assert.equal(a.cx, 10);
+  assert.equal(a.cy, 20);
+  assert.ok(a.w >= 150 && a.w >= MIN_BREITE);
+});
+
+test("umfasse: ohne Punkte das ganze Gebiet", () => {
+  assert.deepEqual(umfasse(BREIT, []), passend(BREIT, null, null));
 });

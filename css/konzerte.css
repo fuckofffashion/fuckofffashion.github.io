@@ -130,6 +130,22 @@ select.kz-input { appearance: auto; }
   touch-action: pan-x pan-y; /* ein Finger scrollt die Seite, zwei Finger gehören der Karte */
 }
 .kz-karte__bild.is-ziehen { cursor: grabbing; }
+/* Zoomknöpfe und „Groß“ oben rechts auf der Karte */
+.kz-karte__knoepfe { position: absolute; top: .7rem; right: .7rem; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; }
+.kz-karte__knopf {
+  min-width: 44px; min-height: 44px; padding: 0 .7rem; border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
+  font: 700 1.35rem/1 var(--font-zine); cursor: pointer; touch-action: manipulation;
+  transition: transform 140ms ease-out;
+}
+.kz-karte__gross { font-size: var(--fs-label); letter-spacing: .06em; text-transform: uppercase; }
+.kz-karte__knopf:active { transform: scale(.96); }
+@media (hover: hover) and (pointer: fine) { .kz-karte__knopf:hover { background: var(--spray); } }
+/* Großansicht: Karte über der ganzen Seite, ein Finger schiebt */
+.kz-karte.is-gross { position: fixed; inset: 0; z-index: 80; margin: 0; padding: .75rem; background: var(--ink); display: flex; flex-direction: column; }
+.kz-karte.is-gross .tape, .kz-karte.is-gross .kz-karte__hilfe { display: none; }
+.kz-karte.is-gross .kz-karte__bild { flex: 1; height: auto; min-height: 0; touch-action: none; }
+.kz-karte.is-gross .kz-karte__knoepfe { top: 1.5rem; right: 1.5rem; }
+html.kz-karte-offen { overflow: hidden; }
 /* Beim Ziehen und Zoomen ohne Kopierer- und Sprühfilter: spart je Bild das Neuberechnen der Filterfläche */
 .kz-karte__bild.is-bewegt .kz-karte__kopie, .kz-karte__bild.is-bewegt .kz-karte__spray { filter: none; }
 .kz-karte__land path { fill: var(--paper); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }

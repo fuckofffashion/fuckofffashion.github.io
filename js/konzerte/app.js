@@ -7,7 +7,7 @@ import { STUFEN } from "./einheiten.js?v=16";
 import { SPRUECHE, spruch } from "./leer.js?v=16";
 import { ortsfeld } from "./ortsfeld.js?v=16";
 import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=25";
-import { starteKarte } from "./karte.js?v=16";
+import { starteKarte } from "./karte.js?v=25";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
@@ -247,7 +247,7 @@ function start(wurzel) {
     zeigeLeer();
     zeigeWeiter(optionen);
     wechsel += 1;
-    document.dispatchEvent(new CustomEvent("konzerte:treffer", { detail: { treffer, mitte: z.mitte, radiusKm } }));
+    document.dispatchEvent(new CustomEvent("konzerte:treffer", { detail: { treffer, mitte: z.mitte, radiusKm, suche: sucht() ? normalisiere(z.suche) : "" } }));
   }
 
   function setzeMitte(mitte) {
