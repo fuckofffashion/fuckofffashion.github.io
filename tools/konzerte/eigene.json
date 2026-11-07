@@ -1,0 +1,45 @@
+{
+ "hinweis": "Eigene Termine, von Hand gepflegt. Vergangene fallen beim täglichen Lauf von selbst weg. Pflicht: datum, bands, laden, stadt. lat/lon optional (sonst wird geortet).",
+ "termine": [
+  {
+   "datum": "2026-11-14", "zeit": "20:00",
+   "bands": "Trijahnity", "zusatz": "Reggae'n Roll",
+   "laden": "Bolleke", "plz": "47138", "stadt": "Duisburg",
+   "lat": 51.4686, "lon": 6.8212,
+   "genres": ["Ska / Reggae"],
+   "links": ["https://www.trijahnity.de/#Events"]
+  },
+  {
+   "datum": "2026-11-07", "zeit": "18:00",
+   "bands": "Dan Ganove", "zusatz": "Akustikpunk aus Oberhausen",
+   "laden": "Schankwirtschaft Zur Linde", "plz": "57518", "stadt": "Betzdorf",
+   "lat": 50.7909, "lon": 7.8701,
+   "genres": ["Punk"],
+   "links": ["https://dan66713.wixsite.com/dan-punkrock/event-details/betzdorf-schankwirtschaft-zur-linde"]
+  },
+  {
+   "datum": "2026-11-14", "zeit": "18:00",
+   "bands": "Dan Ganove", "zusatz": "Akustikpunk aus Oberhausen",
+   "laden": "Hüweg – KJZ Steele", "plz": "45276", "stadt": "Essen",
+   "lat": 51.4446, "lon": 7.0789,
+   "genres": ["Punk"],
+   "links": ["https://dan66713.wixsite.com/dan-punkrock/event-details/essen-huweg"]
+  },
+  {
+   "datum": "2026-11-21", "zeit": "18:00",
+   "bands": "Dan Ganove", "zusatz": "Akustikpunk aus Oberhausen",
+   "laden": "Bürgerhaus Ihlow", "plz": "26632", "stadt": "Ihlow",
+   "lat": 53.4110, "lon": 7.4401,
+   "genres": ["Punk"],
+   "links": ["https://dan66713.wixsite.com/dan-punkrock/event-details/ihlow-burgerhaus-ihlow"]
+  },
+  {
+   "datum": "2026-12-04", "zeit": "18:00",
+   "bands": "Dan Ganove", "zusatz": "Akustikpunk aus Oberhausen",
+   "laden": "Zentrum Altenberg", "plz": "46049", "stadt": "Oberhausen",
+   "lat": 51.4753, "lon": 6.8496,
+   "genres": ["Punk"],
+   "links": ["https://dan66713.wixsite.com/dan-punkrock/event-details/oberhausen-zentrum-altenberg"]
+  }
+ ]
+}

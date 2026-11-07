@@ -11,11 +11,14 @@ from tools.konzerte import abholen
 
 FIXTURE = os.path.join(os.path.dirname(__file__), "fixtures", "knox-feed.xml").replace("\\", "/")
 TABELLE = "data/orte-tabelle.json"
+EIGENE_LEER = os.path.join(os.path.dirname(__file__), "fixtures", "eigene-leer.json").replace("\\", "/")
+EIGENE = os.path.join(os.path.dirname(__file__), "fixtures", "eigene.json").replace("\\", "/")
 
 
-def lauf(daten, heute="2026-11-01", hole_knox=None, hole_radar=None):
+def lauf(daten, heute="2026-11-01", hole_knox=None, hole_radar=None, eigene=EIGENE_LEER):
     """Ohne hole_radar läuft Radar nicht (kein Netz in Tests)."""
-    argv = ["--ohne-nominatim", "--daten", daten, "--tabelle", TABELLE, "--heute", heute]
+    argv = ["--ohne-nominatim", "--daten", daten, "--tabelle", TABELLE, "--heute", heute,
+            "--eigene-datei", eigene]
     if not hole_radar:
         argv.append("--ohne-radar")
     if not hole_knox:
@@ -66,7 +69,7 @@ class AbholenTest(unittest.TestCase):
         self.assertNotIn("Langenthal", staedte)
         self.assertGreaterEqual(k["ohne_ort"], 1)
         self.assertEqual(lies(self.daten, "quellen-status.json"),
-                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None}})
+                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None}, "fof": {"ok_am": "2026-11-01", "fehler_seit": None}})
         self.assertTrue(os.path.exists(os.path.join(self.daten, "orte.json")))
 
     def test_merkmale_gesetzt(self):
@@ -134,7 +137,7 @@ class AbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten, hole_knox=tot)
         self.assertEqual(code, 0)
         self.assertEqual(lies(self.daten, "quellen-status.json"),
-                         {"knox": {"ok_am": "2026-10-30", "fehler_seit": "2026-10-31"}})
+                         {"knox": {"ok_am": "2026-10-30", "fehler_seit": "2026-10-31"}, "fof": {"ok_am": "2026-11-01", "fehler_seit": None}})
 
     def test_dritter_tag_exit_1(self):
         heute = date(2026, 11, 1)
@@ -148,6 +151,47 @@ class AbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten)
         self.assertEqual(code, 0)
         self.assertEqual(lies(self.daten, "quellen-status.json")["knox"], {"ok_am": "2026-11-01", "fehler_seit": None})
+
+
+class EigeneTest(unittest.TestCase):
+    """Quelle fof: von Hand gepflegte Termine aus eigene.json."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.daten = self._tmp.name
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_eigene_termine_landen_in_der_ausgabe(self):
+        code, _ = lauf(self.daten, eigene=EIGENE)
+        self.assertEqual(code, 0)
+        k = lies(self.daten, "konzerte.json")
+        fof = [t for t in k["termine"] if t["quelle"] == "fof"]
+        self.assertEqual(len(fof), 1)  # "Vorbei" liegt vor heute
+        t = fof[0]
+        self.assertEqual(t["id"], "fof-2026-11-05-testband-duisburg")
+        self.assertEqual((t["zeit"], t["laden"], t["stadt"], t["land"]), ("20:00", "Kneipe", "Duisburg", "DE"))
+        self.assertEqual((t["lat"], t["lon"], t["genau"]), (51.4686, 6.8212, True))
+        self.assertEqual(t["genres"], ["Punk"])
+        self.assertEqual(t["links"], [{"quelle": "fof", "url": "https://example.org/live"}])
+
+    def test_kaputte_datei_behaelt_alte_termine(self):
+        alt = dict(ALT, id="fof-alt", quelle="fof")
+        schreibe(self.daten, "konzerte.json", {"stand": "x", "quellen": [], "termine": [alt], "ohne_ort": 0})
+        schreibe(self.daten, "kaputt.json", {"termine": [{"datum": "2026-11-05", "bands": "X", "stadt": "Y"}]})
+        code, ausgabe = lauf(self.daten, eigene=os.path.join(self.daten, "kaputt.json"))
+        self.assertEqual(code, 0)
+        self.assertIn("laden fehlt", ausgabe)
+        self.assertIn("fof-alt", [t["id"] for t in lies(self.daten, "konzerte.json")["termine"]])
+
+    def test_echte_datei_ist_gueltig(self):
+        from tools.konzerte.eigene import lese_eigene
+        termine = lese_eigene(abholen.EIGENE_DATEI)
+        for t in termine:
+            self.assertIsNotNone(t.lat)
+            self.assertTrue(t.links)
+        self.assertEqual(len({t.id for t in termine}), len(termine))
 
 
 class FristTest(unittest.TestCase):
@@ -187,7 +231,7 @@ class FristTest(unittest.TestCase):
         orte = lies(self.daten, "orte.json")
         self.assertEqual(sum(1 for e in orte.values() if "nicht_gefunden" in e), 3)  # Fortschritt gesichert
         self.assertEqual(lies(self.daten, "quellen-status.json"),
-                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None}})
+                         {"knox": {"ok_am": "2026-11-01", "fehler_seit": None}, "fof": {"ok_am": "2026-11-01", "fehler_seit": None}})
 
     def test_ohne_ablauf_keine_meldung(self):
         _, ausgabe, abfragen = self.starte(1e9)
@@ -236,7 +280,7 @@ class RadarAbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten, hole_radar=radar_ok)
         self.assertEqual(code, 0)
         k = lies(self.daten, "konzerte.json")
-        self.assertEqual([q["id"] for q in k["quellen"]], ["knox", "radar"])
+        self.assertEqual([q["id"] for q in k["quellen"]], ["knox", "radar", "fof"])
         self.assertEqual(k["quellen"][1], {"id": "radar", "name": "Radar – radar.squat.net", "url": "https://radar.squat.net/"})
         radar = [t for t in k["termine"] if t["quelle"] == "radar"]
         self.assertEqual([(t["bands"], t["datum"], t["zeit"], t["genau"]) for t in radar],
@@ -245,7 +289,8 @@ class RadarAbholenTest(unittest.TestCase):
         self.assertTrue(any(t["quelle"] == "knox" for t in k["termine"]))
         self.assertEqual(lies(self.daten, "quellen-status.json"),
                          {"knox": {"ok_am": "2026-11-01", "fehler_seit": None},
-                          "radar": {"ok_am": "2026-11-01", "fehler_seit": None}})
+                          "radar": {"ok_am": "2026-11-01", "fehler_seit": None},
+                          "fof": {"ok_am": "2026-11-01", "fehler_seit": None}})
         self.assertIn("radar|5696c22e-aba7-493c-950d-51d175449055", lies(self.daten, "orte.json"))
 
     def test_radar_ort_ohne_koordinaten_wird_geortet(self):

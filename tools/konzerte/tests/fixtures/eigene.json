@@ -1,0 +1,4 @@
+{"termine": [
+ {"datum": "2026-11-05", "zeit": "20:00", "bands": "Testband", "zusatz": "Akustikpunk", "laden": "Kneipe", "plz": "47138", "stadt": "Duisburg", "lat": 51.46861, "lon": 6.82123, "genres": ["Punk"], "links": ["https://example.org/live"]},
+ {"datum": "2026-10-20", "bands": "Vorbei", "laden": "Kneipe", "stadt": "Duisburg", "lat": 51.4, "lon": 6.8}
+]}

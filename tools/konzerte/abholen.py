@@ -14,6 +14,7 @@ import urllib.request
 from datetime import date, datetime, timedelta
 
 from tools.konzerte import knox, radar
+from tools.konzerte.eigene import lese_eigene
 from tools.konzerte.merkmale import genres, ist_frei, ist_kommerz, lade_listen
 from tools.konzerte.ortstabelle import Ortstabelle
 from tools.konzerte.ortung import LAENDER, USER_AGENT, Ortung, nominatim_suche
@@ -29,7 +30,9 @@ KNOX_URL = "https://knox.p-u-n-k.de/db/feed.php?datum_von={von}&datum_bis={bis}"
 QUELLEN = [
     {"id": "knox", "name": "Knox Punkkonzerte Datenbank", "url": "https://knox.p-u-n-k.de/db/"},
     {"id": "radar", "name": "Radar – radar.squat.net", "url": "https://radar.squat.net/"},
+    {"id": "fof", "name": "Fuck Off Fashion", "url": "https://fuckofffashion.github.io/konzerte.html"},
 ]
+EIGENE_DATEI = os.path.join(os.path.dirname(__file__), "eigene.json")
 
 
 def log(text):
@@ -148,6 +151,7 @@ def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
             strom.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser(prog="abholen")
     p.add_argument("--knox-datei")
+    p.add_argument("--eigene-datei", default=EIGENE_DATEI, help="von Hand gepflegte Termine (Quelle fof)")
     p.add_argument("--heute")
     p.add_argument("--ohne-nominatim", action="store_true")
     p.add_argument("--ohne-radar", action="store_true")
@@ -177,6 +181,7 @@ def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
     holer = {
         "knox": lambda: hole_quelle_knox(heute, bis, args.knox_datei, hole_knox),
         "radar": lambda: hole_quelle_radar(heute, bis, listen, cache, hole_radar, frist_um),
+        "fof": lambda: lese_eigene(args.eigene_datei),
     }
     uebersprungen = {"radar"} if args.ohne_radar else set()
 

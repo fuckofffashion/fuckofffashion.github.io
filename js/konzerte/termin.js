@@ -116,6 +116,7 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
     gesehen.add(u.href);
     links.append(link(u.href, u.hostname.replace(/^www\./, "")));
   }
+  if (t.quelle === "fof") links.append(element("span", "kz-termin__fof", "eingetragen von Fuck Off Fashion"));
   if (links.childNodes.length) was.append(links);
 
   // Hinkommen: echter Link zu openstreetmap.org, nur mit Koordinaten

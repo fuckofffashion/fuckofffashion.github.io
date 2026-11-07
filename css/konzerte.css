@@ -209,6 +209,7 @@ select.kz-input { appearance: auto; }
 .kz-link:hover { color: var(--blood-hot); }
 .kz-termin__links .kz-link { padding-block: .35rem; }
 .kz-termin__links .kz-link::after { content: " ↗"; }
+.kz-termin__fof { padding-block: .35rem; color: var(--blood-hot); }
 .kz-termin__hin { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem; padding-top: .35rem; }
 .kz-hin { padding: .8em 1.1em; min-height: 44px; --fg: var(--paper); box-shadow: inset 0 0 0 2px var(--spray); }
 .kz-hin:hover { box-shadow: none; }
