@@ -284,6 +284,7 @@ html.kz-karte-offen { overflow: hidden; }
   /* Gruppentitel nur für Screenreader; die Steuerelemente erklären sich selbst */
   .kz-gruppe__titel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
   .kz-stufe::before { content: "Umkreis: "; }
+  :lang(en) .kz-stufe::before { content: "Radius: "; }
   .kz-wo-zeile { grid-template-columns: auto minmax(0, 1fr); align-items: end; column-gap: .6rem; }
   .kz-wo { padding: .85em .9em; min-height: 2.75rem; letter-spacing: .08em; }
   .kz-input { min-height: 2.75rem; }

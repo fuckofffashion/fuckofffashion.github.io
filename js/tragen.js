@@ -13,8 +13,11 @@
   const dlFront = document.querySelector(".js-tr-dl-front");
   const hint = document.querySelector(".js-tr-hint");
   const live = document.querySelector(".js-tr-live");
-  const FRONT = { black: "assets/img/fof-000-brust-schwarz", white: "assets/img/fof-000-brust-weiss" };
-  const NAMES = { hoodie: "Hoodie", tee: "T-Shirt", schwarz: "Schwarz", grau: "Grau", natur: "Natur" };
+  const W = document.documentElement.dataset.wurzel || ""; // englische Seiten liegen in en/ und setzen "../"
+  const FRONT = { black: W + "assets/img/fof-000-brust-schwarz", white: W + "assets/img/fof-000-brust-weiss" };
+  const EN = document.documentElement.lang === "en";
+  const NAMES = EN ? { hoodie: "Hoodie", tee: "T-shirt", schwarz: "black", grau: "grey", natur: "natural" }
+                   : { hoodie: "Hoodie", tee: "T-Shirt", schwarz: "Schwarz", grau: "Grau", natur: "Natur" };
 
   // Heißpresse: Motiv drückt sich kurz ins Textil
   function press(img) {
@@ -41,9 +44,15 @@
     back.classList.toggle("is-mask", m.mask === "true");
     dlBack.href = color ? m.png : (dark ? m.pngWhite : m.pngBlack);
 
-    hint.textContent = dark ? "Schriftzug und Strich-Motive in Weiß, für dunkle Textilien"
-                            : "Schriftzug und Strich-Motive in Schwarz, für helle Textilien";
-    live.textContent = `${NAMES[teil]} in ${NAMES[farbe]}, vorne Fuck Off Fashion, hinten ${m.title}`;
+    if (EN) {
+      hint.textContent = dark ? "Lettering and line designs in white, for dark fabrics"
+                              : "Lettering and line designs in black, for light fabrics";
+      live.textContent = `${NAMES[teil]} in ${NAMES[farbe]}, front: Fuck Off Fashion, back: ${m.title}`;
+    } else {
+      hint.textContent = dark ? "Schriftzug und Strich-Motive in Weiß, für dunkle Textilien"
+                              : "Schriftzug und Strich-Motive in Schwarz, für helle Textilien";
+      live.textContent = `${NAMES[teil]} in ${NAMES[farbe]}, vorne Fuck Off Fashion, hinten ${m.title}`;
+    }
 
     if (changed === "motiv") press(back);
     if (changed === "farbe") { press(front); press(back); }

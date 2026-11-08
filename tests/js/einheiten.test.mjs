@@ -1,7 +1,7 @@
 // Tests für Szene-Einheiten (Anfahrt in Platten) und Umkreisstufen.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { STUFEN, anfahrt } from "../../js/konzerte/einheiten.js";
+import { STUFEN, STUFEN_EN, anfahrt, stufenName } from "../../js/konzerte/einheiten.js";
 
 test("Umkreisstufen sind Laufweite, Fahrradweite, Bahnweite, Bandbus-Weite", () => {
   assert.deepEqual(STUFEN, [
@@ -46,4 +46,25 @@ test("anderthalb Platten als Wort", () => {
 
 test("angezeigte km sind gerundet", () => {
   assert.match(anfahrt(46.6), /^47 km ·/);
+});
+
+
+test("ohne Dokument ist Deutsch der Standard", () => {
+  assert.equal(anfahrt(47), anfahrt(47, "de"));
+  assert.equal(stufenName(STUFEN[2]), "Bahnweite");
+});
+
+test("englische Stufennamen für alle Stufen", () => {
+  assert.deepEqual(STUFEN.map((s) => stufenName(s, "en")), ["Walking distance", "Cycling distance", "Train distance", "Tour-van distance"]);
+  assert.deepEqual(Object.keys(STUFEN_EN), STUFEN.map((s) => s.id));
+});
+
+test("Anfahrt auf Englisch", () => {
+  assert.equal(anfahrt(47, "en"), "47 km · one LP by train");
+  assert.equal(anfahrt(4, "en"), "4 km · one LP on foot");
+  assert.equal(anfahrt(20, "en"), "20 km · 2 LPs by bike");
+  assert.equal(anfahrt(250, "en"), "250 km · 4.5 LPs by tour van");
+  assert.equal(anfahrt(1, "en"), "1 km · half an LP on foot");
+  assert.equal(anfahrt(15, "en"), "15 km · one and a half LPs by bike");
+  assert.match(anfahrt(46.6, "en"), /^47 km ·/);
 });

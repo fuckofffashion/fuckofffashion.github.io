@@ -16,7 +16,14 @@
   const stempel = $(".js-kasse-stempel"), nullPreis = $(".js-kasse-null"), ansage = $(".js-kasse-ansage");
   const reduced = window.FOF?.MOTION?.reduced ?? matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const SCHRITTE = [
+  const EN = document.documentElement.lang === "en"; // englische Seiten liegen in en/
+  const SCHRITTE = EN ? [
+    [0, "Packing your individuality …"],
+    [22, "Printing the logo …"],
+    [48, "Activating the ad space on your chest …"],
+    [74, "Lightening your bank account …"],
+    [92, "Nearly there …"],
+  ] : [
     [0, "Individualität wird verpackt …"],
     [22, "Logo wird aufgedruckt …"],
     [48, "Werbefläche auf deiner Brust wird aktiviert …"],
@@ -37,7 +44,8 @@
   function entlarven() {
     laden.hidden = true; ende.hidden = false; nullPreis.hidden = false;
     dlg.classList.add("is-entlarvt");
-    ansage.textContent = "Fuck Off. Gesamt 0,00 Euro. Spar dir das. Mach selbst.";
+    ansage.textContent = EN ? "Fuck Off. Total €0.00. Don't bother. Make it yourself."
+                          : "Fuck Off. Gesamt 0,00 Euro. Spar dir das. Mach selbst.";
     ende.querySelector("a").focus({ preventScroll: true });
     if (!reduced && window.FOF?.stamp) FOF.stamp(stempel);
   }
@@ -47,7 +55,7 @@
     if (reduced || !window.gsap) return entlarven();
     laden.hidden = false;
     laden.focus(); // der Knopf verschwindet, der Fokus bleibt im Fenster
-    ansage.textContent = "Bestellung läuft.";
+    ansage.textContent = EN ? "Processing your order." : "Bestellung läuft.";
     const p = { v: 0 };
     const zeigen = () => {
       const v = Math.round(p.v);

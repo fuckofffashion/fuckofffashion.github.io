@@ -44,8 +44,15 @@ export function urlFuer({ pathname, search, hash }, gruppe) {
   return gruppeAusHash(hash, []) === null ? basis + (hash || "") : basis;
 }
 
+/** Sprache der Seite: "en" auf den englischen Seiten (en/), sonst "de". Ohne DOM (Node-Tests) "de". */
+const sprache = () => (globalThis.document?.documentElement?.lang === "en" ? "en" : "de");
+
 /** Text für die Bildschirmleser-Ansage nach einem Filterwechsel. */
-export function ansage(anzahl, name) {
+export function ansage(anzahl, name, sp = sprache()) {
+  if (sp === "en") {
+    const designs = anzahl === 1 ? "design" : "designs";
+    return name ? `${name}: ${anzahl} ${designs}` : `All ${anzahl} ${designs}`;
+  }
   const motive = anzahl === 1 ? "Motiv" : "Motive";
   return name ? `${name}: ${anzahl} ${motive}` : `Alle ${anzahl} ${motive}`;
 }

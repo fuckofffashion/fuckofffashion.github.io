@@ -8,10 +8,10 @@
   <!-- 404.html wird auch für verschachtelte Adressen ausgeliefert (z. B. /a/b). Darum zählen alle Pfade ab dieser Basis.
        tools/veroeffentlichen.sh setzt sie in der veröffentlichten Kopie: "/" (eigene Domain, lokal) oder "/<repo>/" (Projektseite). -->
   <base href="/">
-  <link rel="icon" href="assets/img/favicon.svg?v=25" type="image/svg+xml">
-  <link rel="stylesheet" href="css/tokens.css?v=25">
-  <link rel="stylesheet" href="css/base.css?v=25">
-  <link rel="stylesheet" href="css/site.css?v=25">
+  <link rel="icon" href="assets/img/favicon.svg?v=26" type="image/svg+xml">
+  <link rel="stylesheet" href="css/tokens.css?v=26">
+  <link rel="stylesheet" href="css/base.css?v=26">
+  <link rel="stylesheet" href="css/site.css?v=26">
 </head>
 <body>
 <a class="skip" href="#main" onclick="document.getElementById('main').focus();return false">Zum Inhalt springen</a>
@@ -28,17 +28,22 @@
     <a class="scrawl nav--wide" href="index.html#galerie">Galerie</a>
     <a class="scrawl" href="konzerte.html">Konzerte</a>
   </nav>
+  <a class="head__sprache js-sprache" href="en/" hreflang="en" lang="en" aria-label="English version">EN</a>
 </header>
 <main id="main" class="page wrap" tabindex="-1">
   <p class="label label--red">Fehler 404</p>
   <h1 class="shout shout--mega">Besetzt.</h1>
   <p class="lead">Diese Seite gibt es nicht (mehr). Vielleicht wurde sie enteignet.</p>
   <p><a class="btn" href="./">Zur Startseite <span class="btn__icon" aria-hidden="true">→</span></a></p>
+  <div lang="en">
+    <p>This page doesn't exist (any more). Probably expropriated.</p>
+    <p><a class="btn btn--ghost" href="en/" hreflang="en">Go to the English homepage <span class="btn__icon" aria-hidden="true">→</span></a></p>
+  </div>
 </main>
 <footer class="foot label">
   <span>Fuck Off Fashion · keine Cookies, kein Tracking, kein Shop</span>
   <nav aria-label="Rechtliches"><a class="scrawl" href="impressum.html">Impressum</a><a class="scrawl" href="datenschutz.html">Datenschutz</a></nav>
 </footer>
-<script src="js/menu.js?v=25"></script>
+<script src="js/menu.js?v=26"></script>
 </body>
 </html>

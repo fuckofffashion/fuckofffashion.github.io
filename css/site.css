@@ -13,6 +13,14 @@
 .head__mark { display: flex; align-items: center; gap: .6rem; text-decoration: none; font: 400 1.25rem/1 var(--font-shout); text-transform: uppercase; letter-spacing: .02em; }
 .head__mark svg { width: 1.7rem; height: 1.7rem; }
 .head nav { display: flex; gap: clamp(1rem, 3vw, 2.5rem); }
+/* Sprachumschalter DE/EN: immer sichtbar, auch neben dem Handy-Menüknopf */
+.head__mark { margin-right: auto; }
+.head__sprache {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;
+  margin-left: clamp(1rem, 3vw, 2.5rem); padding: 0 .55rem; border: 2px solid currentColor;
+  font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-decoration: none;
+}
+@media (hover: hover) and (pointer: fine) { .head__sprache:hover { text-decoration: underline; text-underline-offset: .2em; } }
 .head nav a { font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); text-decoration: none; padding-block: .5rem; }
 @media (max-width: 560px) { .head__mark span { display: none; } .head nav .nav--wide { display: none; } }
 /* Handy: Logo und Navigation passen sicher in eine Zeile – Abstände und Schrift sind an die Bildbreite gedeckelt,
@@ -25,6 +33,7 @@
   .head__mark svg { width: min(1.7rem, 7vw); height: min(1.7rem, 7vw); }
   .head nav { gap: min(1rem, 3.2vw); min-width: 0; }
   .head nav a { font-size: min(var(--fs-label), 3.1vw); white-space: nowrap; }
+  .head__sprache { flex: none; margin-left: min(.8rem, 2.6vw); font-size: min(var(--fs-label), 3.1vw); }
 }
 @media (max-width: 370px) { .head nav .nav--mid { display: none; } } /* Startseite: vier Punkte passen erst ab 371 px */
 

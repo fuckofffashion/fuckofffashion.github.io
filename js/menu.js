@@ -4,6 +4,15 @@
    Ohne JavaScript bleibt die Navigation, wie sie ist (eine Zeile).
    ========================================================= */
 (function () {
+  // Sprachumschalter: in der anderen Sprache an derselben Stelle landen (Abschnitt, Filter)
+  document.querySelectorAll(".js-sprache").forEach(link => {
+    const ziel = link.getAttribute("href").split(/[?#]/)[0];
+    link.addEventListener("click", () => { link.setAttribute("href", ziel + location.search + location.hash); });
+  });
+})();
+
+(function () {
+  const EN = document.documentElement.lang === "en";
   const knopf = document.querySelector(".js-menu");
   const nav = knopf && document.getElementById(knopf.getAttribute("aria-controls"));
   if (!nav) return;
@@ -15,7 +24,7 @@
   const setze = auf => {
     head.classList.toggle("is-menu-open", auf);
     knopf.setAttribute("aria-expanded", String(auf));
-    knopf.querySelector(".head__menu-text").textContent = auf ? "Zu" : "Menü";
+    knopf.querySelector(".head__menu-text").textContent = auf ? (EN ? "Close" : "Zu") : (EN ? "Menu" : "Menü");
   };
 
   knopf.addEventListener("click", () => setze(!offen()));

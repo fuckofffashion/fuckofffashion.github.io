@@ -1,5 +1,5 @@
 // Filter und Sortierung für Konzerttermine. Reine Funktionen ohne DOM.
-import { km } from "./geo.js?v=16";
+import { km } from "./geo.js?v=26";
 
 // Liefert neue Objekte mit `km` (Entfernung zur Mitte oder null).
 // Die Eingabe bleibt unverändert. Fehlende Optionen heißen "kein Filter".

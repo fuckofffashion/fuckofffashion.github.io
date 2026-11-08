@@ -19,6 +19,31 @@ def lies_index() -> str:
         return f.read()
 
 
+def lies_en() -> str:
+    with (WURZEL / "en" / "index.html").open(encoding="utf-8", newline="") as f:
+        return f.read()
+
+
+class EnglischPasstZurListe(unittest.TestCase):
+    def test_en_index_ist_aktuell(self):
+        html = lies_en()
+        self.assertEqual(bm.ersetze(html, bm.lade(), "en"), html,
+                         "en/index.html ist veraltet: python tools/build-motive.py ausführen")
+
+    def test_englische_wand_nutzt_englische_texte_und_pfade(self):
+        html = lies_en()
+        for m in bm.lade()["motive"]:
+            self.assertIn(bm.a(m["titel_en"]), html)
+        self.assertNotIn('src="assets/img/', html)
+        self.assertNotIn("PNG laden", html)
+
+    def test_fehlender_englischer_titel_wird_abgelehnt(self):
+        d = json.loads((WURZEL / "tools" / "motive.json").read_text(encoding="utf-8"))
+        del d["motive"][0]["titel_en"]
+        with self.assertRaises(ValueError):
+            bm.pruefe_daten(d)
+
+
 class IndexPasstZurListe(unittest.TestCase):
     def test_index_ist_aktuell(self):
         html = lies_index()

@@ -14,12 +14,13 @@ BASH = shutil.which("bash")
 
 ALLOWLIST = {
     "index.html", "konzerte.html", "404.html", "impressum.html", "datenschutz.html",
+    "en/index.html", "en/konzerte.html",
     "css/a.css", "css/sub/b.css", "js/a.js", "js/konzerte/app.js", "assets/bild.webp",
     "data/konzerte.json", "data/karte.json", "data/orte-tabelle.json",
 }
 AUSGESCHLOSSEN = {
     "docs/plan.md", "tools/x.py", "tests/t.mjs", "kit/k.txt", "styleguide.html", "README.md",
-    "data/orte.json", "data/quellen-status.json", ".gitignore", "redesign/r.html",
+    "data/orte.json", "data/quellen-status.json", ".gitignore", "redesign/r.html", "en/entwurf.html",
 }
 
 

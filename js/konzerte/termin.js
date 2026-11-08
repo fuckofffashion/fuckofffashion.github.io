@@ -1,10 +1,9 @@
 // Ein Konzerttermin als Listeneintrag. Fremde Texte nur per textContent, Links nur http/https.
-import { anfahrt } from "./einheiten.js?v=16";
-import { routenLink } from "./route.js?v=16";
+import { anfahrt } from "./einheiten.js?v=26";
+import { routenLink } from "./route.js?v=26";
+import { t as text } from "./texte.js?v=26";
 
 const KNOX_EINTRAG = "https://knox.p-u-n-k.de/db/index.php?id=";
-
-const WOCHENTAGE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
 // Datum --------------------------------------------------------------------
 // Immer lokale Kalendertage als "YYYY-MM-DD". Kein toISOString(): das rechnet in UTC.
@@ -22,15 +21,15 @@ export function plusTage(d, n) {
 // Unsichtbare Steuerzeichen (z. B. U+202A aus kopierten Bandnamen) stören nur
 const sauber = (s) => String(s ?? "").replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, "").trim();
 
-export function element(tag, klasse, text) {
+export function element(tag, klasse, inhalt) {
   const el = document.createElement(tag);
   if (klasse) el.className = klasse;
-  if (text != null) el.textContent = text;
+  if (inhalt != null) el.textContent = inhalt;
   return el;
 }
 
-export function link(href, text) {
-  const a = element("a", "kz-link", text);
+export function link(href, inhalt) {
+  const a = element("a", "kz-link", inhalt);
   a.href = href;
   a.rel = "noopener noreferrer";
   a.target = "_blank";
@@ -73,10 +72,10 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
   const wann = element("p", "kz-termin__wann");
   const zeit = element("time");
   zeit.dateTime = t.datum;
-  const tagWort = t.datum === h ? "Heute" : t.datum === morgen ? "Morgen" : WOCHENTAGE[datum.getDay()];
+  const tagWort = t.datum === h ? text("heute") : t.datum === morgen ? text("morgen") : text("wochentage")[datum.getDay()];
   zeit.append(
     element("span", `kz-termin__tag${t.datum === h ? " is-heute" : ""}`, tagWort),
-    element("span", "kz-termin__datum", `${zwei(d)}.${zwei(m)}.`),
+    element("span", "kz-termin__datum", text("datum", { t: zwei(d), m: zwei(m) })),
   );
   if (j !== jahr) zeit.append(element("span", "kz-termin__jahr", String(j)));
   wann.append(zeit);
@@ -84,7 +83,7 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
 
   // Was und wo
   const was = element("div", "kz-termin__was");
-  was.append(element("h3", "kz-termin__bands", sauber(t.bands) || "Bands unbekannt"));
+  was.append(element("h3", "kz-termin__bands", sauber(t.bands) || text("bandsUnbekannt")));
   const zusatz = sauber(t.zusatz);
   if (zusatz) was.append(element("p", "kz-termin__zusatz", zusatz));
 
@@ -96,9 +95,9 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
 
   if (t.frei || t.kommerz) {
     const marken = element("p", "kz-termin__marken");
-    if (t.frei) marken.append(element("span", "kz-frei", "Eintritt frei / Spende"));
+    if (t.frei) marken.append(element("span", "kz-frei", text("frei")));
     if (t.kommerz) {
-      const stempel = element("span", "stamp kz-stempel", "Riecht nach Konzern");
+      const stempel = element("span", "stamp kz-stempel", text("kommerz"));
       stempel.style.setProperty("--rot", schraeg(t.id));
       marken.append(stempel);
     }
@@ -108,7 +107,7 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
   // Quellen: KNOX-Eintrag aus der Id, dazu Laden-/Website-Links aus `links`
   const links = element("p", "kz-termin__links");
   const knox = t.quelle === "knox" && /^knox-(\d+)$/.exec(String(t.id));
-  if (knox) links.append(link(KNOX_EINTRAG + knox[1], "bei KNOX"));
+  if (knox) links.append(link(KNOX_EINTRAG + knox[1], text("beiKnox")));
   const gesehen = new Set();
   for (const l of Array.isArray(t.links) ? t.links : []) {
     const u = sichereUrl(l && l.url);
@@ -116,30 +115,30 @@ export function renderTermin(t, tage = kalenderTage(), start = null) {
     gesehen.add(u.href);
     links.append(link(u.href, u.hostname.replace(/^www\./, "")));
   }
-  if (t.quelle === "fof") links.append(element("span", "kz-termin__fof", "eingetragen von Fuck Off Fashion"));
+  if (t.quelle === "fof") links.append(element("span", "kz-termin__fof", text("vonFof")));
   if (links.childNodes.length) was.append(links);
 
   // Hinkommen: echter Link zu openstreetmap.org, nur mit Koordinaten
   if (Number.isFinite(t.lat) && Number.isFinite(t.lon)) {
     const hin = element("p", "kz-termin__hin");
-    const a = element("a", "btn btn--ghost kz-hin", "Hinkommen");
+    const a = element("a", "btn btn--ghost kz-hin", text("hinkommen"));
     a.href = routenLink(t, start);
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    const name = sauber(t.laden) || sauber(t.stadt) || "diesem Termin";
-    a.setAttribute("aria-label", `Hinkommen zu ${name}, öffnet openstreetmap.org`);
+    const name = sauber(t.laden) || sauber(t.stadt) || text("diesemTermin");
+    a.setAttribute("aria-label", text("hinRad", { name }));
     // Standard ist Fahrrad; zu Fuß und Auto sind kleine Alternativen mit demselben Ziel
     const andere = element("span", "kz-hin__andere");
-    [["fuss", "zu Fuß", "Hinkommen zu Fuß"], ["auto", "Auto", "Hinkommen mit dem Auto"]].forEach(([modus, text, art], i) => {
-      const b = element("a", "kz-link kz-hin__modus", text);
+    [["fuss", text("fuss"), "hinFuss"], ["auto", text("auto"), "hinAuto"]].forEach(([modus, wort, art], i) => {
+      const b = element("a", "kz-link kz-hin__modus", wort);
       b.href = routenLink(t, start, modus);
       b.target = "_blank";
       b.rel = "noopener noreferrer";
-      b.setAttribute("aria-label", `${art} zu ${name}, öffnet openstreetmap.org`);
+      b.setAttribute("aria-label", text(art, { name }));
       if (i) andere.append(" · ");
       andere.append(b);
     });
-    hin.append(a, andere, element("span", "kz-hin__hinweis", "öffnet openstreetmap.org"));
+    hin.append(a, andere, element("span", "kz-hin__hinweis", text("oeffnetOsm")));
     was.append(hin);
   }
 

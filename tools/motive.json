@@ -1,153 +1,171 @@
 {
   "_hinweis": "Einzige Liste aller Motive. Nach jeder Änderung: python tools/build-motive.py (schreibt Wand und Motivwahl in index.html neu).",
   "gruppen": [
-    { "id": "kritik", "name": "Kritik" },
-    { "id": "anarchie", "name": "Anarchie" },
-    { "id": "skate", "name": "Skate" },
-    { "id": "diy", "name": "DIY" }
+    { "id": "kritik", "name": "Kritik", "name_en": "Critique" },
+    { "id": "anarchie", "name": "Anarchie", "name_en": "Anarchy" },
+    { "id": "skate", "name": "Skate", "name_en": "Skate" },
+    { "id": "diy", "name": "DIY", "name_en": "DIY" }
   ],
   "designer_start": "001",
   "motive": [
     {
-      "nr": "000", "titel": "Fuck Off Fashion", "datei": "fof-000-brust", "typ": "line",
+      "nr": "000", "titel": "Fuck Off Fashion", "titel_en": "Fuck Off Fashion", "datei": "fof-000-brust", "typ": "line",
       "breite": 985, "hoehe": 830,
       "alt": "Motiv 000: Schriftzug „Fuck Off Fashion“ in drei Zeilen, Schablonenschrift, für die Brust",
+      "alt_en": "Design 000: “Fuck Off Fashion” lettering on three lines, stencil type, for the chest",
       "groesse": { "schwarz": "48 kB", "weiss": "48 kB" },
       "designer": false,
       "gruppen": ["anarchie"]
     },
     {
-      "nr": "001", "titel": "Punk bleibt Punk", "datei": "punk-bleibt-punk", "typ": "color",
+      "nr": "001", "titel": "Punk bleibt Punk", "titel_en": "Punk bleibt Punk (Punk stays punk)", "datei": "punk-bleibt-punk", "typ": "color",
       "breite": 1024, "hoehe": 1024,
       "alt": "Motiv 001: Anarchie-A, „fuck off fashion“, „Punk bleibt Punk“",
+      "alt_en": "Design 001: anarchy A, “fuck off fashion”, “Punk bleibt Punk” (punk stays punk)",
       "groesse": { "png": "1,7 MB" }, "download": "fof-001-punk-bleibt-punk.png",
       "designer": true, "maske": false,
       "gruppen": []
     },
     {
-      "nr": "002", "titel": "Kauf nix", "datei": "fof-002-kauf-nix", "typ": "color",
+      "nr": "002", "titel": "Kauf nix", "titel_en": "Kauf nix (Buy nothing)", "datei": "fof-002-kauf-nix", "typ": "color",
       "breite": 1024, "hoehe": 1024,
       "alt": "Motiv 002: umgekippter Einkaufswagen, rot durchgekreuzt, „Kauf nix – mach selbst“",
+      "alt_en": "Design 002: tipped-over shopping trolley, crossed out in red, “Kauf nix – mach selbst” (buy nothing, make it yourself)",
       "groesse": { "png": "2,1 MB" }, "download": "fof-002-kauf-nix.png",
       "designer": true, "maske": true,
       "gruppen": ["kritik"]
     },
     {
-      "nr": "003", "titel": "Flicken statt Wegwerfen", "datei": "fof-003-flicken", "typ": "color",
+      "nr": "003", "titel": "Flicken statt Wegwerfen", "titel_en": "Flicken statt Wegwerfen (Patch it, don't bin it)", "datei": "fof-003-flicken", "typ": "color",
       "breite": 1024, "hoehe": 1024,
       "alt": "Motiv 003: Sicherheitsnadel durch einen Stoffflicken mit rotem Anarchie-A, „Flicken statt Wegwerfen“",
+      "alt_en": "Design 003: safety pin through a fabric patch with a red anarchy A, “Flicken statt Wegwerfen” (patch it, don't bin it)",
       "groesse": { "png": "1,9 MB" }, "download": "fof-003-flicken.png",
       "designer": true, "maske": true,
       "gruppen": ["kritik"]
     },
     {
-      "nr": "004", "titel": "Fast Fashion kills", "datei": "fof-004-fast-fashion-kills", "typ": "color",
+      "nr": "004", "titel": "Fast Fashion kills", "titel_en": "Fast Fashion kills", "datei": "fof-004-fast-fashion-kills", "typ": "color",
       "breite": 1024, "hoehe": 1024,
       "alt": "Motiv 004: Totenkopf mit Kleiderbügel und Preisschild „0 Euro“, „Fast Fashion kills“",
+      "alt_en": "Design 004: skull with a coat hanger and a price tag reading “0 Euro”, “Fast Fashion kills”",
       "groesse": { "png": "1,6 MB" }, "download": "fof-004-fast-fashion-kills.png",
       "designer": true, "maske": true,
       "gruppen": ["kritik"]
     },
     {
-      "nr": "005", "titel": "Anarchy DJ", "datei": "fof-005-anarchy-dj", "typ": "line",
+      "nr": "005", "titel": "Anarchy DJ", "titel_en": "Anarchy DJ", "datei": "fof-005-anarchy-dj", "typ": "line",
       "breite": 788, "hoehe": 974,
       "alt": "Motiv 005: Anarchie-A mit Armen und Beinen an einem Mischpult",
+      "alt_en": "Design 005: anarchy A with arms and legs at a mixing desk",
       "groesse": { "schwarz": "42 kB", "weiss": "42 kB" },
       "designer": true,
       "gruppen": ["anarchie"]
     },
     {
-      "nr": "006", "titel": "Skate", "datei": "fof-006-skate", "typ": "line",
+      "nr": "006", "titel": "Skate", "titel_en": "Skate", "datei": "fof-006-skate", "typ": "line",
       "breite": 1024, "hoehe": 538,
       "alt": "Motiv 006: Schriftzug „Skate“, das A ist ein Anarchie-A auf einem Skateboard",
+      "alt_en": "Design 006: “Skate” lettering, the A is an anarchy A riding a skateboard",
       "groesse": { "schwarz": "123 kB", "weiss": "122 kB" },
       "designer": true,
       "gruppen": ["skate"]
     },
     {
-      "nr": "007", "titel": "Skate or die", "datei": "fof-007-skate-or-die", "typ": "line",
+      "nr": "007", "titel": "Skate or die", "titel_en": "Skate or die", "datei": "fof-007-skate-or-die", "typ": "line",
       "breite": 848, "hoehe": 981,
       "alt": "Motiv 007: Anarchie-A, darüber „Skate“, darunter „or die“",
+      "alt_en": "Design 007: anarchy A, “Skate” above, “or die” below",
       "groesse": { "schwarz": "40 kB", "weiss": "40 kB" },
       "designer": true,
       "gruppen": ["anarchie", "skate"]
     },
     {
-      "nr": "008", "titel": "Anarchie", "datei": "fof-008-anarchie", "typ": "solid",
+      "nr": "008", "titel": "Anarchie", "titel_en": "Anarchy", "datei": "fof-008-anarchie", "typ": "solid",
       "breite": 1008, "hoehe": 1024,
       "alt": "Motiv 008: Anarchie-Zeichen, A im Kreis, knallrot gesprüht mit Tropfnasen",
+      "alt_en": "Design 008: anarchy symbol, A in a circle, sprayed bright red with drips",
       "groesse": { "png": "731 kB" },
       "designer": true, "maske": false,
       "gruppen": ["anarchie"]
     },
     {
-      "nr": "009", "titel": "DIY or die", "datei": "fof-009-diy-or-die", "typ": "line",
+      "nr": "009", "titel": "DIY or die", "titel_en": "DIY or die", "datei": "fof-009-diy-or-die", "typ": "line",
       "breite": 906, "hoehe": 1022,
       "alt": "Motiv 009: Spraydose sprüht ein Anarchie-A, „DIY or die“",
+      "alt_en": "Design 009: spray can spraying an anarchy A, “DIY or die”",
       "groesse": { "schwarz": "26 kB", "weiss": "26 kB" },
       "designer": true,
       "gruppen": ["diy", "anarchie"]
     },
     {
-      "nr": "010", "titel": "Trag es, bis es reißt", "datei": "fof-010-trag-es", "typ": "line",
+      "nr": "010", "titel": "Trag es, bis es reißt", "titel_en": "Trag es, bis es reißt (Wear it till it rips)", "datei": "fof-010-trag-es", "typ": "line",
       "breite": 909, "hoehe": 990,
       "alt": "Motiv 010: Sicherheitsnadel hält einen zerrissenen Stofffetzen zusammen, „Trag es bis es reißt“",
+      "alt_en": "Design 010: safety pin holding a torn scrap of fabric together, “Trag es bis es reißt” (wear it till it rips)",
       "groesse": { "schwarz": "25 kB", "weiss": "26 kB" },
       "designer": true,
       "gruppen": ["kritik", "diy"]
     },
     {
-      "nr": "011", "titel": "Wer näht dein Shirt?", "datei": "fof-011-wer-naeht", "typ": "line",
+      "nr": "011", "titel": "Wer näht dein Shirt?", "titel_en": "Wer näht dein Shirt? (Who sews your shirt?)", "datei": "fof-011-wer-naeht", "typ": "line",
       "breite": 997, "hoehe": 987,
       "alt": "Motiv 011: Nähmaschinennadel, deren Faden zur erhobenen Faust wird, „Wer näht dein Shirt?“",
+      "alt_en": "Design 011: sewing machine needle whose thread turns into a raised fist, “Wer näht dein Shirt?” (who sews your shirt?)",
       "groesse": { "schwarz": "29 kB", "weiss": "31 kB" },
       "designer": true,
       "gruppen": ["kritik"]
     },
     {
-      "nr": "012", "titel": "Flick die Welt", "datei": "fof-012-flick-die-welt", "typ": "line",
+      "nr": "012", "titel": "Flick die Welt", "titel_en": "Flick die Welt (Patch the world)", "datei": "fof-012-flick-die-welt", "typ": "line",
       "breite": 982, "hoehe": 864,
       "alt": "Motiv 012: Weltkugel, mit groben Kreuzstichen und einem Flicken zusammengenäht, „Flick die Welt“",
+      "alt_en": "Design 012: globe stitched together with rough cross-stitches and a patch, “Flick die Welt” (patch the world)",
       "groesse": { "schwarz": "30 kB", "weiss": "31 kB" },
       "designer": true,
       "gruppen": ["kritik", "diy"]
     },
     {
-      "nr": "013", "titel": "Laut bleiben", "datei": "fof-013-laut-bleiben", "typ": "line",
+      "nr": "013", "titel": "Laut bleiben", "titel_en": "Laut bleiben (Stay loud)", "datei": "fof-013-laut-bleiben", "typ": "line",
       "breite": 815, "hoehe": 844,
       "alt": "Motiv 013: Kassette mit herausquellendem Band, das ein Anarchie-A bildet, „Laut bleiben“",
+      "alt_en": "Design 013: cassette with its tape spilling out into an anarchy A, “Laut bleiben” (stay loud)",
       "groesse": { "schwarz": "27 kB", "weiss": "29 kB" },
       "designer": true,
       "gruppen": ["anarchie"]
     },
     {
-      "nr": "014", "titel": "Niemand führt dich", "datei": "fof-014-niemand-fuehrt-dich", "typ": "line",
+      "nr": "014", "titel": "Niemand führt dich", "titel_en": "Niemand führt dich (Nobody leads you)", "datei": "fof-014-niemand-fuehrt-dich", "typ": "line",
       "breite": 682, "hoehe": 924,
       "alt": "Motiv 014: Gesprungenes Megafon und zerrissene Leine, „Niemand führt dich“",
+      "alt_en": "Design 014: cracked megaphone and a snapped leash, “Niemand führt dich” (nobody leads you)",
       "groesse": { "schwarz": "31 kB", "weiss": "33 kB" },
       "designer": true,
       "gruppen": ["anarchie"]
     },
     {
-      "nr": "015", "titel": "Asphalt für alle", "datei": "fof-015-asphalt", "typ": "line",
+      "nr": "015", "titel": "Asphalt für alle", "titel_en": "Asphalt für alle (Asphalt for all)", "datei": "fof-015-asphalt", "typ": "line",
       "breite": 1001, "hoehe": 1011,
       "alt": "Motiv 015: Skateboard über einer gesprengten Kette, „Asphalt für alle“",
+      "alt_en": "Design 015: skateboard above a blown-apart chain, “Asphalt für alle” (asphalt for all)",
       "groesse": { "schwarz": "37 kB", "weiss": "39 kB" },
       "designer": true,
       "gruppen": ["skate"]
     },
     {
-      "nr": "016", "titel": "Druck es selbst", "datei": "fof-016-druck-es-selbst", "typ": "line",
+      "nr": "016", "titel": "Druck es selbst", "titel_en": "Druck es selbst (Print it yourself)", "datei": "fof-016-druck-es-selbst", "typ": "line",
       "breite": 957, "hoehe": 854,
       "alt": "Motiv 016: Punk-Ratte mit Iro und Spraydose, „Druck es selbst“",
+      "alt_en": "Design 016: punk rat with a mohawk and a spray can, “Druck es selbst” (print it yourself)",
       "groesse": { "schwarz": "25 kB", "weiss": "28 kB" },
       "designer": true,
       "gruppen": ["diy"]
     },
     {
-      "nr": "017", "titel": "Zeckenspray. Wirkt nicht.", "datei": "fof-017-zeckenspray", "typ": "line",
+      "nr": "017", "titel": "Zeckenspray. Wirkt nicht.", "titel_en": "Zeckenspray. Wirkt nicht. (Tick spray. Doesn't work.)", "datei": "fof-017-zeckenspray", "typ": "line",
       "breite": 928, "hoehe": 850,
       "alt": "Motiv 017: Eine Dose Zeckenspray liegt achtlos herum, daneben sprüht eine Zecke mit Iro fröhlich mit ihrer eigenen Dose, „Zeckenspray. Wirkt nicht.“",
+      "alt_en": "Design 017: a can of tick spray lies forgotten while a tick with a mohawk happily sprays away with its own can, “Zeckenspray. Wirkt nicht.” (tick spray. Doesn't work. “Zecke”, tick, is German slang for a left-wing punk)",
       "groesse": { "schwarz": "30 kB", "weiss": "33 kB" },
       "designer": true,
       "gruppen": ["anarchie"]

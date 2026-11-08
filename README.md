@@ -19,11 +19,19 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 | `kit/` | Druckvorlagen für Sticker-Bogen und Flyer, `tools/build-kit.py` macht daraus die PDFs in `assets/kit/` |
 | `styleguide.html` | Vorschau des Design-Systems (nicht verlinkt, `noindex`) |
 
+## Zwei Sprachen
+
+Deutsch ist die Hauptfassung, die englische liegt in `en/` (`en/index.html`, `en/konzerte.html`). Impressum und Datenschutz gibt es nur auf Deutsch, die englischen Seiten verlinken darauf mit „(German)“.
+
+- **Jede Textänderung an `index.html` oder `konzerte.html` gehört auch in die englische Datei.** IDs und Sprungmarken bleiben in beiden gleich, sonst landet der Umschalter nicht an derselben Stelle (`tools/konzerte/tests/test_sprachen.py` prüft das).
+- Englische Seiten tragen `<html lang="en" data-wurzel="../">` und alle Pfade mit `../`. Das JS liest `data-wurzel` für Datenpfade und `lang` für seine Texte.
+- Umschalter: `.head__sprache` im Kopf jeder Seite; `js/menu.js` hängt Abschnitt und Filter (`?…#…`) an den Link.
+
 ## Neues Motiv hinzufügen
 
 1. Bilder nach `assets/img/` legen: PNG zum Download plus Vorschau `…-1024.webp` (`ffmpeg -i motiv.png -vf scale=1024:-1 -c:v libwebp -quality 80 motiv-1024.webp`); Strich-Motive je als `-schwarz`/`-weiss`.
-2. In `tools/motive.json` einen Eintrag anhängen (Nummer, Titel, Dateistamm, Typ `line`/`color`/`solid`, Maße, Alt-Text, Dateigrößen, `gruppen`). Neue Gruppe: unter `gruppen` oben eintragen, der Filterknopf erscheint, sobald ein Motiv sie trägt.
-3. `python tools/build-motive.py` schreibt Wand und Motivwahl in `index.html` zwischen die `<!-- motive:… -->`-Marker neu (dort nie von Hand ändern; der Python-Test merkt ein vergessenes Neubauen).
+2. In `tools/motive.json` einen Eintrag anhängen (Nummer, Titel, englischer Titel `titel_en`, Dateistamm, Typ `line`/`color`/`solid`, Maße, Alt-Text und `alt_en`, Dateigrößen, `gruppen`). Neue Gruppe: unter `gruppen` oben eintragen, der Filterknopf erscheint, sobald ein Motiv sie trägt.
+3. `python tools/build-motive.py` schreibt Wand und Motivwahl in `index.html` und `en/index.html` zwischen die `<!-- motive:… -->`-Marker neu (dort nie von Hand ändern; der Python-Test merkt ein vergessenes Neubauen).
 4. Teilbarer Link je Gruppe: `index.html#motive-<gruppe>`. Filter-Logik: `js/motivfilter.js` (getestet), Seite: `js/motive.js`.
 
 ## Nach Änderungen an CSS/JS

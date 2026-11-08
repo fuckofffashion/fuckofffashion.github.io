@@ -4,7 +4,8 @@
 // der Kartengrund unter dem Kopierer-Filter (Korn in Pixeln, bleibt beim Zoomen gleich grob) und die Marker
 // ohne Filter. Zoomen und Verschieben ändern nur die viewBox; die Haufen werden je Zoomstufe einmal gebildet.
 
-import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, umfasse, zoomUm } from "./kartenansicht.js?v=25";
+import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, umfasse, zoomUm } from "./kartenansicht.js?v=26";
+import { t as text, zahl } from "./texte.js?v=26";
 
 export { projiziere }; // Projektion und Ansichtsrechnung liegen in kartenansicht.js
 
@@ -45,7 +46,7 @@ export function haufen(punkte, radiusPx, massstab) {
 
 // Zeichnen ------------------------------------------------------------------
 const NS = "http://www.w3.org/2000/svg";
-const KARTE_URL = "data/karte.json";
+const KARTE_URL = (globalThis.document?.documentElement.dataset.wurzel || "") + "data/karte.json"; // en/ setzt "../"
 const HAUFEN_PX = 38; // Fangradius eines Haufens auf dem Bildschirm (größer als der Kreis, damit wenig überlappt)
 const MARKER_PX = 28;
 const STADT_PX = 70; // Mindestabstand zwischen zwei Stadtnamen
@@ -178,7 +179,7 @@ function render(s) {
     const g = knoten("g", { class: `kz-karte__haufen${klasse}`, "data-i": i }, stapel);
     knoten("circle", { cx: k.x, cy: k.y, r: px(radiusPx(k.ids.length)), "stroke-width": px(2.5) }, g);
     const t = knoten("text", { x: k.x, y: k.y, dy: ".36em", "text-anchor": "middle", "font-size": px(k.ids.length > 99 ? 11 : 13) }, g);
-    t.textContent = k.ids.length.toLocaleString("de-DE");
+    t.textContent = zahl(k.ids.length);
   });
   s.ebenen.marker.replaceChildren(marker);
   s.ebenen.stapel.replaceChildren(stapel);
@@ -213,7 +214,7 @@ function render(s) {
     knoten("circle", { class: "kz-karte__mitte", cx: mx, cy: my, r: px(5), "stroke-width": px(3) }, kreis);
     // Der Satz gilt nur für den echten Standort, nicht für einen eingetippten Ort
     if (s.mitte.art === "geo") {
-      const satz = "Du bist hier. Leider.";
+      const satz = text("duBistHier");
       const breite = satz.length * 7.2 + 12; // Courier: 0,6 em je Zeichen bei 12 px
       knoten("rect", { class: "kz-karte__schild", x: mx + 10 / m, y: my - 11 / m, width: px(breite), height: px(20) }, kreis);
       const t = knoten("text", { class: "kz-karte__satz", x: mx + 16 / m, y: my + 3.5 / m, "font-size": px(12) }, kreis);
@@ -346,7 +347,7 @@ function bedienung(s) {
     document.documentElement.classList.toggle("kz-karte-offen", an);
     if (gross) {
       gross.setAttribute("aria-pressed", String(an));
-      gross.textContent = an ? "✕ Klein" : "⤢ Groß";
+      gross.textContent = text(an ? "klein" : "gross");
     }
   };
   gross?.addEventListener("click", () => setzeGross(!s.gross));

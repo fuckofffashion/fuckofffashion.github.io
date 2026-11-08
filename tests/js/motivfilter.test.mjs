@@ -57,3 +57,10 @@ test("ansage nennt Anzahl und Gruppe, Einzahl bei einem Motiv", () => {
   assert.equal(ansage(2, "Skate"), "Skate: 2 Motive");
   assert.equal(ansage(1, "Skate"), "Skate: 1 Motiv");
 });
+
+test("ansage auf Englisch, Einzahl bei einem Motiv; ohne Dokument deutsch", () => {
+  assert.equal(ansage(9, "", "en"), "All 9 designs");
+  assert.equal(ansage(2, "Skate", "en"), "Skate: 2 designs");
+  assert.equal(ansage(1, "Skate", "en"), "Skate: 1 design");
+  assert.equal(ansage(2, "Skate"), ansage(2, "Skate", "de"));
+});

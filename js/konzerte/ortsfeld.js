@@ -1,12 +1,10 @@
 // Feld „PLZ / Ort“ mit Vorschlagsliste (Combobox nach ARIA-Muster).
 // Die Ortstabelle lädt erst beim ersten Fokus oder Tippen, danach bleibt dasselbe Objekt im Speicher
 // (sucheOrt() hängt seinen Index an genau dieses Objekt). Der getippte Ort wird nirgends gespeichert.
-import { sucheOrt } from "./ortssuche.js?v=16";
+import { sucheOrt } from "./ortssuche.js?v=26";
+import { t } from "./texte.js?v=26";
 
 const VERZOEGERUNG_MS = 150;
-
-const TEXT_NICHT_GEFUNDEN = "Kenn ich nicht. Probier die PLZ oder den nächsten größeren Ort.";
-const TEXT_TABELLE_FEHLT = "Ortsliste gerade nicht da. Drück „Wo bin ich?“ oder versuch's später.";
 
 // input: <input role=combobox>, liste: <ul role=listbox>
 // melde(text): Hinweis anzeigen ("" löscht), onWahl({lat, lon, name}): Ort gewählt
@@ -108,7 +106,7 @@ export function ortsfeld({ input, liste, url, melde, onWahl }) {
       await holeTabelle();
     } catch {
       zeige([]);
-      melde(TEXT_TABELLE_FEHLT);
+      melde(t("tabelleFehlt"));
       return [];
     }
     // Kam die Tabelle erst, nachdem das Feld den Fokus verloren hat: keine Liste aufklappen
@@ -116,7 +114,7 @@ export function ortsfeld({ input, liste, url, melde, onWahl }) {
     // Während des Ladens kann weitergetippt worden sein: immer den aktuellen Wert nehmen
     const ergebnis = sucheOrt(tabelle, input.value);
     zeige(ergebnis);
-    melde(ergebnis.length || input.value.trim().length < 2 ? "" : TEXT_NICHT_GEFUNDEN);
+    melde(ergebnis.length || input.value.trim().length < 2 ? "" : t("nichtGefunden"));
     return ergebnis;
   }
 

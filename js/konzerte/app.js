@@ -2,25 +2,28 @@
 // Datenschutz: Der Standort (Geolocation oder getippter Ort) bleibt im Speicher dieser Seite.
 // In localStorage stehen nur Umkreisstufe, Genre und die zwei Schalter.
 // Fremde Texte (Bands, Zusatz, Laden, Stadt) kommen ausschließlich per textContent ins DOM.
-import { filtern, sortieren, normalisiere } from "./filter.js?v=25";
-import { STUFEN } from "./einheiten.js?v=16";
-import { SPRUECHE, spruch } from "./leer.js?v=16";
-import { ortsfeld } from "./ortsfeld.js?v=16";
-import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=25";
-import { starteKarte } from "./karte.js?v=25";
+import { filtern, sortieren, normalisiere } from "./filter.js?v=26";
+import { STUFEN, stufenName } from "./einheiten.js?v=26";
+import { spruch } from "./leer.js?v=26";
+import { ortsfeld } from "./ortsfeld.js?v=26";
+import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=26";
+import { starteKarte } from "./karte.js?v=26";
+import { t, zahl, gebiet } from "./texte.js?v=26";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
-const DATEN_URL = "data/konzerte.json";
-const ORTE_URL = "data/orte-tabelle.json";
+// Englische Seiten liegen in en/ und setzen <html data-wurzel="../">
+const WURZEL = document.documentElement.dataset.wurzel || "";
+const DATEN_URL = WURZEL + "data/konzerte.json";
+const ORTE_URL = WURZEL + "data/orte-tabelle.json";
 const SPEICHER_SCHLUESSEL = "fof-konzerte";
 const SEITE = 100; // so viele Termine je „Mehr zeigen“
 const ALLGEMEIN = "Punk / Hardcore (allgemein)";
 const KNOX_NEU = "https://knox.p-u-n-k.de/db/neu.php";
 const KNOX_START = "https://knox.p-u-n-k.de/db/";
 
-const TEXT_KEIN_STANDORT = "Kein Standort. Tipp eine PLZ oder einen Ort ein.";
-const TEXT_DATEN_FEHLEN = "Termine gerade nicht da. Versuch's später.";
+// Genre so, wie es in der Auswahl steht („allgemein“ übersetzt, der Wert bleibt)
+const genreName = (g) => (g === ALLGEMEIN ? t("allgemein") : g);
 
 // Fr/Sa/So: heute bis Sonntag. Sonst: kommender Freitag bis Sonntag.
 function wochenende(jetzt = new Date()) {
@@ -116,7 +119,7 @@ function start(wurzel) {
   function zeigeStufe() {
     const s = stufe();
     el.umkreis.value = String(STUFEN.indexOf(s));
-    const text = `${s.label} · ${s.km} km`;
+    const text = `${stufenName(s)} · ${s.km} km`;
     el.stufe.textContent = text;
     el.umkreis.setAttribute("aria-valuetext", text);
   }
@@ -140,12 +143,12 @@ function start(wurzel) {
     const standard = z.von === heute() && !z.bis;
     const schnell = el.schnell.some((b) => b.getAttribute("aria-pressed") === "true");
     if (!standard && !schnell) {
-      const kurz = (iso) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.` : "…");
+      const kurz = (iso) => (iso ? t("datum", { t: iso.slice(8, 10), m: iso.slice(5, 7) }) : "…");
       teile.push(`${kurz(z.von)}–${kurz(z.bis)}`);
     }
-    if (z.genre) teile.push(`Genre: ${z.genre}`);
-    if (z.nurFrei) teile.push("nur frei");
-    if (z.ohneKommerz) teile.push("ohne Kommerz");
+    if (z.genre) teile.push(t("genre", { g: genreName(z.genre) }));
+    if (z.nurFrei) teile.push(t("nurFrei"));
+    if (z.ohneKommerz) teile.push(t("ohneKommerz"));
     el.mehrfilterAktiv.textContent = teile.join(" · ");
   }
 
@@ -174,7 +177,7 @@ function start(wurzel) {
     gezeigt = bis;
     const rest = treffer.length - gezeigt;
     el.mehr.hidden = rest <= 0;
-    el.mehr.textContent = `Mehr zeigen (noch ${rest.toLocaleString("de-DE")})`;
+    el.mehr.textContent = t("mehr", { z: zahl(rest) });
   }
 
   function zeigeLeer() {
@@ -184,21 +187,21 @@ function start(wurzel) {
       return;
     }
     if (sucht()) {
-      el.leer.replaceChildren(element("span", "kz-leer__spruch", `Nichts zu „${z.suche.trim()}“.`),
-        "Tippfehler? Oder die Band spielt gerade nicht. Andere Filter lockern hilft manchmal.");
+      el.leer.replaceChildren(element("span", "kz-leer__spruch", t("nichtsZu", { q: z.suche.trim() })),
+        t("nichtsZuTipp"));
       el.leer.hidden = false;
       return;
     }
     const text = spruch(wechsel);
     el.leer.replaceChildren(element("span", "kz-leer__spruch", text));
-    if (text === SPRUECHE[1]) el.leer.append(" ", link(KNOX_NEU, "Termin bei KNOX eintragen"));
+    if (text === spruch(1)) el.leer.append(" ", link(KNOX_NEU, t("knoxEintragen")));
     el.leer.hidden = false;
   }
 
   function zeigeZahl() {
     const n = treffer.length;
-    let text = n === 0 ? "Keine Termine" : `${n.toLocaleString("de-DE")} ${n === 1 ? "Termin" : "Termine"}`;
-    if (z.mitte) text += z.ueberall && sucht() ? " überall" : ` in ${stufe().label} um ${z.mitte.um}`;
+    let text = t("zahl", { n, z: zahl(n) });
+    if (z.mitte) text += z.ueberall && sucht() ? t("ueberall") : t("imUmkreis", { stufe: stufenName(stufe()), um: z.mitte.um });
     el.zahl.textContent = text;
   }
 
@@ -209,8 +212,8 @@ function start(wurzel) {
       return;
     }
     if (z.ueberall) {
-      el.weiterText.textContent = "Die Suche ignoriert gerade deinen Umkreis.";
-      el.weiterKnopf.textContent = "Nur im Umkreis";
+      el.weiterText.textContent = t("ignoriert");
+      el.weiterKnopf.textContent = t("nurUmkreis");
       el.weiter.hidden = false;
       return;
     }
@@ -219,8 +222,8 @@ function start(wurzel) {
       el.weiter.hidden = true;
       return;
     }
-    el.weiterText.textContent = `Noch ${aussen.toLocaleString("de-DE")} Treffer außerhalb deines Umkreises.`;
-    el.weiterKnopf.textContent = "Überall suchen";
+    el.weiterText.textContent = t("aussen", { n: aussen, z: zahl(aussen) });
+    el.weiterKnopf.textContent = t("ueberallSuchen");
     el.weiter.hidden = false;
   }
 
@@ -268,11 +271,11 @@ function start(wurzel) {
   el.wo.addEventListener("click", () => {
     const nr = ++ortsAnfrage;
     if (!("geolocation" in navigator)) {
-      melde(TEXT_KEIN_STANDORT);
+      melde(t("keinStandort"));
       return;
     }
     el.wo.setAttribute("aria-busy", "true");
-    melde("Moment, wir gucken, wo du steckst …");
+    melde(t("suchtStandort"));
     const fertig = () => el.wo.removeAttribute("aria-busy");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -283,15 +286,15 @@ function start(wurzel) {
         setzeMitte({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
-          name: "dein Standort",
-          um: "deinen Standort",
+          name: t("standortName"),
+          um: t("standortUm"),
           art: "geo",
         });
       },
       () => {
         fertig();
         if (nr !== ortsAnfrage) return;
-        melde(TEXT_KEIN_STANDORT);
+        melde(t("keinStandort"));
       },
       { timeout: 10000, maximumAge: 300000 },
     );
@@ -454,7 +457,7 @@ function start(wurzel) {
         .filter((g) => typeof g === "string" && g)
         .sort((a, b) => (a === ALLGEMEIN) - (b === ALLGEMEIN) || a.localeCompare(b, "de"));
       for (const g of genres) {
-        const o = element("option", null, g);
+        const o = element("option", null, genreName(g));
         o.value = g;
         el.genre.append(o);
       }
@@ -463,17 +466,15 @@ function start(wurzel) {
 
       if (Number.isFinite(d.ohne_ort) && d.ohne_ort > 0) {
         el.ohneOrt.replaceChildren(
-          d.ohne_ort === 1
-            ? "1 Termin ohne Ort, den findest du "
-            : `${d.ohne_ort.toLocaleString("de-DE")} Termine ohne Ort, die findest du `,
-          link(KNOX_START, "bei KNOX"),
+          t("ohneOrt", { n: d.ohne_ort, z: zahl(d.ohne_ort) }),
+          link(KNOX_START, t("beiKnox")),
         );
         el.ohneOrt.hidden = false;
       }
 
       const stand = new Date(d.stand);
       if (!Number.isNaN(stand.getTime())) {
-        el.stand.textContent = `Stand: ${stand.toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" })}`;
+        el.stand.textContent = t("stand", { d: stand.toLocaleString(gebiet(), { dateStyle: "medium", timeStyle: "short" }) });
         el.stand.hidden = false;
       }
       return true;
@@ -481,7 +482,7 @@ function start(wurzel) {
       // Nur Lade- und Formatfehler landen hier; Fehler beim Rendern bleiben sichtbar (Konsole)
       console.error("Konzerttermine nicht geladen:", fehler);
       daten = null;
-      el.zahl.textContent = TEXT_DATEN_FEHLEN;
+      el.zahl.textContent = t("datenFehlen");
       el.liste.replaceChildren();
       el.mehr.hidden = true;
       el.leer.hidden = true;
