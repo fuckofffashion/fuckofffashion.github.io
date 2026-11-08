@@ -4158,5 +4158,33 @@
   "lat": 48.1260513,
   "lon": 11.5984585,
   "land": "DE"
+ },
+ "DE|koln mulheim|limes": {
+  "lat": 50.9673078,
+  "lon": 7.0023642,
+  "land": "DE"
+ },
+ "DE|bonn|namenlos": {
+  "lat": 50.7362557,
+  "lon": 7.0934231,
+  "land": "DE"
+ },
+ "DE|bonn zentrum|alte vhs": {
+  "lat": 50.739474,
+  "lon": 7.1034806,
+  "land": "DE"
+ },
+ "DE|koln|bauwagenplatz": {
+  "lat": 50.9505206,
+  "lon": 6.983618,
+  "land": "DE"
+ },
+ "DE|koln ehrenfeld|privat (ehemals aetherblissement club scheisse)": {
+  "nicht_gefunden": "2026-11-08"
+ },
+ "DE|witzenhausen|klub": {
+  "lat": 51.3438426,
+  "lon": 9.8589394,
+  "land": "DE"
  }
 }
