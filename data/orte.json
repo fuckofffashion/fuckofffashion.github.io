@@ -4148,5 +4148,15 @@
   "lat": 51.2515339,
   "lon": 6.7907603,
   "land": "DE"
+ },
+ "DE|trier|villawuller": {
+  "lat": 49.7607134,
+  "lon": 6.6349364,
+  "land": "DE"
+ },
+ "DE|munchen|drehleier theater": {
+  "lat": 48.1260513,
+  "lon": 11.5984585,
+  "land": "DE"
  }
 }
