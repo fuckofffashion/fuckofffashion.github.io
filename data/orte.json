@@ -4186,5 +4186,20 @@
   "lat": 51.3438426,
   "lon": 9.8589394,
   "land": "DE"
+ },
+ "DE|aachen|az aachen": {
+  "lat": 50.776351,
+  "lon": 6.083862,
+  "land": "DE"
+ },
+ "DE|bonn|bla": {
+  "lat": 50.7362893,
+  "lon": 7.0936392,
+  "land": "DE"
+ },
+ "DE|limburg an der lahn lindenholzhausen|dorfgemeinschaftshaus": {
+  "lat": 50.3745114,
+  "lon": 8.1254826,
+  "land": "DE"
  }
 }
