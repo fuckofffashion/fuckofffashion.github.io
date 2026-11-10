@@ -4201,5 +4201,18 @@
   "lat": 50.3745114,
   "lon": 8.1254826,
   "land": "DE"
+ },
+ "radar|80d6db13-ec31-4e56-9b34-f075c046e406": {
+  "lat": 51.9090557,
+  "lon": 4.4493864,
+  "plz": "3024SG",
+  "stadt": "Rotterdam",
+  "land": "NL",
+  "laden": "Petteflet"
+ },
+ "DE|dusseldorf|linkes zentrum hinterhof": {
+  "lat": 51.2106063,
+  "lon": 6.7836744,
+  "land": "DE"
  }
 }
