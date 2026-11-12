@@ -4217,5 +4217,28 @@
  },
  "DE|bremen|bdp haus": {
   "nicht_gefunden": "2026-11-11"
+ },
+ "DE|luneburg|salon hansen": {
+  "lat": 53.2474112,
+  "lon": 10.4035719,
+  "land": "DE"
+ },
+ "DE|hamburg st. pauli|rote flora": {
+  "nicht_gefunden": "2026-11-12"
+ },
+ "DE|dusseldorf|alter schlachthof": {
+  "lat": 51.249592,
+  "lon": 6.7893771,
+  "land": "DE"
+ },
+ "DE|koln|club bahnhof ehrenfeld": {
+  "lat": 50.9516879,
+  "lon": 6.915989,
+  "land": "DE"
+ },
+ "DE|freiburg|waldsee": {
+  "lat": 47.9881267,
+  "lon": 7.8844044,
+  "land": "DE"
  }
 }
