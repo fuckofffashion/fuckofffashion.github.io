@@ -4240,5 +4240,45 @@
   "lat": 47.9881267,
   "lon": 7.8844044,
   "land": "DE"
+ },
+ "DE|paderborn|alles ist gut": {
+  "lat": 51.7199146,
+  "lon": 8.7456208,
+  "land": "DE"
+ },
+ "DE|kassel|nachrichtenmeisterei": {
+  "lat": 51.321396,
+  "lon": 9.4882796,
+  "land": "DE"
+ },
+ "DE|gottingen|t keller theaterkeller": {
+  "lat": 51.5277437,
+  "lon": 9.9439974,
+  "land": "DE"
+ },
+ "DE|lennestadt|billard cafe hufnagel": {
+  "lat": 51.1019216,
+  "lon": 8.0714188,
+  "land": "DE"
+ },
+ "DE|stuttgart|gasparitsch": {
+  "lat": 48.7880522,
+  "lon": 9.2116419,
+  "land": "DE"
+ },
+ "DE|hamburg|marias ballroom": {
+  "lat": 53.4551121,
+  "lon": 9.986277,
+  "land": "DE"
+ },
+ "DE|hamburg|inselpark arena": {
+  "lat": 53.4955839,
+  "lon": 10.0024183,
+  "land": "DE"
+ },
+ "DE|chemnitz|atomino": {
+  "lat": 50.8234848,
+  "lon": 12.922082,
+  "land": "DE"
  }
 }
