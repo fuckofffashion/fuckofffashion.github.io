@@ -4280,5 +4280,15 @@
   "lat": 50.8234848,
   "lon": 12.922082,
   "land": "DE"
+ },
+ "DE|essen|weststadthalle": {
+  "lat": 51.4581367,
+  "lon": 7.0027362,
+  "land": "DE"
+ },
+ "BE|antwerpen|kavka oudaan": {
+  "lat": 51.2156788,
+  "lon": 4.4031014,
+  "land": "BE"
  }
 }
