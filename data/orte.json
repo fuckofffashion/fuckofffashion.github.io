@@ -4290,5 +4290,31 @@
   "lat": 51.2156788,
   "lon": 4.4031014,
   "land": "BE"
+ },
+ "radar|a6eb9982-c28c-44b6-b100-b636d5a08f21": {
+  "lat": 52.5422164,
+  "lon": 13.6174574,
+  "plz": "12627",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "La Casa"
+ },
+ "radar|c1cd8bf4-c8e4-4d20-aa3c-2751bbe09fca": {
+  "lat": 52.5136974,
+  "lon": 13.4666469,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "K9"
+ },
+ "DE|hamburg|georg elser halle": {
+  "lat": 53.5565061,
+  "lon": 9.9701015,
+  "land": "DE"
+ },
+ "DE|munchen|kulturzentrum gorod": {
+  "lat": 48.1491029,
+  "lon": 11.5232113,
+  "land": "DE"
  }
 }
