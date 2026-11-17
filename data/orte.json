@@ -4316,5 +4316,15 @@
   "lat": 48.1491029,
   "lon": 11.5232113,
   "land": "DE"
+ },
+ "DE|ostritz|az meva": {
+  "lat": 51.0077046,
+  "lon": 14.9270127,
+  "land": "DE"
+ },
+ "DE|hamburg|semtex": {
+  "lat": 53.5481634,
+  "lon": 9.9632423,
+  "land": "DE"
  }
 }
