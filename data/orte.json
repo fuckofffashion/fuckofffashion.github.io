@@ -4326,5 +4326,46 @@
   "lat": 53.5481634,
   "lon": 9.9632423,
   "land": "DE"
+ },
+ "radar|3a32b32a-988e-4944-9294-c880416d3eb1": {
+  "lat": 52.5038714,
+  "lon": 13.4836489,
+  "plz": "10317",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "BLO-Ateliers"
+ },
+ "DE|wuppertal|loch": {
+  "lat": 51.2580904,
+  "lon": 7.1408267,
+  "land": "DE"
+ },
+ "DE|44793 bochum|theater": {
+  "lat": 51.4789086,
+  "lon": 7.2131319,
+  "land": "DE"
+ },
+ "DE|tubingen|club voltaire": {
+  "lat": 48.5207337,
+  "lon": 9.0510382,
+  "land": "DE"
+ },
+ "DE|paderborn|akka paderborn": {
+  "lat": 51.7204565,
+  "lon": 8.761252,
+  "land": "DE"
+ },
+ "DE|ulm|pinocchio pizzawerkstatt": {
+  "nicht_gefunden": "2026-11-18"
+ },
+ "DE|weimar|kasseturm": {
+  "lat": 50.9818955,
+  "lon": 11.3259926,
+  "land": "DE"
+ },
+ "DE|lippstadt|abseite": {
+  "lat": 51.676875,
+  "lon": 8.349019,
+  "land": "DE"
  }
 }
