@@ -4367,5 +4367,38 @@
   "lat": 51.676875,
   "lon": 8.349019,
   "land": "DE"
+ },
+ "DE|leipzig|ilses erika": {
+  "lat": 51.3108117,
+  "lon": 12.3762712,
+  "land": "DE"
+ },
+ "DE|berlin friedrichshain|abstand": {
+  "lat": 52.5166542,
+  "lon": 13.4641926,
+  "land": "DE"
+ },
+ "DE|rostock|alte zuckerfabrik": {
+  "lat": 54.0763475,
+  "lon": 12.1599477,
+  "land": "DE"
+ },
+ "|warschau, pol|– progresja": {
+  "nicht_gefunden": "2026-11-19"
+ },
+ "|mailand, ita|– alcatraz": {
+  "nicht_gefunden": "2026-11-19"
+ },
+ "|paris, fra|– elysee montmartre": {
+  "nicht_gefunden": "2026-11-19"
+ },
+ "|barcelona, ​​spa|– sala apolo": {
+  "nicht_gefunden": "2026-11-19"
+ },
+ "|madrid, spa|– wagen": {
+  "nicht_gefunden": "2026-11-19"
+ },
+ "|lissabon, por|– lav – lisboa ao vivo": {
+  "nicht_gefunden": "2026-11-19"
  }
 }
