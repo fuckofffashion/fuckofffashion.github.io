@@ -4400,5 +4400,53 @@
  },
  "|lissabon, por|– lav – lisboa ao vivo": {
   "nicht_gefunden": "2026-11-19"
+ },
+ "radar|17c65190-bf7d-409c-a221-83ca0d398057": {
+  "lat": null,
+  "lon": null,
+  "plz": "12045",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Casino For Social Medicine",
+  "geholt": "2026-11-20"
+ },
+ "radar|68d5bc05-ca5c-4174-9a69-99e4f2497915": {
+  "lat": 52.4880065,
+  "lon": 13.3868088,
+  "plz": "10965",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Arcanoa"
+ },
+ "DE|berlin|casino for social medicine": {
+  "lat": 52.4820545,
+  "lon": 13.438957,
+  "land": "DE"
+ },
+ "DE|meerbusch|pauls savanne": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|uk glasgow|o2 academy": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|uk birmingham|o2 academy": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|uk manchester|o2 victoria warehouse": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|uk london|o2 academy brixton": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|be antwerp|fort merksem": {
+  "lat": 51.263605,
+  "lon": 4.4579624,
+  "land": "BE"
+ },
+ "|fr paris|bataclan": {
+  "nicht_gefunden": "2026-11-20"
+ },
+ "|zurich|ag hallenstadion": {
+  "nicht_gefunden": "2026-11-20"
  }
 }
