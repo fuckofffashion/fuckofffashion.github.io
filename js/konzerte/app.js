@@ -2,13 +2,13 @@
 // Datenschutz: Der Standort (Geolocation oder getippter Ort) bleibt im Speicher dieser Seite.
 // In localStorage stehen nur Umkreisstufe, Genre und die zwei Schalter.
 // Fremde Texte (Bands, Zusatz, Laden, Stadt) kommen ausschließlich per textContent ins DOM.
-import { filtern, sortieren, normalisiere } from "./filter.js?v=28";
-import { STUFEN, stufenName } from "./einheiten.js?v=28";
-import { spruch } from "./leer.js?v=28";
-import { ortsfeld } from "./ortsfeld.js?v=28";
-import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=28";
-import { starteKarte } from "./karte.js?v=28";
-import { t, zahl, gebiet } from "./texte.js?v=28";
+import { filtern, sortieren, normalisiere } from "./filter.js?v=29";
+import { STUFEN, stufenName } from "./einheiten.js?v=29";
+import { spruch } from "./leer.js?v=29";
+import { ortsfeld } from "./ortsfeld.js?v=29";
+import { renderTermin, kalenderTage, element, link, heute, plusTage, tagText } from "./termin.js?v=29";
+import { starteKarte } from "./karte.js?v=29";
+import { t, zahl, gebiet } from "./texte.js?v=29";
 
 export { renderTermin }; // Schnittstelle für Task 9 und Tests
 
