@@ -294,6 +294,8 @@ html:not(.js) .tr__controls { display: none; }
 .outro__title { grid-column: 1 / -1; font-size: clamp(3.5rem, 13vw, 13rem); }
 .outro__foot { grid-column: 1 / span 7; display: grid; gap: var(--sp-3); margin-top: var(--sp-4); }
 @media (max-width: 900px) { .outro__foot { grid-column: 1 / -1; } }
+/* Handy: rechte Spalte frei für den Schlussknoten des roten Fadens (js/faden.js) */
+@media (max-width: 699.98px) { .outro__foot { padding-right: min(38%, 150px); } }
 
 /* Mitmachen ---------------------------------------------- */
 .join__head { margin-bottom: var(--sp-6); align-items: end; }
@@ -335,7 +337,8 @@ html:not(.js) .tr__controls { display: none; }
 }
 
 /* Fuß ---------------------------------------------------- */
-.foot { border-top: 1px solid var(--ink-3); padding: var(--sp-4) var(--edge) var(--sp-5); display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); justify-content: space-between; }
+/* Fuß liegt über dem roten Faden (Canvas z-index 55): der Faden verschwindet dahinter statt die Links zu verdecken */
+.foot { position: relative; z-index: 56; background: var(--ink); border-top: 1px solid var(--ink-3); padding: var(--sp-4) var(--edge) var(--sp-5); display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); justify-content: space-between; }
 .foot nav { display: flex; gap: var(--sp-3); }
 .foot a { text-decoration: none; }
 

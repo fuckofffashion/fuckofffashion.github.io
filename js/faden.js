@@ -93,6 +93,7 @@ function start(THREE) {
     const right = document.querySelector(".wrap").getBoundingClientRect().right;
     railW = Math.max(16, vw - right); rail = right + railW / 2;
   };
+  const outroFoot = document.querySelector(".outro__foot");
   const knotSize = () => Math.min(110, Math.max(40, railW * 1.1));
   const knot = sel => ({ el: document.querySelector(sel), range: [.06, .32], at: r => {
     const s = knotSize();
@@ -105,9 +106,16 @@ function start(THREE) {
     } },
     knot("#t-anarchie"), knot("#t-wand"), knot("#t-tragen"), knot("#t-join"),
     { el: document.querySelector(".outro__title"), range: [.12, .48], at: (r, vw, vh) => {
+      if (mobile() && outroFoot) {
+        // Handy: in der freien rechten Spalte neben Text und Knopf (css/site.css hält sie frei),
+        // sonst liegt der Knoten über dem Schlusssatz
+        const f = outroFoot.getBoundingClientRect();
+        const s = Math.min(vw * .34, 140);
+        return { cx: vw - s * .45 - 6, cy: f.top + f.height / 2, size: s, radius: Math.min(12, Math.max(4, s * .028)) };
+      }
       // unter der Schluss-Zeile, rechts neben Text und Knopf
-      const s = Math.min(vw * (mobile() ? .42 : .3), vh * .5, 400);
-      return { cx: vw * (mobile() ? .72 : .74), cy: r.bottom + s * .5 + 24, size: s, radius: Math.min(12, Math.max(4, s * .028)) };
+      const s = Math.min(vw * .3, vh * .5, 400);
+      return { cx: vw * .74, cy: r.bottom + s * .5 + 24, size: s, radius: Math.min(12, Math.max(4, s * .028)) };
     } },
   ].filter(a => a.el);
 
