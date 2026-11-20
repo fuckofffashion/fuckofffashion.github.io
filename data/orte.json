@@ -4448,5 +4448,10 @@
  },
  "|zurich|ag hallenstadion": {
   "nicht_gefunden": "2026-11-20"
+ },
+ "DE|berlin|la casa": {
+  "lat": 52.5422403,
+  "lon": 13.6173176,
+  "land": "DE"
  }
 }
