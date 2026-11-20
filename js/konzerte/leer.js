@@ -1,5 +1,5 @@
 // Sprüche für die leere Konzertliste. Ton: frech, DIY, ohne Beleidigungen gegen Menschen, ohne Markennamen.
-import { sprache } from "./texte.js?v=27";
+import { sprache } from "./texte.js?v=28";
 
 export const SPRUECHE = [
   "Heute nix. Geh Sticker kleben.",

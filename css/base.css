@@ -45,6 +45,8 @@ body::after {
   text-transform: uppercase; letter-spacing: var(--track-label); color: var(--ash);
 }
 .label--red { color: var(--blood-hot); }
+/* Ganze Sätze: Schreibmaschine bleibt, aber ohne Versalien und Sperrung (Versalien nur für kurze Etiketten) */
+.label--satz { text-transform: none; letter-spacing: .01em; line-height: 1.5; }
 .red { color: var(--blood); }
 .strike { position: relative; white-space: nowrap; }
 .strike::after {
@@ -162,12 +164,13 @@ body::after {
 .poster__title { font: 400 1.35rem/1 var(--font-shout); text-transform: uppercase; }
 .poster__dl {
   position: absolute; right: .9rem; top: .9rem; z-index: 3;
-  background: var(--blood); color: var(--paper); padding: .55em .8em;
+  display: inline-flex; align-items: center; min-height: 2.75rem; /* 44 px Tippfläche */
+  background: var(--blood); color: var(--paper); padding: .55em .9em;
   font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-transform: uppercase; text-decoration: none;
-  transform: rotate(3deg); opacity: 0; transition: opacity var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+  transform: rotate(3deg); transition: transform var(--dur-fast) var(--ease-out);
 }
-.poster:hover .poster__dl, .poster__dl:focus-visible { opacity: 1; transform: rotate(-2deg) scale(1.05); }
-@media (hover: none) { .poster__dl { opacity: 1; } }
+/* immer sichtbar (wichtigste Aktion der Seite); Maus darüber hebt ihn nur an */
+.poster:hover .poster__dl, .poster__dl:focus-visible { transform: rotate(-2deg) scale(1.05); }
 .poster__dls { position: absolute; right: .9rem; top: .9rem; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
 .poster__dls .poster__dl { position: static; }
 .poster__dl--alt { background: var(--ink); }

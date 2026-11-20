@@ -118,6 +118,7 @@
 /* Anarchie ----------------------------------------------- */
 .anarchy__lead { max-width: 30ch; margin: 0 0 var(--sp-3); }
 .anarchy__claim { max-width: var(--measure); margin: 0; font-size: var(--fs-lead); line-height: 1.45; color: var(--ash); }
+.anarchy__claim .red { color: var(--blood-hot); } /* Fließtextgröße: helles Rot für 4,5:1 */
 .anarchy__claim strong { font-weight: 800; }
 .anarchy__points {
   grid-column: 1 / -1; margin: var(--sp-6) 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -151,17 +152,28 @@
 /* Die Wand ----------------------------------------------- */
 .wall__head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--sp-3); margin-bottom: var(--sp-6); }
 .wall { grid-column: 1 / -1; row-gap: var(--sp-6); align-items: start; }
-.wall > :nth-child(4n+1) { grid-column: 1 / span 6; --rot: -2.5deg; }
-.wall > :nth-child(4n+2) { grid-column: 8 / span 4; --rot: 3deg; margin-top: 6rem; }
-.wall > :nth-child(4n+3) { grid-column: 3 / span 4; --rot: 1.5deg; }
-.wall > :nth-child(4n+4) { grid-column: 8 / span 5; --rot: -3.5deg; margin-top: -4rem; }
+/* Desktop: drei Plakate je Reihe, versetzt und schief geklebt */
+.wall > :nth-child(3n+1) { grid-column: 1 / span 4; --rot: -2.5deg; }
+.wall > :nth-child(3n+2) { grid-column: 5 / span 4; --rot: 2.5deg; margin-top: 4rem; }
+.wall > :nth-child(3n+3) { grid-column: 9 / span 4; --rot: -1.5deg; margin-top: 1.5rem; }
 /* Gefiltert zählt der Rhythmus nur sichtbare Plakate. Browser ohne „nth-child(… of …)“ verwerfen
    diese Regeln und behalten den Rhythmus oben (dann bleiben nur Lücken im Muster). */
-.wall > :nth-child(4n+1 of :not([hidden])) { grid-column: 1 / span 6; --rot: -2.5deg; margin-top: 0; }
-.wall > :nth-child(4n+2 of :not([hidden])) { grid-column: 8 / span 4; --rot: 3deg; margin-top: 6rem; }
-.wall > :nth-child(4n+3 of :not([hidden])) { grid-column: 3 / span 4; --rot: 1.5deg; margin-top: 0; }
-.wall > :nth-child(4n+4 of :not([hidden])) { grid-column: 8 / span 5; --rot: -3.5deg; margin-top: -4rem; }
-@media (max-width: 800px) { .wall > * { grid-column: 1 / -1 !important; margin-top: 0 !important; } }
+.wall > :nth-child(3n+1 of :not([hidden])) { grid-column: 1 / span 4; --rot: -2.5deg; margin-top: 0; }
+.wall > :nth-child(3n+2 of :not([hidden])) { grid-column: 5 / span 4; --rot: 2.5deg; margin-top: 4rem; }
+.wall > :nth-child(3n+3 of :not([hidden])) { grid-column: 9 / span 4; --rot: -1.5deg; margin-top: 1.5rem; }
+/* Handy und Tablet: zwei Spalten; Download-Knöpfe unter dem Bild statt darüber */
+@media (max-width: 800px) {
+  .wall { row-gap: var(--sp-4); }
+  .wall > * { grid-column: span 6 !important; margin-top: 0 !important; }
+  .wall > :nth-child(odd of :not([hidden])) { --rot: -1.2deg; }
+  .wall > :nth-child(even of :not([hidden])) { --rot: 1deg; margin-top: 1.5rem !important; }
+  .wall .poster { padding: .4rem .4rem 0; }
+  .wall .poster__dls { position: static; flex-direction: column; align-items: stretch; gap: .3rem; margin-top: .4rem; }
+  .wall .poster > .poster__dl { position: static; display: flex; margin-top: .4rem; }
+  .wall .poster__dl, .wall .poster:hover .poster__dl { justify-content: center; transform: none; }
+  .wall .poster__meta { flex-direction: column; align-items: flex-start; gap: .35rem; padding: .6rem .1rem .8rem; }
+  .wall .poster__title { font-size: 1.05rem; }
+}
 
 /* Motiv-Filter (Wand und Motivwahl): Schablonen-Knöpfe, ohne JS nicht da (hidden) */
 .motivfilter { --mf-fg: var(--paper); --mf-bg: var(--ink-2);
@@ -190,6 +202,7 @@
 .license p { margin: 0; max-width: var(--measure); }
 .license__text { display: grid; gap: var(--sp-2); }
 .license__text strong { font-weight: 800; }
+.license .scrawl { display: inline-block; padding-block: .9rem; margin-block: -.9rem; }
 .license__karma { font: 400 var(--fs-3)/1.1 var(--font-shout); text-transform: uppercase; color: var(--blood-hot); }
 @media (max-width: 600px) { .license { grid-template-columns: 1fr; } }
 
@@ -232,7 +245,7 @@
 .tr__pill { position: relative; cursor: pointer; }
 .tr__pill input, .tr__thumb input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .tr__pill span {
-  display: inline-flex; align-items: center; gap: .5em; padding: .6em 1em; border: 2px solid var(--ink);
+  display: inline-flex; align-items: center; gap: .5em; min-height: 2.75rem; padding: .6em 1em; border: 2px solid var(--ink);
   font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); text-transform: uppercase;
   transition: background var(--dur-fast), color var(--dur-fast);
 }
@@ -254,6 +267,10 @@ html:not(.js) .tr__controls { display: none; }
 
 /* Selbermachen (horizontal gepinnt auf Desktop) ---------- */
 .diy { overflow: hidden; }
+/* Karten und Text liegen über dem roten Faden (Canvas z-index 55); der Hintergrund ist durchsichtig
+   (Body ist ebenfalls Tinte), damit der Faden zwischen den Karten sichtbar bleibt. Auf dem
+   Abschnitt selbst, weil GSAP ihn beim Anheften zur eigenen Ebene macht. */
+.sec--ink.diy { position: relative; z-index: 56; background: transparent; }
 .diy__head { margin-bottom: var(--sp-5); }
 .diy__title { grid-column: 1 / span 6; }
 .diy__title .shout { margin-top: .4rem; }
@@ -294,6 +311,11 @@ html:not(.js) .tr__controls { display: none; }
 .outro__title { grid-column: 1 / -1; font-size: clamp(3.5rem, 13vw, 13rem); }
 .outro__foot { grid-column: 1 / span 7; display: grid; gap: var(--sp-3); margin-top: var(--sp-4); }
 @media (max-width: 900px) { .outro__foot { grid-column: 1 / -1; } }
+/* Handy: rechter Rand breiter als der linke, dort läuft der rote Faden (js/faden.js misst .wrap) */
+@media (max-width: 699.98px) {
+  .wrap { width: calc(100% - var(--edge) - max(var(--edge), 1.75rem)); margin-left: var(--edge); margin-right: auto; }
+  .diy__track { margin-right: max(var(--edge), 1.75rem); }
+}
 /* Handy: rechte Spalte frei für den Schlussknoten des roten Fadens (js/faden.js) */
 @media (max-width: 699.98px) { .outro__foot { padding-right: min(38%, 150px); } }
 
@@ -480,7 +502,7 @@ html:has(.kasse[open]) { overflow: hidden; }
 @media (max-width: 560px) {
   .head.has-menu .head__mark span { display: inline; font-size: min(1.25rem, 5.4vw); }
   .head.has-menu .head__menu {
-    display: inline-flex; align-items: center; gap: .55rem; padding: .6rem .8rem; border: 2px solid var(--paper);
+    display: inline-flex; align-items: center; gap: .55rem; min-height: 2.75rem; padding: .6rem .8rem; border: 2px solid var(--paper);
     background: none; color: var(--paper); cursor: pointer;
     font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label);
   }
