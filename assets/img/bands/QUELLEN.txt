@@ -1,0 +1,7 @@
+Bandlogos der Bandseite (bands.html), geladen am 20.11.2026 von den offiziellen Seiten der Bands.
+Umgewandelt in WebP mit Transparenz, höchstens 800 px breit. Quelle je Datei auch in tools/bands.json (logo_quelle).
+
+dan-ganove.webp      https://static.wixstatic.com/media/1093e8_c35bda69ecc54d05b6f301076c8a7d78~mv2.png  (https://dan66713.wixsite.com/dan-punkrock)
+alarmsignal.webp     https://www.alarmsignal-punkrock.de/wp-content/uploads/2024/09/Alarmsignal_logo.webp
+los-fastidios.webp   https://globaluserfiles.com/media/287625_f24588bbb1474289b12a4f18a6189574ee94fde2.png  (https://losfastidios.net)
+trijahnity.webp      https://www.trijahnity.de/images/Trijahnity_logo_weiß.png
