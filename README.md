@@ -21,9 +21,9 @@ Statische Seite ohne Build-Schritt. Lokal ansehen: `python -m http.server 4173 -
 
 ## Zwei Sprachen
 
-Deutsch ist die Hauptfassung, die englische liegt in `en/` (`en/index.html`, `en/konzerte.html`). Impressum und Datenschutz gibt es nur auf Deutsch, die englischen Seiten verlinken darauf mit „(German)“.
+Deutsch ist die Hauptfassung, die englische liegt in `en/` (`en/index.html`, `en/konzerte.html`, `en/bands.html`). Impressum und Datenschutz gibt es nur auf Deutsch, die englischen Seiten verlinken darauf mit „(German)“.
 
-- **Jede Textänderung an `index.html` oder `konzerte.html` gehört auch in die englische Datei.** IDs und Sprungmarken bleiben in beiden gleich, sonst landet der Umschalter nicht an derselben Stelle (`tools/konzerte/tests/test_sprachen.py` prüft das).
+- **Jede Textänderung an `index.html`, `konzerte.html` oder `bands.html` gehört auch in die englische Datei.** IDs und Sprungmarken bleiben in beiden gleich, sonst landet der Umschalter nicht an derselben Stelle (`tools/konzerte/tests/test_sprachen.py` prüft das).
 - Englische Seiten tragen `<html lang="en" data-wurzel="../">` und alle Pfade mit `../`. Das JS liest `data-wurzel` für Datenpfade und `lang` für seine Texte.
 - Umschalter: `.head__sprache` im Kopf jeder Seite; `js/menu.js` hängt Abschnitt und Filter (`?…#…`) an den Link.
 
@@ -79,6 +79,26 @@ Tests:
 
 - Browser-Module: `node --test "tests/js/*.test.mjs"`
 - Python: `python -m unittest discover -s tools/konzerte/tests -t .`
+
+## Bandseite „Die Säule“
+
+Seite `bands.html` (+ `en/bands.html`): Bands, die wir live gesehen haben, als abreißbare Logo-Plakate auf Litfaßsäulen, sortiert nach ihrem nächsten Konzert (Bald 0–30 Tage, Demnächst 31–90, Später, Gerade still). Entwurf: `docs/superpowers/specs/2026-11-21-bandseite-design.md`.
+
+Neue Band:
+
+1. Logo als WebP mit Transparenz (höchstens 800 px breit) nach `assets/img/bands/<id>.webp`, Quelle in `assets/img/bands/QUELLEN.txt` eintragen.
+2. In `tools/bands.json` einen Eintrag anhängen: `id`, `name`, `logo`, `logo_quelle`, `web`, optional `beschreibung` (`de`/`en`), `schreibweisen`, `nicht` (Muster gegen falsche Treffer), `auch_zusatz` (auch im Beschreibungstext der Termine suchen), `plakat` (`papier` oder `blut` statt Schwarz).
+3. `python tools/build-bands.py` schreibt die Plakate in beide Seiten (zwischen die `<!-- bands:plakate:… -->`-Marker, dort nie von Hand ändern).
+4. `python -m tools.konzerte.bands` ordnet sofort die Termine aus `data/konzerte.json` zu (sonst macht das der tägliche Lauf).
+
+Zugeordnet wird nur über den Bandnamen im Termin, als ganzes Wort, ohne Groß/Klein und Emoji. Bands, die nur in der eigenen Terminliste stehen (`tools/konzerte/eigene.json`), haben nur Termine, wenn sie dort eingetragen sind.
+
+| Pfad | Zuständig für |
+|---|---|
+| `tools/konzerte/bands.py` | Zuordnung Termin → Band, schreibt `data/bands.json` |
+| `tools/build-bands.py` | Plakate ins HTML |
+| `js/bands/saeulen.js` | Säulen-Logik (getestet in `tests/js/bands.test.mjs`) |
+| `js/bands/app.js`, `texte.js` | Säulen bauen, Termine füllen, Abreißen |
 
 ## Täglicher Lauf und Veröffentlichung (GitHub)
 

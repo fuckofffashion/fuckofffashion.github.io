@@ -23,6 +23,10 @@
 @media (hover: hover) and (pointer: fine) { .head__sprache:hover { text-decoration: underline; text-underline-offset: .2em; } }
 .head nav a { font: 700 var(--fs-label)/1 var(--font-zine); text-transform: uppercase; letter-spacing: var(--track-label); text-decoration: none; padding-block: .5rem; }
 @media (max-width: 560px) { .head__mark span { display: none; } .head nav .nav--wide { display: none; } }
+/* Tablet und schmaler Desktop: mit sieben Punkten (Startseite) passt die Zeile erst ab etwa 960 px,
+   darunter fallen die langen Punkte weg wie am Handy (sonst ragen Navigation und EN über den Rand) */
+@media (min-width: 561px) and (max-width: 960px) { .head nav .nav--wide { display: none; } .head nav { gap: clamp(.8rem, 2.2vw, 1.6rem); } }
+@media (min-width: 561px) and (max-width: 700px) { .head nav .nav--mid { display: none; } }
 /* Handy: Logo und Navigation passen sicher in eine Zeile – Abstände und Schrift sind an die Bildbreite gedeckelt,
    so sprengt auch eine vergrößerte Systemschrift (Android-Textskalierung) die Zeile nicht, und das Logo
    schrumpft nie unter die Navigation. Dazu eine dunkle Leiste: Inhalt läuft beim Scrollen darunter durch

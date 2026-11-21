@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 WURZEL = Path(__file__).resolve().parents[3]
-PAARE = {"index.html": "en/index.html", "konzerte.html": "en/konzerte.html"}
+PAARE = {"index.html": "en/index.html", "konzerte.html": "en/konzerte.html", "bands.html": "en/bands.html"}
 NUR_DEUTSCH = ["impressum.html", "datenschutz.html", "404.html"]
 
 
@@ -72,3 +72,13 @@ class SprachenTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Hauptnavigation(unittest.TestCase):
+    def test_bands_steht_vor_konzerte(self):
+        for rel in ["index.html", "konzerte.html", "bands.html"] + [f"en/{s}" for s in ("index.html", "konzerte.html", "bands.html")]:
+            with self.subTest(rel):
+                nav = re.search(r'<nav id="hauptnav".*?</nav>', lies(rel), re.S).group(0)
+                ziele = re.findall(r'href="([^"]+)"', nav)
+                self.assertIn("bands.html", ziele)
+                self.assertLess(ziele.index("bands.html"), ziele.index("konzerte.html"))
