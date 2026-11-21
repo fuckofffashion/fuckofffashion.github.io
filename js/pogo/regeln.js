@@ -44,7 +44,7 @@ export function imTakt(t, bpm = BPM, start = 0) {
 export const SPRUNG = { bonus: 15, daneben: 3 };
 export const GEDRAENGE = 0.75; // halbiert nach Spieletest 2: Bier ist Ressource, kein Countdown
 export const STAGEDIVE_AB = 4;
-export const BONUS = { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600 };
+export const BONUS = { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 150, stagedive: 600 };
 
 /** Verschüttetes Bier in Prozent für einen Rempler mit Aufprallgeschwindigkeit `schlag` (m/s). */
 export function verschuettet(schlag, { rucksack = false, inLuft = false } = {}) {

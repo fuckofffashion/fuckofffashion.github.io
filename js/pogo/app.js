@@ -31,7 +31,7 @@ let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher)
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
-let stillZeit = 0, zieht = false, sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
+let stillZeit = 0, zieht = false, mikroGezaehlt = new Set(), sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
 function neueRunde(neueAufgaben = true) {
   raeumeAuf();
@@ -59,7 +59,7 @@ function neueRunde(neueAufgaben = true) {
   sprungBis = 0; reiheSeit = 0; nassBis = 0; letzterSpritzer = -99; duDaTeile = new Set(); wuerfe = []; andenken = [];
   geplanteWuerfe = [{ art: "plektrum", t: song.wuerfe.plektrum }, { art: "drumstick", t: song.wuerfe.drumstick }];
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
-  stagedive = { phase: "aus", fertig: false }; mikroAn = false;
+  stagedive = { phase: "aus", fertig: false }; mikroAn = false; mikroGezaehlt = new Set();
   abguck = { zeit: 0, fertig: false, erklaertBis: -1 }; schnoesel = null; fascho = null; rufZeit = 0; rufTreffer = 0; saenger = null; geblendetBis = 0; abgeguckt = null; faktor = 1; phase = "aus";
   if (S.band[1]) S.band[1].g.visible = true;
   stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
@@ -89,7 +89,7 @@ function spritzer(menge, farbe = 0xf2b632) {
   }
 }
 function verschuette(menge, grund) {
-  if (menge <= 0) return;
+  if (menge <= 0 || phase === "zugabe") return; // Zugabe ist Party: Bier zählt nicht mehr
   bier = Math.max(0, bier - menge);
   spritzer(menge); if (grund) pop(grund); S.wackeln(menge * 0.015);
 }
@@ -106,12 +106,13 @@ function springe(t = zeit, uhr = null) {
   ich.inLuft = true; sprungBis = zeit + sprungDauer(song.bpm);
   const z = zone(ich.x, ich.z, L);
   if (mikroAn && z === "reihe") {
-    if (imTakt(t, song.bpm, song.start)) { punkte += BONUS.oi; pop(T.oi, "var(--paper)"); } else pop(T.daneben, "var(--paper-2)");
+    const w = rufTipp(t - song.start, song.bpm, mikroGezaehlt);
+    if (w === "treffer") { punkte += BONUS.oi; pop(T.oi, "var(--paper)"); } else if (w === "daneben") pop(T.daneben, "var(--paper-2)");
     return;
   }
   const w = sprungWertung(z, imTakt(t, song.bpm, song.start));
   if (w.punkte) { punkte += w.punkte; stats.taktSpruenge++; pop(T.takt, "#58d26a"); }
-  if (w.bier) { bier = Math.max(0, bier - w.bier); spritzer(2); }
+  if (w.bier && phase !== "zugabe") { bier = Math.max(0, bier - w.bier); spritzer(2); }
 }
 function wische(seite) {
   if (!laeuft || stagedive.phase !== "getragen" || !stagedive.griff) return;
@@ -211,7 +212,7 @@ function schritt(dt) {
   if (z === "mitte") stats.mitteSekunden += dt;
   if (z === "reihe" && teil.name === "LETZTER REFRAIN") stats.reiheImLetztenRefrain = true;
   reiheSeit = z === "reihe" && !getragen ? reiheSeit + dt : 0;
-  if (z === "reihe") bier = Math.max(0, bier - GEDRAENGE * kraft * dt);
+  if (z === "reihe" && phase !== "zugabe") bier = Math.max(0, bier - GEDRAENGE * kraft * dt);
   if (z === "reihe" && wilderTeil(teil0) && reiheSeit > 3 && zeit - letzterSpritzer > 8) {
     letzterSpritzer = zeit; nassBis = zeit + 3; pop(T.abkuehlen, "#7fc8ff"); spritzer(8, 0x7fc8ff);
   }
@@ -499,6 +500,7 @@ function starte() {
   song = SONGS.find((s) => s.id === songId) || BEAT;
   if (song.datei && !musik.bereit(WURZEL + song.datei)) { pop(T.songFehlt, "var(--paper)"); song = BEAT; }
   neueRunde(false);
+  try { S.renderer.compile(S.scene, S.camera); } catch {} // Shader vorab bauen: kein Ruckler in der ersten Sekunde
   $("pogo-start").hidden = true; $("pogo-ende").hidden = true; $("pogo-hud").hidden = false; $("pogo-tonbox").hidden = false;
   spielEl.scrollIntoView({ block: "nearest" });
   laeuft = true; pausiert = false; letzte = performance.now(); phase = "song";

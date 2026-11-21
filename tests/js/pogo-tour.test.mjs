@@ -122,3 +122,12 @@ test("Song aus der Adresse: nur bekannte Songs", async () => {
   assert.equal(songAusAdresse("?song=<x>"), null);
   assert.equal(songAusAdresse(""), null);
 });
+
+test("Mikro-Moment ist der größte Bonus der Runde (Spec), größer als ein perfekter Stagedive", async () => {
+  const { BONUS, STAGEDIVE } = await import("../../js/pogo/regeln.js");
+  assert.equal(BONUS.oi, 150);
+  for (const s of SONGS) {
+    const schlaege = Math.floor((s.mikro[1] - s.mikro[0]) / (60 / s.bpm));
+    assert.ok(BONUS.oi * schlaege > STAGEDIVE.punkteProSekunde * STAGEDIVE.dauer + STAGEDIVE.bonus, s.id);
+  }
+});
