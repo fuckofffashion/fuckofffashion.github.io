@@ -80,3 +80,28 @@ test("Motivliste passt zu tools/motive.json, Bilder existieren", () => {
   assert.deepEqual(MOTIVE.map((m) => m.nr), liste.map((m) => m.nr));
   for (const m of MOTIVE) assert.ok(existsSync(wurzel + m.bild), m.bild);
 });
+
+test("Zugabe-Zeiten: ab letztem Refrain, 15 s, mit Datei höchstens bis Songende", async () => {
+  const { zugabeZeiten } = await import("../../js/pogo/regeln.js");
+  assert.deepEqual(zugabeZeiten(SONGS[0]), { start: 43, ende: 58 });
+  assert.deepEqual(zugabeZeiten(BEAT), { start: 48, ende: 63 });
+});
+
+test("Raster ab Versatz: nächster Schlag liegt auf dem Raster", async () => {
+  const { rasterAb } = await import("../../js/pogo/regeln.js");
+  const s = 60 / 176 / 2;
+  const r = rasterAb(48, s);
+  assert.ok(r.zeit >= 48 && r.zeit - 48 < s);
+  assert.ok(Math.abs(r.zeit - r.k * s) < 1e-9);
+  assert.deepEqual(rasterAb(0, s), { k: 0, zeit: 0 });
+});
+
+test("Zugabe-Ruf: höchstens ein Treffer pro Schlag, daneben bleibt daneben", async () => {
+  const { rufTipp } = await import("../../js/pogo/regeln.js");
+  const v = 60 / 120, gezaehlt = new Set();
+  assert.equal(rufTipp(v * 3 + 0.02, 120, gezaehlt), "treffer");
+  assert.equal(rufTipp(v * 3 - 0.03, 120, gezaehlt), "schon");
+  assert.equal(rufTipp(v * 3 + 0.25, 120, gezaehlt), "daneben");
+  assert.equal(rufTipp(v * 4, 120, gezaehlt), "treffer");
+  assert.equal(gezaehlt.size, 2);
+});

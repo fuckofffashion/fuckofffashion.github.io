@@ -102,3 +102,21 @@ export function schurkenZeiten(song) {
   return { schnoesel: song.teile[refrain].bis, fascho: Math.round(song.ende * 0.4 * 10) / 10 };
 }
 Object.assign(BONUS, { abgeguckt: 200, schnoesel: 300, fascho: 200 });
+
+/** Zugabe: ab Beginn des letzten Refrains ZUGABE.dauer Sekunden; mit Songdatei höchstens bis Songende. */
+export function zugabeZeiten(song) {
+  const start = song.teile.at(-2).bis, ende = start + ZUGABE.dauer;
+  return { start, ende: song.datei ? Math.min(song.ende, ende) : ende };
+}
+/** Erster Rasterschlag ab einer Songzeit (für den Start mitten im Song). */
+export function rasterAb(versatz, schritt) {
+  const k = Math.max(0, Math.ceil(versatz / schritt - 1e-9));
+  return { k, zeit: k * schritt };
+}
+/** Tipp im Zugabe-Ruf: "treffer" (neuer Schlag im Takt), "schon" (dieser Schlag zählt schon), "daneben". */
+export function rufTipp(t, bpm, gezaehlt) {
+  if (!imTakt(t, bpm, 0)) return "daneben";
+  const schlag = Math.round(t / (60 / bpm));
+  if (gezaehlt.has(schlag)) return "schon";
+  gezaehlt.add(schlag); return "treffer";
+}

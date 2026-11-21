@@ -1,7 +1,7 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten,
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp,
 } from "./regeln.js?v=31";
 import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=31";
 import { sprache, TEXTE } from "./texte.js?v=31";
@@ -28,7 +28,7 @@ const musik = erzeugeMusik();
 let songId = SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
 let speicher = null; try { speicher = globalThis.localStorage; } catch { speicher = null; }
 let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher);
-let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
+let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
@@ -94,9 +94,10 @@ function verschuette(menge, grund) {
 }
 
 /* ---------- Aktionen ---------- */
-function springe(t = zeit) {
+function springe(t = zeit, uhr = null) {
   if (laeuft && phase === "ruf") {
-    if (imTakt(musik.uhr() ?? rufZeit, song.bpm, 0)) { rufTreffer++; pop(T.zugaGa, "var(--paper)"); } else pop(T.daneben, "var(--paper-2)");
+    const w = rufTipp(uhr ?? musik.uhr() ?? rufZeit, song.bpm, rufGezaehlt);
+    if (w === "treffer") { rufTreffer++; pop(T.zugaGa, "var(--paper)"); } else if (w === "daneben") pop(T.daneben, "var(--paper-2)");
     return;
   }
   if (!laeuft || pausiert || stagedive.phase === "getragen" || ich.inLuft) return;
@@ -128,7 +129,7 @@ let zeiger = null;
 function beginneZeiger(e) {
   if (!laeuft) return;
   const r = spielEl.getBoundingClientRect();
-  zeiger = { id: e.pointerId, druckZeit: zeit, x0: e.clientX, y0: e.clientY, t0: performance.now(), dx: 0, dy: 0, weg: 0, ziehen: false, rx: e.clientX - r.left, ry: e.clientY - r.top };
+  zeiger = { id: e.pointerId, druckZeit: zeit, druckUhr: phase === "ruf" ? musik.uhr() ?? rufZeit : null, x0: e.clientX, y0: e.clientY, t0: performance.now(), dx: 0, dy: 0, weg: 0, ziehen: false, rx: e.clientX - r.left, ry: e.clientY - r.top };
   S.renderer.domElement.setPointerCapture?.(e.pointerId);
 }
 function bewegeZeiger(e) {
@@ -146,14 +147,14 @@ function beendeZeiger(e) {
   if (!zeiger || (e && e.pointerId !== zeiger.id)) return;
   if (geste(performance.now() - zeiger.t0, zeiger.weg) === "tippen") {
     if (stagedive.phase === "getragen") wische(zeiger.rx < spielEl.clientWidth / 2 ? -1 : 1);
-    else springe(zeiger.druckZeit);
+    else springe(zeiger.druckZeit, zeiger.druckUhr);
   }
   zeiger = null; stick.hidden = true;
 }
 const tasten = new Set();
 addEventListener("keydown", (e) => {
   if (!laeuft) return;
-  if (e.key === " ") { e.preventDefault(); springe(); return; }
+  if (e.key === " ") { e.preventDefault(); if (!e.repeat) springe(); return; }
   if (stagedive.phase === "getragen" && (e.key === "ArrowLeft" || e.key === "a")) { wische(-1); return; }
   if (stagedive.phase === "getragen" && (e.key === "ArrowRight" || e.key === "d")) { wische(1); return; }
   if (/^(Arrow|[wasd]$)/.test(e.key)) { tasten.add(e.key); e.preventDefault(); }
@@ -351,7 +352,7 @@ function extras(dt) {
   }
 }
 function starteRuf() {
-  phase = "ruf"; rufZeit = 0; rufTreffer = 0;
+  phase = "ruf"; rufZeit = 0; rufTreffer = 0; rufGezaehlt = new Set();
   if (stagedive.phase === "getragen") { stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; }
   $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = T.zugabeRuf; pop(T.zugabe, "var(--paper)");
   musik.stopp(); musik.klatschen(song.bpm);
@@ -364,7 +365,11 @@ function rufSchritt(echt) {
 }
 function starteZugabe() {
   phase = "zugabe"; faktor = ZUGABE.faktor;
-  const start = song.teile.at(-2).bis; zeit = start; zugabeEnde = Math.min(song.ende, start + ZUGABE.dauer);
+  const zz = zugabeZeiten(song), start = zz.start; zeit = start; zugabeEnde = zz.ende;
+  // die Uhr springt zurück: alle Zeitstempel aus dem Song gelten nicht mehr
+  nassBis = geblendetBis = sprungBis = 0; ich.inLuft = false; letzterSpritzer = randPop = -99; beruehrt = new Map();
+  if (schnoesel) schnoesel.naechsterBlitz = start + 2;
+  entferneFreibier(); entferneSurfer();
   musik.start(song.datei ? WURZEL + song.datei : null, start);
   const f = F.baueFigur(THREE, { aufnaeher: false }); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 40), new THREE.MeshBasicMaterial({ color: 0x58d26a, transparent: true, opacity: 0.55, depthWrite: false }));
@@ -451,7 +456,7 @@ function bild(jetzt) {
     else if (laeuft) {
       const uhr = musik.uhr();
       let rest = uhr === null ? echt : Math.min(0.25, Math.max(0, uhr - zeit));
-      while (rest > 1e-6 && laeuft) { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
+      while (rest > 1e-6 && laeuft && phase !== "ruf") { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
     }
     else if (L) { bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.3 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.3, false); S.setzeLicht(0.3, performance.now() / 1000, 3); }
     if (L) S.kamera(ich, dt, false, stagedive?.phase === "getragen");
@@ -466,7 +471,7 @@ function zeigeStand() {
   $("pogo-bierstand").style.height = b + "%"; $("pogo-bier").textContent = b + " %";
   $("pogo-punkte").textContent = Math.round(punkte);
   $("pogo-teil").textContent = T.teile[teilBei(zeit, song.teile).name];
-  const rest = Math.max(0, Math.ceil(song.ende - zeit)); $("pogo-zeit").textContent = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`;
+  const rest = Math.max(0, Math.ceil((phase === "zugabe" ? zugabeEnde : song.ende) - zeit)); $("pogo-zeit").textContent = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`;
 }
 
 function zeigeAufgabenUndKutte() {

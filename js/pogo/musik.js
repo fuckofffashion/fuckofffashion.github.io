@@ -1,13 +1,13 @@
 // Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
-import { teilBei, VIERTEL, songZeit } from "./regeln.js?v=31";
+import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=31";
 
 const ACHTEL = VIERTEL / 2;
 const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
 
 export function erzeugeMusik() {
   let audio = null, master = null, tonAn = true, naechste = 0, start = 0, achtel = 0, takt = null, rauschen = null, verzerrer = null;
-  let quelle = null; const puffer = new Map();
+  let quelle = null, modus = "beat", klatschBpm = 120; const puffer = new Map();
   const kontext = () => {
     if (audio) return audio;
     const AC = globalThis.AudioContext || globalThis.webkitAudioContext; if (!AC) return null;
@@ -28,6 +28,10 @@ export function erzeugeMusik() {
     const g = audio.createGain(); g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + ACHTEL * 0.95); g.connect(verzerrer);
     for (const m of [1, 1.5, 2]) { const o = audio.createOscillator(); o.type = "sawtooth"; o.frequency.value = frq * m; o.connect(g); o.start(t); o.stop(t + ACHTEL); }
   };
+  function klatsche() {
+    const ctx = audio; if (!ctx) return;
+    while (naechste < ctx.currentTime + 0.12) { zisch(naechste, 0.08, 0.5, false); knall(naechste, 180, 0.08, 0.35); naechste += 60 / klatschBpm; }
+  }
   function plane() {
     while (naechste < audio.currentTime + 0.12) {
       const teil = teilBei(naechste - start);
@@ -62,7 +66,8 @@ export function erzeugeMusik() {
         const ctx = kontext(); if (!ctx) return;
         ctx.resume()?.catch?.(() => {});
         this.stopp();
-        const t0 = ctx.currentTime + 0.05; naechste = t0; start = t0 - versatz; achtel = 0;
+        const t0 = ctx.currentTime + 0.05; start = t0 - versatz; modus = "beat";
+        const r = rasterAb(versatz, ACHTEL); achtel = r.k; naechste = start + r.zeit;
         if (url && puffer.has(url)) {
           quelle = ctx.createBufferSource(); quelle.buffer = puffer.get(url); quelle.connect(master); quelle.start(t0, versatz);
         } else { takt = setInterval(plane, 25); }
@@ -74,13 +79,13 @@ export function erzeugeMusik() {
       try {
         const ctx = kontext(); if (!ctx) return;
         this.stopp(); ctx.resume()?.catch?.(() => {});
-        naechste = start = ctx.currentTime + 0.05;
-        takt = setInterval(() => { while (naechste < ctx.currentTime + 0.12) { zisch(naechste, 0.08, 0.5, false); knall(naechste, 180, 0.08, 0.35); naechste += 60 / bpm; } }, 25);
+        naechste = start = ctx.currentTime + 0.05; modus = "klatschen"; klatschBpm = bpm;
+        takt = setInterval(klatsche, 25);
       } catch { audio = null; }
     },
     pause() { if (!quelle) { clearInterval(takt); takt = null; } audio?.suspend(); },
     // die Audiouhr steht während der Pause still, das Raster läuft danach nahtlos weiter
-    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(plane, 25); } },
+    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(modus === "klatschen" ? klatsche : plane, 25); } },
     /** Songzeit nach der Audiouhr, oder null ohne Ton (dann zählt die normale Uhr). */
     uhr() { return audio && audio.state === "running" ? songZeit(audio.currentTime, start, audio.outputLatency || audio.baseLatency || 0) : null; },
     setzeTon(an) { tonAn = an; if (master) master.gain.value = an ? 0.45 : 0; },
