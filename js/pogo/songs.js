@@ -23,6 +23,8 @@ export const SONGS = [
       { bis: 58, name: "LETZTER REFRAIN", kraft: 1.15, kreis: true },
     ],
     mikro: [50, 54], wuerfe: { plektrum: 26, drumstick: 55, setliste: 52 }, wall: [37, 40],
+    // Mitgrölen: nur die Worte des Titels, je Schlag eines (Etappe 5)
+    groelen: { worte: ["ES", "GEHT", "NOCH", "LAUTER!"], teile: ["REFRAIN!", "LETZTER REFRAIN"] },
     freigabe: { durch: "Dan Ganove", ueber: "Mark", datum: "2026-11-21", art: "mündlich, Datei von Mark geliefert" },
   },
 ];
