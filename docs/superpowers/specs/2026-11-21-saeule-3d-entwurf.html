@@ -1,0 +1,820 @@
+<meta charset="utf-8">
+<title>Die Säule 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;800&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap">
+<style>
+/* Layout: eine dunkle Bühne mit der Säule in der Mitte, Kopf links oben, Terminzettel als Seitenblatt (Handy: von unten), Bandleiste darunter */
+:root {
+  --ink: #0b0a0a;
+  --ink-2: #1a1614;
+  --paper: #f1ede4;
+  --paper-2: #ddd6c8;
+  --blood: #d4161b;
+  --blood-hot: #ff3b3b;
+  --dim: #a59e93;
+  --font-shout: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-zine: "Courier Prime", "Courier New", monospace;
+  --font-edding: "Permanent Marker", "Comic Sans MS", cursive;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { background: var(--ink); color: var(--paper); }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.label { font-family: var(--font-zine); font-weight: 700; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--blood-hot); margin: 0; }
+
+.kopf { padding-block: 20px 4px; display: grid; gap: 6px; }
+.kopf h1 { font-family: var(--font-shout); font-weight: 400; text-transform: uppercase; font-size: clamp(2.6rem, 9vw, 5.2rem); line-height: .9; margin: 0; letter-spacing: .01em; }
+.kopf { transition: opacity 300ms ease-out; }
+.ist-offen .kopf { opacity: 0; }
+@media (max-width: 899px) { .ist-offen .kopf { opacity: 1; } }
+.kopf p.satz { margin: 0; max-width: 34ch; color: var(--paper-2); }
+
+.stage {
+  position: relative; height: min(84vh, 860px); min-height: 540px; overflow: hidden;
+  background: radial-gradient(ellipse 50% 58% at 50% 46%, #3b2f29 0%, #1d1714 46%, var(--ink) 82%);
+}
+.stage canvas { display: block; width: 100%; height: 100%; }
+.hinweis {
+  position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; pointer-events: none;
+  font-family: var(--font-zine); font-size: .82rem; letter-spacing: .08em; color: var(--dim);
+}
+.laden {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  font-family: var(--font-edding); font-size: 1.4rem; color: var(--paper-2);
+}
+.laden small { display: block; font-family: var(--font-zine); font-size: .85rem; color: var(--dim); margin-top: .4rem; }
+
+@media (min-width: 900px) {
+  .kopf { position: absolute; top: 28px; left: max(28px, env(safe-area-inset-left, 0px)); z-index: 2; padding: 0; pointer-events: none; max-width: 300px; }
+  .stage-wrap { position: relative; }
+}
+
+/* Terminzettel */
+.zettel {
+  position: absolute; z-index: 3; background: var(--paper); color: var(--ink);
+  right: max(24px, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%) rotate(1.2deg);
+  width: min(360px, 40vw); max-height: calc(100% - 48px); overflow: auto;
+  padding: 22px 22px 20px; box-shadow: 0 18px 40px rgba(0,0,0,.55);
+  clip-path: polygon(0 1.5%, 6% 0, 13% 1.2%, 22% .2%, 31% 1.4%, 44% 0, 57% 1.1%, 68% .1%, 79% 1.3%, 90% .2%, 100% 1%, 99.4% 50%, 100% 99%, 88% 100%, 74% 98.8%, 60% 100%, 47% 98.9%, 33% 100%, 20% 98.7%, 8% 100%, 0 98.8%, .6% 50%);
+}
+.zettel h2 { font-family: var(--font-shout); font-weight: 400; text-transform: uppercase; font-size: 2.2rem; line-height: 1; margin: 6px 0 2px; }
+.zettel .art { font-family: var(--font-zine); font-size: .9rem; margin: 0 0 14px; color: #4a4540; }
+.zettel ol { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 10px; }
+.zettel li { display: grid; grid-template-columns: 6.2rem 1fr; gap: 10px; align-items: baseline; border-top: 1px dashed #b9b0a0; padding-top: 8px; }
+.zettel li strong { font-family: var(--font-shout); font-weight: 400; font-size: 1.25rem; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.zettel li span { font-size: .95rem; line-height: 1.35; min-width: 0; }
+.zettel .still { font-family: var(--font-edding); font-size: 1.4rem; margin: 6px 0 16px; }
+.zettel .label { color: var(--blood); }
+.knoepfe { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  appearance: none; border: 0; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;
+  min-height: 44px; padding: 0 16px; font: 800 .82rem/1 var(--font-body); letter-spacing: .08em; text-transform: uppercase;
+  background: var(--blood); color: var(--paper); transition: transform 160ms ease-out, background 160ms ease-out;
+}
+.btn:active { transform: scale(.97); }
+.btn--ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+.btn:focus-visible, .chip:focus-visible { outline: 3px solid var(--blood-hot); outline-offset: 3px; }
+
+@media (max-width: 899px) {
+  .zettel { left: 12px; right: 12px; width: auto; top: auto; bottom: 12px; transform: rotate(-.6deg); max-height: 56%; }
+  .zettel h2 { font-size: 1.8rem; }
+}
+
+/* Bandleiste: der Weg ohne Maus und ohne 3D */
+.leiste { padding-block: 22px 8px; display: grid; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.chip {
+  appearance: none; cursor: pointer; border: 2px solid var(--paper-2); background: transparent; color: var(--paper);
+  min-height: 48px; padding: 6px 14px; text-align: left; display: grid; gap: 0;
+  transition: background 160ms ease-out, color 160ms ease-out, transform 160ms ease-out;
+}
+.chip b { font-family: var(--font-shout); font-weight: 400; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .02em; line-height: 1.1; }
+.chip small { font-family: var(--font-zine); font-size: .8rem; color: var(--dim); }
+.chip[aria-pressed="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.chip[aria-pressed="true"] small { color: #4a4540; }
+.chip:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .chip:hover { border-color: var(--blood-hot); } }
+
+.notiz { padding-block: 18px 40px; display: grid; gap: 8px; max-width: 70ch; color: var(--paper-2); font-size: .95rem; }
+.notiz p { margin: 0; }
+.notiz strong { color: var(--paper); }
+@media (prefers-reduced-motion: reduce) { .btn, .chip { transition: none; } }
+</style>
+
+<div class="stage-wrap">
+  <header class="kopf wrap">
+    <p class="label">Fuck Off Fashion · Bands</p>
+    <h1>Die Säule</h1>
+    <p class="satz">Bands, die wir live gesehen haben und gut finden. Reiß ein Plakat ab, darunter stehen die nächsten Termine.</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="laden" id="laden">Kleister wird angerührt …<small>Säule wird geklebt</small></div>
+    <p class="hinweis" id="hinweis">Ziehen zum Drehen · Plakat antippen zum Abreißen</p>
+    <aside class="zettel" id="zettel" hidden aria-live="polite" tabindex="-1"></aside>
+  </div>
+</div>
+
+<section class="leiste wrap" aria-labelledby="leiste-titel">
+  <h2 class="label" id="leiste-titel">Alle Bands auf der Säule</h2>
+  <ul class="chips" id="chips"></ul>
+</section>
+
+<section class="notiz wrap">
+  <p><strong>Entwurf.</strong> Die Säule rechnet der Browser live mit three.js. Plakate, Zettel, Rost und Sticker zeichnet er selbst, nur die Bandlogos sind echte Bilder.</p>
+  <p>Mit HyperFrames entsteht aus derselben Szene ein kurzer Film: Kamerafahrt um die Säule, ein Plakat reißt ab. Der läuft auf Handys ohne 3D, bei reduzierter Bewegung und auf Instagram.</p>
+  <p>Termine: Stand 21.11.2026 aus der Konzertdatenbank.</p>
+</section>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+/* ---------- Daten (Stand der Konzertdatenbank vom 21.11.2026) ---------- */
+const BANDS = [
+  { id: "alarmsignal", name: "Alarmsignal", logo: "bands/alarmsignal.webp", web: "https://www.alarmsignal-punkrock.de/", art: "Deutschpunk", plakat: "schwarz" },
+  { id: "dan-ganove", name: "Dan Ganove", logo: "bands/dan-ganove.webp", web: "https://dan66713.wixsite.com/dan-punkrock", art: "Akustikpunk aus Oberhausen", plakat: "papier" },
+  { id: "los-fastidios", name: "Los Fastidios", logo: "bands/los-fastidios.webp", web: "https://losfastidios.net", art: "Streetpunk und Ska aus Italien", plakat: "rot" },
+  { id: "trijahnity", name: "Trijahnity", logo: "bands/trijahnity.webp", web: "https://www.trijahnity.de", art: "Reggae'n Roll", plakat: "schwarz" },
+];
+const TERMINE = {
+  "dan-ganove": [{ datum: "2026-11-21", zeit: "18:00", laden: "Bürgerhaus Ihlow", stadt: "Ihlow" }, { datum: "2026-12-04", zeit: "18:00", laden: "Zentrum Altenberg", stadt: "Oberhausen" }],
+  "alarmsignal": [{ datum: "2026-11-27", zeit: null, laden: "AJZ Talschock", stadt: "Chemnitz" }, { datum: "2026-11-28", zeit: null, laden: "Klubhaus der Jugend", stadt: "Saalfeld" }],
+  "los-fastidios": [{ datum: "2026-11-26", zeit: null, laden: "Sonic Ballroom", stadt: "Köln Ehrenfeld" }, { datum: "2026-11-29", zeit: null, laden: "Kunstverein e.V. (KV)", stadt: "Nürnberg" }, { datum: "2027-02-13", zeit: null, laden: "CLUB VAUDEVILLE", stadt: "Lindau" }, { datum: "2027-03-06", zeit: null, laden: "Goldgrube Kassel", stadt: "Kassel" }, { datum: "2027-04-15", zeit: null, laden: "PITCHER", stadt: "Düsseldorf" }],
+  "trijahnity": [],
+};
+
+const zahl = (n) => String(n).padStart(2, "0");
+const isoLokal = (d) => `${d.getFullYear()}-${zahl(d.getMonth() + 1)}-${zahl(d.getDate())}`;
+const HEUTE = isoLokal(new Date());
+const TAGE = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+function tagDatum(iso) {
+  const [j, m, t] = iso.split("-").map(Number);
+  return `${TAGE[new Date(Date.UTC(j, m - 1, t)).getUTCDay()]} ${zahl(t)}.${zahl(m)}.`;
+}
+const kuenftige = (id) => (TERMINE[id] || []).filter((t) => t.datum >= HEUTE);
+
+const BEWEGUNG = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Zufall mit Samen: die Säule sieht bei jedem Laden gleich aus ---------- */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const hash = (s) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 17);
+
+/* ---------- Malwerkzeug für Papier ---------- */
+function leinwand(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+
+function rissPfad(ctx, x, y, w, h, rnd, rough, step) {
+  const pts = [];
+  const kante = (x0, y0, x1, y1, nx, ny) => {
+    const n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) / step));
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      let j = (rnd() - 0.5) * rough * 2;
+      if (rnd() < 0.06) j += rnd() * rough * 3.2;
+      pts.push([x0 + (x1 - x0) * t + nx * j, y0 + (y1 - y0) * t + ny * j]);
+    }
+  };
+  kante(x, y, x + w, y, 0, 1); kante(x + w, y, x + w, y + h, -1, 0);
+  kante(x + w, y + h, x, y + h, 0, -1); kante(x, y + h, x, y, 1, 0);
+  ctx.beginPath();
+  pts.forEach(([px, py], i) => (i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+  ctx.closePath();
+}
+
+/* Blatt mit heller Faserkante; gibt den Samen zurück, damit Rückseite und Ausschnitt dieselbe Form haben */
+function blatt(ctx, x, y, w, h, farbe, rnd, { rough = 8, step = 11, faser = "#efe8da" } = {}) {
+  const seed = Math.floor(rnd() * 1e9);
+  rissPfad(ctx, x, y, w, h, mulberry32(seed), rough, step); ctx.fillStyle = faser; ctx.fill();
+  rissPfad(ctx, x + 5, y + 5, w - 10, h - 10, mulberry32(seed + 1), rough, step); ctx.fillStyle = farbe; ctx.fill();
+  return seed;
+}
+function blattClip(ctx, x, y, w, h, seed, rough = 8, step = 11) {
+  rissPfad(ctx, x + 5, y + 5, w - 10, h - 10, mulberry32(seed + 1), rough, step); ctx.clip();
+}
+
+function koernung(ctx, w, h, menge, rnd) {
+  const d = ctx.getImageData(0, 0, w, h), a = d.data;
+  for (let i = 0; i < a.length; i += 4) {
+    if (!a[i + 3]) continue;
+    const n = (rnd() - 0.5) * menge;
+    a[i] += n; a[i + 1] += n; a[i + 2] += n;
+  }
+  ctx.putImageData(d, 0, 0);
+}
+function knicke(ctx, w, h, rnd, n = 4) {
+  ctx.save(); ctx.globalCompositeOperation = "source-atop";
+  for (let k = 0; k < n; k++) {
+    const vertikal = rnd() < 0.5;
+    const p = (0.25 + rnd() * 0.5) * (vertikal ? w : h);
+    const zug = (dx, farbe) => {
+      ctx.strokeStyle = farbe; ctx.lineWidth = 2; ctx.beginPath();
+      if (vertikal) { ctx.moveTo(p + dx, 0); ctx.lineTo(p + dx + (rnd() - 0.5) * 30, h); }
+      else { ctx.moveTo(0, p + dx); ctx.lineTo(w, p + dx + (rnd() - 0.5) * 30); }
+      ctx.stroke();
+    };
+    zug(0, "rgba(255,255,255,.10)"); zug(2, "rgba(0,0,0,.18)");
+  }
+  ctx.restore();
+}
+function kratzer(ctx, w, h, rnd, farbe, n) {
+  ctx.save(); ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = farbe;
+  for (let k = 0; k < n; k++) { ctx.globalAlpha = 0.15 + rnd() * 0.5; ctx.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 6, 1 + rnd() * 3); }
+  ctx.restore();
+}
+function gesperrt(ctx, text, cx, y, abstand) {
+  const breiten = [...text].map((z) => ctx.measureText(z).width);
+  let x = cx - (breiten.reduce((a, b) => a + b, 0) + abstand * (text.length - 1)) / 2;
+  ctx.textAlign = "left";
+  [...text].forEach((z, i) => { ctx.fillText(z, x, y); x += breiten[i] + abstand; });
+}
+function passend(ctx, text, maxBreite, groesse, schrift, gewicht = 400) {
+  ctx.font = `${gewicht} ${groesse}px ${schrift}`;
+  const b = ctx.measureText(text).width;
+  if (b > maxBreite) ctx.font = `${gewicht} ${Math.floor(groesse * maxBreite / b)}px ${schrift}`;
+}
+
+const FARBE = {
+  papier: { bg: "#e8dfcc", faser: "#f8f3ea", label: "#b5171c", marker: "#141212" },
+  schwarz: { bg: "#141212", faser: "#e6dccb", label: "#ff3b3b", marker: "#f1ede4" },
+  rot: { bg: "#bf161b", faser: "#efe5d3", label: "#141212", marker: "#f1ede4" },
+};
+
+/* ---------- Die einzelnen Drucksachen ---------- */
+function malCollage() {
+  const W = 2048, H = 1280, c = leinwand(W, H), x = c.getContext("2d"), rnd = mulberry32(7);
+  x.fillStyle = "#2a2420"; x.fillRect(0, 0, W, H);
+  const farben = ["#e6dccb", "#cfc3ab", "#b5171c", "#151212", "#6e1813", "#8d867b", "#e6dccb", "#151212", "#151212"];
+  const worte = ["KAUF NIX", "OI!", "PUNK LEBT", "DIY", "LIVE", "AUSVERKAUFT", "SKA", "SA 12.04.", "EINTRITT FREI", "NO FUTURE?", "KONZERT", "HEUTE", "SOLI", "DIY OR DIE"];
+  for (let n = 0; n < 190; n++) {
+    const seed = Math.floor(rnd() * 1e9);
+    const px = rnd() * W, py = rnd() * H, w = 90 + rnd() * 380, h = 70 + rnd() * 300;
+    for (const off of [0, -W, W]) {
+      if (px + off + w < -40 || px + off - w > W + 40) continue;
+      const r = mulberry32(seed);
+      const farbe = farben[Math.floor(r() * farben.length)];
+      x.save(); x.translate(px + off, py); x.rotate((r() - 0.5) * 0.28);
+      const s = blatt(x, -w / 2, -h / 2, w, h, farbe, r, { rough: 9, step: 12, faser: "#d9cfbc" });
+      x.save(); blattClip(x, -w / 2, -h / 2, w, h, s, 9, 12);
+      const art = r();
+      const hell = farbe === "#e6dccb" || farbe === "#cfc3ab" || farbe === "#8d867b";
+      if (art < 0.42) {
+        x.fillStyle = hell ? (r() < 0.5 ? "#151212" : "#b5171c") : "#e6dccb";
+        x.font = `${Math.floor(h * (0.45 + r() * 0.4))}px Anton`; x.textAlign = "left"; x.textBaseline = "middle";
+        x.fillText(worte[Math.floor(r() * worte.length)], -w / 2 - r() * w * 0.4, (r() - 0.5) * h * 0.4);
+      } else if (art < 0.6) {
+        x.fillStyle = hell ? "rgba(20,18,18,.55)" : "rgba(230,220,203,.35)";
+        for (let yy = -h / 2; yy < h / 2; yy += 14) for (let xx = -w / 2; xx < w / 2; xx += 14) {
+          x.beginPath(); x.arc(xx, yy, 2 + 3 * Math.abs(Math.sin(xx * 0.02 + yy * 0.01)), 0, 7); x.fill();
+        }
+      } else if (art < 0.7) {
+        x.fillStyle = hell ? "#151212" : "#e6dccb"; x.font = `700 ${Math.floor(18 + r() * 14)}px "Courier Prime"`; x.textAlign = "left";
+        for (let yy = -h / 2 + 30; yy < h / 2; yy += 30) x.fillText("KONZERT · EINLASS 20 UHR · NUR ABENDKASSE", -w / 2 + 12, yy);
+      }
+      x.restore(); x.restore();
+    }
+  }
+  // Rostflecken, wo alles abgerissen ist
+  for (let k = 0; k < 26; k++) {
+    const g = x.createRadialGradient(0, 0, 0, 0, 0, 40 + rnd() * 70);
+    g.addColorStop(0, "rgba(110,50,28,.9)"); g.addColorStop(1, "rgba(110,50,28,0)");
+    x.save(); x.translate(rnd() * W, rnd() * H); x.scale(1, 0.6 + rnd()); x.fillStyle = g; x.fillRect(-120, -120, 240, 240); x.restore();
+  }
+  // Regenspuren und Dreck
+  for (let k = 0; k < 420; k++) {
+    x.strokeStyle = `rgba(0,0,0,${0.03 + rnd() * 0.08})`; x.lineWidth = 1 + rnd() * 3;
+    const sx = rnd() * W, sy = rnd() * H * 0.6; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + (rnd() - 0.5) * 6, sy + 80 + rnd() * 420); x.stroke();
+  }
+  let g = x.createLinearGradient(0, H * 0.72, 0, H);
+  g.addColorStop(0, "rgba(22,14,10,0)"); g.addColorStop(1, "rgba(22,14,10,.7)"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createLinearGradient(0, 0, 0, 90);
+  g.addColorStop(0, "rgba(10,6,4,.75)"); g.addColorStop(1, "rgba(10,6,4,0)"); x.fillStyle = g; x.fillRect(0, 0, W, 90);
+  koernung(x, W, H, 26, rnd);
+  return c;
+}
+
+function malFOF() {
+  const W = 1600, H = 1735, c = leinwand(W, H), x = c.getContext("2d"), r = mulberry32(11);
+  const seed = blatt(x, 30, 30, W - 60, H - 60, "#121010", r, { rough: 20, step: 18, faser: "#e9e0cc" });
+  x.save(); blattClip(x, 30, 30, W - 60, H - 60, seed, 20, 18);
+  x.fillStyle = "#efe6d2"; x.textAlign = "center"; x.textBaseline = "alphabetic";
+  x.font = "400 400px Anton"; let F = 400 * 1300 / x.measureText("FASHION").width; x.font = `400 ${F}px Anton`;
+  const hoehe = x.measureText("FASHION").actualBoundingBoxAscent, luft = F * 0.07;
+  let y = 190 + hoehe;
+  for (const wort of ["FUCK", "OFF", "FASHION"]) { x.fillText(wort, W / 2, y); y += hoehe + luft; }
+  // abgeriebener Druck
+  x.fillStyle = "#121010";
+  for (let k = 0; k < 3200; k++) { x.globalAlpha = 0.25 + r() * 0.7; x.fillRect(r() * W, 160 + r() * (y - 160), 1 + r() * 5, 1 + r() * 4); }
+  x.globalAlpha = 1;
+  // roter Pinselstrich
+  const sy = y - hoehe + 40;
+  x.strokeStyle = "#d4161b"; x.lineCap = "round";
+  for (let k = 0; k < 6; k++) {
+    x.globalAlpha = 0.55 + r() * 0.4; x.lineWidth = 12 + r() * 14; x.beginPath();
+    x.moveTo(300 + r() * 30, sy + 26 + r() * 14); x.quadraticCurveTo(W / 2, sy + 4 + r() * 16, W - 330 + r() * 30, sy + r() * 14); x.stroke();
+  }
+  x.globalAlpha = 1;
+  x.fillStyle = "#efe6d2"; x.font = '700 92px "Courier Prime"'; gesperrt(x, "DIY OR DIE", W / 2, sy + 190, 22);
+  x.restore();
+  knicke(x, W, H, r, 5);
+  kratzer(x, W, H, r, "#e6dccb", 900);
+  koernung(x, W, H, 22, r);
+  return c;
+}
+
+function malPlakat(band, bild) {
+  const S = 1000, M = 34, f = FARBE[band.plakat], r = mulberry32(hash(band.id));
+  const vorne = leinwand(S, S), x = vorne.getContext("2d");
+  const seed = blatt(x, M, M, S - 2 * M, S - 2 * M, f.bg, r, { rough: 10, step: 12, faser: f.faser });
+  x.save(); blattClip(x, M, M, S - 2 * M, S - 2 * M, seed, 10, 12);
+  x.fillStyle = f.label; x.font = '700 32px "Courier Prime"'; x.textBaseline = "alphabetic";
+  gesperrt(x, "LIVE GESEHEN · FÜR GUT BEFUNDEN", S / 2, 128, 3);
+  const box = { w: 780, h: 560, cy: 470 };
+  const k = Math.min(box.w / bild.width, box.h / bild.height);
+  x.drawImage(bild, S / 2 - bild.width * k / 2, box.cy - bild.height * k / 2, bild.width * k, bild.height * k);
+  const naechst = kuenftige(band.id)[0];
+  const text = naechst ? `${tagDatum(naechst.datum)} · ${naechst.stadt}` : "gerade still";
+  x.save(); x.translate(S / 2, 862); x.rotate(-0.035); x.fillStyle = f.marker; x.textAlign = "center";
+  passend(x, text, 800, 64, '"Permanent Marker"'); x.fillText(text, 0, 0);
+  x.strokeStyle = f.marker; x.lineWidth = 5; x.lineCap = "round"; x.beginPath(); x.moveTo(-230, 26); x.quadraticCurveTo(0, 18, 250, 30); x.stroke();
+  x.restore(); x.restore();
+  // Klebeband an den oberen Ecken
+  for (const [tx, rot] of [[170, -0.6], [S - 170, 0.6]]) {
+    x.save(); x.translate(tx, 78); x.rotate(rot);
+    rissPfad(x, -110, -28, 220, 56, mulberry32(seed + tx), 5, 9); x.fillStyle = "rgba(226,214,182,.62)"; x.fill(); x.restore();
+  }
+  knicke(x, S, S, r, 3);
+  kratzer(x, S, S, r, band.plakat === "papier" ? "#2a2420" : "#e6dccb", 700);
+  koernung(x, S, S, 20, r);
+
+  const hinten = leinwand(S, S), y = hinten.getContext("2d");
+  rissPfad(y, M, M, S - 2 * M, S - 2 * M, mulberry32(seed), 10, 12); y.fillStyle = "#d6ccb7"; y.fill();
+  y.save(); y.globalCompositeOperation = "source-atop";
+  for (let n = 0; n < 40; n++) { y.fillStyle = `rgba(120,96,56,${0.05 + r() * 0.12})`; y.beginPath(); y.ellipse(r() * S, r() * S, 20 + r() * 90, 10 + r() * 60, r() * 3, 0, 7); y.fill(); }
+  y.restore();
+  koernung(y, S, S, 18, r);
+  return { vorne, hinten };
+}
+
+function malZettel(band) {
+  const S = 900, x0 = 30, c = leinwand(S, S), x = c.getContext("2d"), r = mulberry32(hash(band.id) + 5);
+  const seed = blatt(x, x0, x0, S - 2 * x0, S - 2 * x0, "#ece5d6", r, { rough: 7, step: 10, faser: "#faf6ee" });
+  x.save(); blattClip(x, x0, x0, S - 2 * x0, S - 2 * x0, seed, 7, 10);
+  x.strokeStyle = "rgba(60,90,160,.2)"; x.lineWidth = 2;
+  for (let yy = 170; yy < S; yy += 60) { x.beginPath(); x.moveTo(0, yy); x.lineTo(S, yy); x.stroke(); }
+  x.strokeStyle = "rgba(212,22,27,.4)"; x.beginPath(); x.moveTo(112, 0); x.lineTo(112, S); x.stroke();
+  x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.fillStyle = "#b5171c"; x.font = '700 38px "Courier Prime"'; x.fillText("NÄCHSTE TERMINE", 140, 118);
+  x.fillStyle = "#141212"; passend(x, band.name.toUpperCase(), 680, 76, "Anton"); x.fillText(band.name.toUpperCase(), 140, 222);
+  const liste = kuenftige(band.id);
+  if (!liste.length) {
+    x.save(); x.translate(150, 420); x.rotate(-0.04); x.font = '64px "Permanent Marker"';
+    x.fillText("Gerade still.", 0, 0); x.fillText("Kommt wieder.", 0, 100); x.restore();
+  } else {
+    liste.slice(0, 4).forEach((t, i) => {
+      const yy = 330 + i * 120;
+      x.fillStyle = "#141212"; x.font = "62px Anton"; x.fillText(tagDatum(t.datum).toUpperCase(), 140, yy);
+      passend(x, `${t.stadt} · ${t.laden}${t.zeit ? " · " + t.zeit : ""}`, 640, 34, '"Courier Prime"', 700);
+      x.fillText(`${t.stadt} · ${t.laden}${t.zeit ? " · " + t.zeit : ""}`, 140, yy + 44);
+    });
+    if (liste.length > 4) { x.fillStyle = "#b5171c"; x.font = '44px "Permanent Marker"'; x.fillText(`+ ${liste.length - 4} weitere`, 150, 830); }
+  }
+  x.restore();
+  koernung(x, S, S, 16, r);
+  return c;
+}
+
+function malSprayA() {
+  const S = 640, c = leinwand(S, S), x = c.getContext("2d"), r = mulberry32(3);
+  x.lineCap = "round"; x.lineJoin = "round";
+  const sprueh = (pfad, lw) => {
+    for (const [a, extra, blur] of [[0.28, 22, 18], [0.5, 8, 8], [0.95, 0, 2]]) {
+      x.globalAlpha = a; x.lineWidth = lw + extra; x.strokeStyle = "#d4161b"; x.shadowColor = "rgba(212,22,27,.7)"; x.shadowBlur = blur;
+      x.beginPath(); pfad(); x.stroke();
+    }
+    x.shadowBlur = 0; x.globalAlpha = 1;
+  };
+  sprueh(() => x.arc(320, 320, 212, 0, Math.PI * 2), 30);
+  sprueh(() => { x.moveTo(140, 575); x.lineTo(322, 48); x.lineTo(505, 575); }, 34);
+  sprueh(() => { x.moveTo(170, 392); x.lineTo(478, 372); }, 30);
+  x.fillStyle = "#d4161b";
+  for (const [dx, dy] of [[140, 580], [505, 580], [260, 530], [400, 532], [470, 392], [200, 396]]) {
+    const len = 30 + r() * 110; x.lineWidth = 6 + r() * 5; x.strokeStyle = "#c3141a";
+    x.beginPath(); x.moveTo(dx, dy); x.lineTo(dx + (r() - 0.5) * 4, Math.min(S - 14, dy + len)); x.stroke();
+    x.beginPath(); x.arc(dx, Math.min(S - 14, dy + len), 6 + r() * 3, 0, 7); x.fill();
+  }
+  for (let k = 0; k < 900; k++) {
+    const a = r() * Math.PI * 2, d = 160 + r() * 110;
+    x.globalAlpha = r() * 0.6; x.beginPath(); x.arc(320 + Math.cos(a) * d, 320 + Math.sin(a) * d, r() * 2.4, 0, 7); x.fill();
+  }
+  x.globalAlpha = 1;
+  return c;
+}
+
+function malSticker(zeilen, w, h, rot, seedZahl, farbe = "#e9e0cc", schrift = "#141212") {
+  const c = leinwand(w, h), x = c.getContext("2d"), r = mulberry32(seedZahl);
+  x.translate(w / 2, h / 2); x.rotate(rot);
+  const bw = w * 0.78, bh = h * 0.74;
+  const s = blatt(x, -bw / 2, -bh / 2, bw, bh, farbe, r, { rough: 7, step: 10, faser: "#f7f2e8" });
+  x.save(); blattClip(x, -bw / 2, -bh / 2, bw, bh, s, 7, 10);
+  x.fillStyle = schrift; x.textAlign = "center"; x.textBaseline = "middle";
+  const fs = Math.floor(bh / (zeilen.length + 0.6));
+  x.font = `${fs}px "Permanent Marker"`;
+  zeilen.forEach((z, i) => x.fillText(z, 0, (i - (zeilen.length - 1) / 2) * fs * 0.95));
+  x.restore();
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  koernung(x, w, h, 18, r);
+  return c;
+}
+
+function malRost(seedZahl, grund) {
+  const W = 1024, H = 512, c = leinwand(W, H), x = c.getContext("2d"), r = mulberry32(seedZahl);
+  x.fillStyle = grund; x.fillRect(0, 0, W, H);
+  const fleck = (farbe, n, min, max) => {
+    for (let k = 0; k < n; k++) {
+      const rad = min + r() * (max - min), px = r() * W, py = r() * H;
+      const g = x.createRadialGradient(px, py, 0, px, py, rad);
+      g.addColorStop(0, farbe); g.addColorStop(1, farbe.replace(/[\d.]+\)$/, "0)"));
+      x.fillStyle = g; x.fillRect(px - rad, py - rad, rad * 2, rad * 2);
+    }
+  };
+  fleck("rgba(58,20,14,.8)", 160, 10, 70);
+  fleck("rgba(160,72,38,.6)", 120, 6, 40);
+  fleck("rgba(30,12,8,.7)", 60, 4, 18);
+  x.fillStyle = "rgba(200,185,160,.75)";
+  for (let k = 0; k < 500; k++) { x.globalAlpha = 0.3 + r() * 0.6; x.fillRect(r() * W, r() * H, 1 + r() * 4, 1 + r() * 3); }
+  x.globalAlpha = 1;
+  for (let k = 0; k < 140; k++) {
+    x.strokeStyle = `rgba(40,14,8,${0.08 + r() * 0.15})`; x.lineWidth = 1 + r() * 3;
+    const px = r() * W; x.beginPath(); x.moveTo(px, r() * H * 0.4); x.lineTo(px + (r() - 0.5) * 8, H); x.stroke();
+  }
+  koernung(x, W, H, 30, r);
+  return c;
+}
+
+/* ---------- Gekrümmte Flächen auf der Säule (mit Abreiß-Verformung) ---------- */
+const R = 1;
+function gitter(nu, nv) {
+  const g = new THREE.BufferGeometry();
+  const pos = new Float32Array((nu + 1) * (nv + 1) * 3), uv = new Float32Array((nu + 1) * (nv + 1) * 2), idx = [];
+  for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) { const k = j * (nu + 1) + i; uv[k * 2] = i / nu; uv[k * 2 + 1] = j / nv; }
+  for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * (nu + 1) + i, b = a + 1, c = a + nu + 1, d = c + 1; idx.push(a, b, c, b, d, c); }
+  g.setIndex(idx);
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+  g.userData = { nu, nv };
+  return g;
+}
+/* p = 0 klebt, p = 1 ganz abgerollt. Die Risslinie wandert von unten nach oben, rechts etwas voraus. */
+function forme(g, s, p = 0) {
+  const { nu, nv } = g.userData, pos = g.attributes.position.array;
+  const dth = s.w / s.r, y0 = s.y - s.h / 2, rc = 0.045 + 0.06 * p;
+  for (let j = 0; j <= nv; j++) {
+    const v = j / nv;
+    for (let i = 0; i <= nu; i++) {
+      const u = i / nu, k = (j * (nu + 1) + i) * 3, th = s.th + (u - 0.5) * dth;
+      let y = y0 + v * s.h, raus = 0;
+      if (p > 0) {
+        const yl = y0 + s.h * (-0.25 + p * 1.5) + (u - 0.5) * 0.32 * s.h, d = yl - y;
+        if (d > 0) {
+          const phi = d / rc;
+          if (phi < Math.PI) { raus = rc * (1 - Math.cos(phi)); y = yl - rc * Math.sin(phi); }
+          else { raus = 2 * rc + (d - Math.PI * rc) * 0.18; y = yl + (d - Math.PI * rc); }
+        }
+      }
+      const rr = s.r + raus;
+      pos[k] = rr * Math.sin(th); pos[k + 1] = y; pos[k + 2] = rr * Math.cos(th);
+    }
+  }
+  g.attributes.position.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingSphere();
+}
+
+/* ---------- Szene ---------- */
+const stage = document.getElementById("stage");
+const zettelEl = document.getElementById("zettel");
+const chipsEl = document.getElementById("chips");
+const ladenEl = document.getElementById("laden");
+let szene = null;  // bleibt null, wenn WebGL fehlt: dann arbeitet nur die Liste
+let aktiv = null;
+
+function zeitAus(ms, wert) { return new Promise((ok) => setTimeout(() => ok(wert), ms)); }
+
+async function start() {
+  const schriften = ["400 40px Anton", '700 40px "Courier Prime"', '40px "Permanent Marker"', "800 20px Archivo"];
+  await Promise.race([Promise.all(schriften.map((s) => document.fonts.load(s))), zeitAus(3500)]);
+  const bilder = await Promise.all(BANDS.map(async (b) => {
+    const img = new Image(); img.src = b.logo;
+    try { await img.decode(); return img; } catch { return null; }
+  }));
+  baueChips();
+  try { szene = baueSzene(bilder); }
+  catch (fehler) {
+    console.error(fehler);
+    ladenEl.innerHTML = "Hier läuft kein 3D.<small>Die Liste unter der Säule zeigt alle Termine.</small>";
+    return;
+  }
+  ladenEl.hidden = true;
+}
+
+function baueSzene(bilder) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.domElement.setAttribute("role", "img");
+  renderer.domElement.setAttribute("aria-label", "Litfaßsäule mit dem Fuck-Off-Fashion-Plakat und vier Bandplakaten");
+  stage.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 60);
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  const tex = (canvas, rep) => {
+    const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = maxAniso;
+    if (rep) { t.wrapS = THREE.RepeatWrapping; t.repeat.set(rep, 1); }
+    return t;
+  };
+
+  scene.add(new THREE.HemisphereLight(0xffeedd, 0x2a1410, 0.55));
+  const key = new THREE.DirectionalLight(0xffe0c0, 2.7);
+  key.position.set(3.2, 7.5, 6); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, { left: -3, right: 3, top: 6, bottom: -1, near: 1, far: 20 });
+  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+  key.target.position.set(0, 2.2, 0); scene.add(key, key.target);
+  const kante = new THREE.DirectionalLight(0xff3a2a, 1.9); kante.position.set(-4.5, 3.5, -4.5); scene.add(kante);
+  const kante2 = new THREE.DirectionalLight(0xffb090, 0.6); kante2.position.set(5, 2, -3); scene.add(kante2);
+
+  const saeule = new THREE.Group(); scene.add(saeule);
+
+  // Körper mit Plakatschichten (Naht nach hinten gedreht)
+  const KOERPER = { unten: 0.3, oben: 4.0 };
+  const hk = KOERPER.oben - KOERPER.unten;
+  const koerper = new THREE.Mesh(
+    new THREE.CylinderGeometry(R, R, hk, 128, 1, true, Math.PI, Math.PI * 2),
+    new THREE.MeshStandardMaterial({ map: tex(malCollage()), roughness: 0.93 }),
+  );
+  koerper.position.y = KOERPER.unten + hk / 2; koerper.receiveShadow = true; saeule.add(koerper);
+
+  // Dach, Knauf und Sockel aus rostigem Blech
+  const rostDach = new THREE.MeshStandardMaterial({ map: tex(malRost(21, "#8a2a20"), 3), roughness: 0.78, metalness: 0.35, side: THREE.DoubleSide });
+  const rostSockel = new THREE.MeshStandardMaterial({ map: tex(malRost(42, "#5e221a"), 3), roughness: 0.85, metalness: 0.3 });
+  const v2 = (a, b) => new THREE.Vector2(a, b);
+  const dachProfil = [v2(0.995, -0.14), v2(1.03, -0.13), v2(1.035, -0.01), v2(1.06, 0.0), v2(1.25, 0.08), v2(1.27, 0.14), v2(1.24, 0.19), v2(1.1, 0.22), v2(0.92, 0.35), v2(0.68, 0.5), v2(0.42, 0.59), v2(0.2, 0.635), v2(0.08, 0.65), v2(0.06, 0.72), v2(0.0, 0.73)];
+  const dach = new THREE.Mesh(new THREE.LatheGeometry(dachProfil, 96), rostDach);
+  dach.position.y = KOERPER.oben; dach.castShadow = true; dach.receiveShadow = true; saeule.add(dach);
+  const knauf = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 20), rostDach);
+  knauf.position.y = KOERPER.oben + 0.82; knauf.castShadow = true; saeule.add(knauf);
+  const sockelProfil = [v2(0, 0), v2(1.17, 0), v2(1.17, 0.07), v2(1.13, 0.12), v2(1.13, 0.17), v2(1.07, 0.22), v2(1.03, 0.3), v2(0.99, 0.32)];
+  const sockel = new THREE.Mesh(new THREE.LatheGeometry(sockelProfil, 96), rostSockel);
+  sockel.castShadow = true; sockel.receiveShadow = true; saeule.add(sockel);
+
+  // Boden: weicher Schatten
+  const boden = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.32 }));
+  boden.rotation.x = -Math.PI / 2; boden.receiveShadow = true; scene.add(boden);
+  const fleckC = leinwand(256, 256), fx = fleckC.getContext("2d"), fg = fx.createRadialGradient(128, 128, 20, 128, 128, 128);
+  fg.addColorStop(0, "rgba(0,0,0,.85)"); fg.addColorStop(1, "rgba(0,0,0,0)"); fx.fillStyle = fg; fx.fillRect(0, 0, 256, 256);
+  const fleck = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(fleckC), transparent: true, depthWrite: false }));
+  fleck.rotation.x = -Math.PI / 2; fleck.position.y = 0.002; scene.add(fleck);
+
+  const flaeche = (canvas, s, reihenfolge, nu = 24, nv = 24) => {
+    const g = gitter(nu, nv); forme(g, s, 0);
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: tex(canvas), transparent: true, alphaTest: 0.5, roughness: 0.88 }));
+    m.renderOrder = reihenfolge; m.receiveShadow = true; saeule.add(m); return m;
+  };
+
+  // Hauptplakat, Anarchie-A und Sticker
+  flaeche(malFOF(), { th: 0, y: 2.97, w: 1.68, h: 1.82, r: R + 0.006 }, 2, 40, 30);
+  flaeche(malSprayA(), { th: 0.64, y: 3.5, w: 0.62, h: 0.62, r: R + 0.012 }, 4);
+  flaeche(malSticker(["KAUF", "NIX"], 520, 400, -0.12, 31), { th: -0.8, y: 3.52, w: 0.52, h: 0.4, r: R + 0.011 }, 4);
+  flaeche(malSticker(["PUNK", "LEBT"], 440, 420, 0.1, 32), { th: 1.06, y: 0.62, w: 0.42, h: 0.4, r: R + 0.011 }, 4);
+  flaeche(malSticker(["DIY"], 360, 260, 0.2, 33, "#bf161b", "#f1ede4"), { th: -1.1, y: 1.1, w: 0.34, h: 0.25, r: R + 0.011 }, 4);
+
+  // Bandplakate: zwei Spalten unter dem Hauptplakat, weitere Bands wandern um die Säule
+  const PLATZ = [[-0.425, 1.62], [0.43, 1.65], [-0.41, 0.78], [0.44, 0.8], [-1.32, 2.6], [1.32, 2.6], [-1.32, 1.7], [1.32, 1.7], [-1.3, 0.8], [1.3, 0.8]];
+  const plakate = [];
+  BANDS.forEach((band, i) => {
+    const [th, y] = PLATZ[i % PLATZ.length];
+    const s = { th, y, w: 0.8, h: 0.8, r: R + 0.008 };
+    flaeche(malZettel(band), { th, y: y + 0.01, w: 0.74, h: 0.74, r: R + 0.004 }, 1, 16, 16);
+    const bild = bilder[i];
+    const { vorne, hinten } = bild ? malPlakat(band, bild) : malPlakat(band, leinwand(10, 10));
+    const g = gitter(36, 36); forme(g, s, 0);
+    const vorderMat = new THREE.MeshStandardMaterial({ map: tex(vorne), transparent: true, alphaTest: 0.5, roughness: 0.82, side: THREE.FrontSide });
+    const rueckMat = new THREE.MeshStandardMaterial({ map: tex(hinten), transparent: true, alphaTest: 0.5, roughness: 0.95, side: THREE.BackSide });
+    const gruppe = new THREE.Group();
+    const vorn = new THREE.Mesh(g, vorderMat), rueck = new THREE.Mesh(g, rueckMat);
+    vorn.renderOrder = 3; rueck.renderOrder = 3; vorn.receiveShadow = true; vorn.castShadow = true;
+    vorn.customDepthMaterial = new THREE.MeshDepthMaterial({ map: vorderMat.map, alphaTest: 0.5 });
+    gruppe.add(vorn, rueck); saeule.add(gruppe);
+    vorn.userData.band = band;
+    plakate.push({ band, s, g, gruppe, mats: [vorderMat, rueckMat], vorn, p: 0, zustand: "haengt", t: 0, warte: 0 });
+  });
+
+  /* Kamera und Steuerung */
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableZoom = false; controls.enablePan = false; controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.minPolarAngle = Math.PI / 2 - 0.45; controls.maxPolarAngle = Math.PI / 2 + 0.12;
+  renderer.domElement.style.touchAction = "pan-y";
+  let leerlauf = BEWEGUNG, flug = null, zeit = 0;
+  controls.addEventListener("start", () => { leerlauf = false; });
+
+  const grund = { ziel: new THREE.Vector3(0, 2.42, 0), abstand: 10 };
+  function passeAn() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    grund.abstand = Math.max(2.95 / tan, 1.6 / (tan * camera.aspect));
+  }
+  passeAn();
+  camera.position.set(0, grund.ziel.y + 0.5, grund.abstand); controls.target.copy(grund.ziel); controls.update();
+  new ResizeObserver(() => { passeAn(); if (!aktiv && !flug) fliegeZu(grundAnsicht(), 0.01); }).observe(stage);
+
+  function grundAnsicht() {
+    const az = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
+    const pos = new THREE.Vector3(Math.sin(az) * grund.abstand, grund.ziel.y + 0.5, Math.cos(az) * grund.abstand);
+    return { pos, ziel: grund.ziel.clone() };
+  }
+  function plakatAnsicht(pl) {
+    const { th, y } = pl.s, breit = stage.clientWidth >= 900;
+    const raus = new THREE.Vector3(Math.sin(th), 0, Math.cos(th)), quer = new THREE.Vector3(Math.cos(th), 0, -Math.sin(th));
+    const mitte = raus.clone().multiplyScalar(R).setY(y);
+    const ziel = mitte.clone().addScaledVector(quer, breit ? 0.3 : 0).add(new THREE.Vector3(0, breit ? 0 : -0.42, 0));
+    const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const abstand = Math.max(3.1, 0.62 / (tan * camera.aspect));
+    return { pos: ziel.clone().addScaledVector(raus, abstand).add(new THREE.Vector3(0, 0.25, 0)), ziel };
+  }
+  function fliegeZu(ansicht, dauer = 0.95) {
+    if (!BEWEGUNG) dauer = 0.01;
+    flug = { von: { pos: camera.position.clone(), ziel: controls.target.clone() }, nach: ansicht, t: 0, dauer };
+    controls.enabled = false;
+  }
+
+  /* Plakat abreißen und wieder ankleben */
+  function reisse(band, fertig) {
+    const pl = plakate.find((x) => x.band === band);
+    leerlauf = false;
+    fliegeZu(plakatAnsicht(pl));
+    if (!BEWEGUNG) { pl.zustand = "weg"; pl.gruppe.visible = false; fertig(); return; }
+    pl.zustand = "reisst"; pl.warte = 0.35; pl.fertig = fertig;
+  }
+  function klebe(band, zurueck = true) {
+    const pl = plakate.find((x) => x.band === band);
+    pl.fertig = null;
+    pl.gruppe.visible = true; pl.gruppe.position.set(0, 0, 0); pl.gruppe.rotation.set(0, 0, 0);
+    pl.mats.forEach((m) => (m.opacity = BEWEGUNG ? 0 : 1));
+    if (BEWEGUNG) { pl.zustand = "klebt"; pl.p = 1; pl.t = 0; } else { pl.zustand = "haengt"; pl.p = 0; forme(pl.g, pl.s, 0); }
+    if (zurueck) fliegeZu(grundAnsicht());
+  }
+
+  /* Zeiger: Klick vs. Ziehen unterscheiden, Hover hebt die Ecke */
+  const strahl = new THREE.Raycaster(), maus = new THREE.Vector2();
+  let unten = null, schwebt = null;
+  const triff = (e) => {
+    const r = renderer.domElement.getBoundingClientRect();
+    maus.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    strahl.setFromCamera(maus, camera);
+    const treffer = strahl.intersectObjects(plakate.filter((p) => p.gruppe.visible && p.zustand === "haengt").map((p) => p.vorn));
+    return treffer.length ? treffer[0].object.userData.band : null;
+  };
+  renderer.domElement.addEventListener("pointerdown", (e) => { unten = { x: e.clientX, y: e.clientY }; });
+  renderer.domElement.addEventListener("pointerup", (e) => {
+    if (!unten || Math.hypot(e.clientX - unten.x, e.clientY - unten.y) > 6) return;
+    const band = triff(e); if (band) oeffne(band);
+  });
+  renderer.domElement.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    schwebt = triff(e); renderer.domElement.style.cursor = schwebt ? "pointer" : "grab";
+  });
+  renderer.domElement.addEventListener("pointerleave", () => { schwebt = null; });
+
+  /* Bildschleife */
+  const uhr = new THREE.Clock();
+  const sanft = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  renderer.setAnimationLoop(() => {
+    const dt = Math.min(uhr.getDelta(), 0.1); zeit += dt;
+    if (flug) {
+      flug.t = Math.min(1, flug.t + dt / flug.dauer); const k = sanft(flug.t);
+      camera.position.lerpVectors(flug.von.pos, flug.nach.pos, k);
+      controls.target.lerpVectors(flug.von.ziel, flug.nach.ziel, k);
+      camera.lookAt(controls.target);
+      if (flug.t >= 1) { flug = null; controls.enabled = true; }
+    } else if (leerlauf && !aktiv) {
+      const az = 0.34 * Math.sin(zeit * 0.22);
+      camera.position.set(Math.sin(az) * grund.abstand, grund.ziel.y + 0.5 + 0.12 * Math.sin(zeit * 0.17), Math.cos(az) * grund.abstand);
+      controls.target.copy(grund.ziel);
+    }
+    for (const pl of plakate) {
+      const alt = pl.p;
+      if (pl.zustand === "haengt") {
+        const soll = BEWEGUNG && schwebt === pl.band && !aktiv ? 0.17 : 0;
+        pl.p += (soll - pl.p) * Math.min(1, dt * 10); if (Math.abs(pl.p) < 1e-4) pl.p = 0;
+      } else if (pl.zustand === "reisst") {
+        if (pl.warte > 0) pl.warte -= dt;
+        else { pl.p = Math.min(1, pl.p + dt * (0.5 + 2.6 * pl.p)); if (pl.p >= 1) { pl.zustand = "faellt"; pl.t = 0; pl.fertig?.(); pl.fertig = null; } }
+      } else if (pl.zustand === "faellt") {
+        pl.t = Math.min(1, pl.t + dt / 0.75);
+        const raus = new THREE.Vector3(Math.sin(pl.s.th), 0, Math.cos(pl.s.th));
+        pl.gruppe.position.copy(raus.multiplyScalar(0.9 * pl.t)).add(new THREE.Vector3(0, -2.2 * pl.t * pl.t, 0));
+        pl.mats.forEach((m) => (m.opacity = 1 - pl.t));
+        if (pl.t >= 1) { pl.zustand = "weg"; pl.gruppe.visible = false; }
+      } else if (pl.zustand === "klebt") {
+        pl.t = Math.min(1, pl.t + dt / 0.25); pl.mats.forEach((m) => (m.opacity = pl.t));
+        pl.p = Math.max(0, pl.p - dt * 2.4); if (pl.p <= 0) { pl.zustand = "haengt"; pl.mats.forEach((m) => (m.opacity = 1)); }
+      }
+      if (pl.p !== alt) forme(pl.g, pl.s, pl.p);
+    }
+    controls.update();
+    renderer.render(scene, camera);
+  });
+
+  return { reisse, klebe };
+}
+
+/* ---------- Terminzettel und Bandleiste ---------- */
+function baueChips() {
+  chipsEl.innerHTML = "";
+  for (const band of BANDS) {
+    const n = kuenftige(band.id)[0];
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.dataset.id = band.id; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = `<b></b><small></small>`;
+    b.querySelector("b").textContent = band.name;
+    b.querySelector("small").textContent = n ? `Nächstes Mal: ${tagDatum(n.datum)} ${n.stadt}` : "Gerade still";
+    b.addEventListener("click", () => (aktiv === band ? schliesse() : oeffne(band)));
+    li.append(b); chipsEl.append(li);
+  }
+}
+
+function fuelleZettel(band) {
+  const liste = kuenftige(band.id);
+  zettelEl.innerHTML = "";
+  const kopf = document.createElement("p"); kopf.className = "label"; kopf.textContent = "Nächste Termine";
+  const h = document.createElement("h2"); h.textContent = band.name;
+  const art = document.createElement("p"); art.className = "art"; art.textContent = band.art;
+  zettelEl.append(kopf, h, art);
+  if (liste.length) {
+    const ol = document.createElement("ol");
+    for (const t of liste) {
+      const li = document.createElement("li");
+      const d = document.createElement("strong"); d.textContent = tagDatum(t.datum);
+      const o = document.createElement("span"); o.textContent = `${t.stadt}, ${t.laden}${t.zeit ? ", " + t.zeit + " Uhr" : ""}`;
+      li.append(d, o); ol.append(li);
+    }
+    zettelEl.append(ol);
+  } else {
+    const p = document.createElement("p"); p.className = "still"; p.textContent = "Gerade still. Kommt wieder.";
+    zettelEl.append(p);
+  }
+  const k = document.createElement("div"); k.className = "knoepfe";
+  const zu = document.createElement("button"); zu.type = "button"; zu.className = "btn"; zu.textContent = "Plakat wieder ankleben";
+  zu.addEventListener("click", () => schliesse());
+  const web = document.createElement("a"); web.className = "btn btn--ghost"; web.href = band.web; web.target = "_blank"; web.rel = "noopener"; web.textContent = "Zur Band";
+  k.append(zu, web); zettelEl.append(k);
+}
+
+function oeffne(band) {
+  if (aktiv && szene) szene.klebe(aktiv, false);
+  aktiv = band;
+  chipsEl.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.id === band.id)));
+  document.getElementById("hinweis").hidden = true;
+  document.body.classList.add("ist-offen");
+  zettelEl.hidden = true;
+  const zeige = () => { if (aktiv !== band) return; fuelleZettel(band); zettelEl.hidden = false; zettelEl.focus({ preventScroll: true }); };
+  if (szene) szene.reisse(band, zeige); else zeige();
+}
+function schliesse() {
+  if (!aktiv) return;
+  const war = aktiv; aktiv = null;
+  zettelEl.hidden = true;
+  document.body.classList.remove("ist-offen");
+  if (szene) szene.klebe(war, true);
+  chipsEl.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", "false"));
+  chipsEl.querySelector(`[data-id="${war.id}"]`)?.focus({ preventScroll: true });
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") schliesse(); });
+
+start();
+</script>
