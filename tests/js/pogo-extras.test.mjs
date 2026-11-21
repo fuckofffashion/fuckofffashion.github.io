@@ -49,6 +49,9 @@ test("Aufgaben: Bedingungen an ihren Grenzen", () => {
   assert.equal(auf("surferUeberlebt").erfuellt({ ...leer, surferGesehen: 1, surferTreffer: 0 }), true);
   assert.equal(auf("surferUeberlebt").erfuellt({ ...leer, surferGesehen: 1, surferTreffer: 1 }), false);
   assert.equal(auf("surferUeberlebt").erfuellt(leer), false);
+  // mit leerem Becher am Ende zählt sie nicht (Mark, nach dem ersten Spieletest)
+  assert.equal(auf("surferUeberlebt").erfuellt({ ...leer, surferGesehen: 1, surferTreffer: 0, bierEnde: 0 }), false);
+  assert.equal(auf("surferUeberlebt").erfuellt({ ...leer, surferGesehen: 1, surferTreffer: 0, bierEnde: 3 }), true);
 });
 
 test("Aufgaben: zwei verschiedene, ohne Crowdsurfer nie die Surfer-Aufgabe", () => {

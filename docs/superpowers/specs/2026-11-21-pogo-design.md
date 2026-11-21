@@ -122,3 +122,9 @@ Marks Auswahl: Motive auf dem Rücken, Modeschnösel, Zugabe und Sänger in der 
 - **Eigener Beat nicht mehr wählbar.** Zur Auswahl stehen nur echte Songs. Der Beat bleibt als stiller Ersatz, falls die Songdatei nicht lädt. „Rein in den Pit“ wartet, bis der Song geladen ist.
 - **Menüpunkt „Pogo“** im Hauptmenü aller Seiten (DE/EN), nicht nur der Einstieg über die Säule.
 - **Spieletester-Agent:** `.claude/agents/pogo-spieletester.md` spielt das Spiel im Browser und schreibt Fehler und Vorschläge nach `docs/spieletest/befunde.md`. Abgearbeitet wird von dort.
+- **Wertung nach dem ersten Spieletest (Mark):**
+  - Leerer oder fast leerer Becher zählt wie 25 % Bier (`BIER_MIN`). Das Endbild zeigt dann „zählt als 25 %“.
+  - Wer im Pit länger als 2 s weder läuft noch springt oder tippt, bekommt nur halbe Punkte. Hinweis: „Beweg dich!“.
+  - Stagedive: Der Landebonus (600) gibt es nur mit mindestens 50 % Bier. Ein nicht abgewehrter Griff kostet 10 % statt 6 %.
+  - Die Aufgabe „Kein Stiefel im Bier“ zählt nicht, wenn die Runde mit leerem Becher endet.
+- **Goldenes Motiv erklärt:** Beim ersten Nahekommen (3 m) pro Runde erscheinen „GOLDENES MOTIV!“ und 5 s lang der Hinweis. Ein grüner Füllring zeigt den Abguck-Fortschritt.

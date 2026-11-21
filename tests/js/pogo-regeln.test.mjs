@@ -48,7 +48,11 @@ test("verschuettet: in der Luft nichts, Schwelle, Deckel, Rucksack", () => {
 
 test("Ergebnis und Titel", () => {
   assert.equal(ergebnis(1000, 50), 500);
-  assert.equal(ergebnis(1000, 0), 0);
+  // leerer oder fast leerer Becher zählt wie 25 % Bier (Mark, nach dem ersten Spieletest)
+  assert.equal(ergebnis(1000, 0), 250);
+  assert.equal(ergebnis(1000, 10), 250);
+  assert.equal(ergebnis(1000, 25), 250);
+  assert.equal(ergebnis(1000, 26), 260);
   assert.equal(titelSchluessel(2000, 0), "leer");
   assert.equal(titelSchluessel(100, 90), "randSteher");
   assert.equal(titelSchluessel(900, 10), "legendaer");
@@ -142,10 +146,27 @@ test("teilBei und imTakt arbeiten mit Songdaten", async () => {
 
 test("Stagedive lohnt sich: wenige Griffe, kleiner Verlust, Punkte beim Tragen, Landung in der Mitte", async () => {
   const { STAGEDIVE, landeZ, stagediveVerlustMax } = await import("../../js/pogo/regeln.js");
-  assert.deepEqual(STAGEDIVE, { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 6, punkteProSekunde: 60, bonus: 600 });
+  assert.deepEqual(STAGEDIVE, { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 10, punkteProSekunde: 60, bonus: 600, bonusAbBier: 50 });
   const L2 = { x: 3.3, z: [-4.2, 4.2], gitterZ: -3.6 };
   assert.equal(zone(0, landeZ(L2), L2), "mitte");
-  // schlimmster Fall: alle Griffe verpasst – höchstens 20 % Bier weg, Punkte beim Tragen > Verlust an Wert
-  assert.ok(stagediveVerlustMax() <= 20);
+  // schlimmster Fall: alle Griffe verpasst – 30 % Bier weg; Abwehren lohnt sich jetzt
+  assert.equal(stagediveVerlustMax(), 30);
   assert.ok(STAGEDIVE.punkteProSekunde * STAGEDIVE.dauer + STAGEDIVE.bonus >= 900);
+});
+
+test("Stagedive-Bonus nur mit mindestens halbem Becher", async () => {
+  const { stagediveBonus } = await import("../../js/pogo/regeln.js");
+  assert.equal(stagediveBonus(100), 600);
+  assert.equal(stagediveBonus(50), 600);
+  assert.equal(stagediveBonus(49.9), 0);
+  assert.equal(stagediveBonus(0), 0);
+});
+
+test("Stillstehen: nach 2 s nur noch halbe Punkte", async () => {
+  const { stillFaktor, STILL_AB } = await import("../../js/pogo/regeln.js");
+  assert.equal(STILL_AB, 2);
+  assert.equal(stillFaktor(0), 1);
+  assert.equal(stillFaktor(2), 1);
+  assert.equal(stillFaktor(2.01), 0.5);
+  assert.equal(stillFaktor(30), 0.5);
 });

@@ -24,7 +24,7 @@ export const TEXTE = {
     plektrum: "PLEKTRUM!", drumstick: "DRUMSTICK!", setliste: "SETLISTE!", oi: "OI!", takt: "IM TAKT!",
     daneben: "daneben", mikro: "MIKRO! Tipp im Takt: OI! OI! OI!", stagediveKnopf: "Stagediven!",
     getragen: "Du wirst getragen! Schlag die Hände weg: tipp auf ihre Seite.", hand: "HAND!", abgewehrt: "weg da!",
-    bierdusche: "BIERDUSCHE!", gelandet: "GELANDET!",
+    bierdusche: "BIERDUSCHE!", gelandet: "GELANDET!", gelandetOhne: "GELANDET, aber zu wenig Bier für den Bonus", bewegDich: "Beweg dich! Rumstehen gibt nur halbe Punkte.", zaehltAls: ({ n }) => `zählt als ${n} %`,
     punkte: "Punkte", bier: "Bier", ergebnis: "Ergebnis", andenken: "Gefangen",
     keineAndenken: "Nichts gefangen. Nach vorn!", tonAn: "Ton an", tonAus: "Ton aus",
     titel: {
@@ -61,7 +61,7 @@ export const TEXTE = {
     plektrum: "PICK!", drumstick: "DRUMSTICK!", setliste: "SETLIST!", oi: "OI!", takt: "ON THE BEAT!",
     daneben: "off beat", mikro: "MIC! Tap on the beat: OI! OI! OI!", stagediveKnopf: "Stage dive!",
     getragen: "You're crowdsurfing! Slap the hands away: tap their side.", hand: "HAND!", abgewehrt: "back off!",
-    bierdusche: "BEER SHOWER!", gelandet: "LANDED!",
+    bierdusche: "BEER SHOWER!", gelandet: "LANDED!", gelandetOhne: "LANDED, but too little beer for the bonus", bewegDich: "Move! Standing still only gets half points.", zaehltAls: ({ n }) => `counts as ${n}%`,
     punkte: "Points", bier: "Beer", ergebnis: "Score", andenken: "Caught",
     keineAndenken: "Caught nothing. Get to the front!", tonAn: "Sound on", tonAus: "Sound off",
     titel: {

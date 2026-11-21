@@ -1,7 +1,7 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp,
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN,
 } from "./regeln.js?v=32";
 import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=32";
 import { sprache, TEXTE } from "./texte.js?v=32";
@@ -31,7 +31,7 @@ let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher)
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
-let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
+let stillZeit = 0, sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
 function neueRunde(neueAufgaben = true) {
   raeumeAuf();
@@ -55,7 +55,7 @@ function neueRunde(neueAufgaben = true) {
     f.g.position.set(p.x, 0, p.z); S.raum.add(f.g); figuren.set(p, f);
   }
   becher = F.baueBecher(THREE); becher.scale.setScalar(1.8); becher.position.y = -0.6; figuren.get(ich).arme[1].add(becher);
-  bier = 100; punkte = 0; zeit = 0; wall = null; beruehrt = new Map(); freibier = null; surfer = null; tropfen = []; randPop = -9;
+  stillZeit = 0; bier = 100; punkte = 0; zeit = 0; wall = null; beruehrt = new Map(); freibier = null; surfer = null; tropfen = []; randPop = -9;
   sprungBis = 0; reiheSeit = 0; nassBis = 0; letzterSpritzer = -99; duDaTeile = new Set(); wuerfe = []; andenken = [];
   geplanteWuerfe = [{ art: "plektrum", t: song.wuerfe.plektrum }, { art: "drumstick", t: song.wuerfe.drumstick }];
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
@@ -100,6 +100,7 @@ function springe(t = zeit, uhr = null) {
     if (w === "treffer") { rufTreffer++; pop(T.zugaGa, "var(--paper)"); } else if (w === "daneben") pop(T.daneben, "var(--paper-2)");
     return;
   }
+  stillZeit = 0; // jedes Tippen zählt als Mitmachen (auch OI! am Mikro)
   if (!laeuft || pausiert || stagedive.phase === "getragen" || ich.inLuft) return;
   ich.inLuft = true; sprungBis = zeit + 0.45;
   const z = zone(ich.x, ich.z, L);
@@ -181,6 +182,7 @@ function schritt(dt) {
     if (tasten.has("ArrowLeft") || tasten.has("a")) sx -= 1; if (tasten.has("ArrowRight") || tasten.has("d")) sx += 1;
     if (tasten.has("ArrowUp") || tasten.has("w")) sz -= 1; if (tasten.has("ArrowDown") || tasten.has("s")) sz += 1;
     const sl = Math.hypot(sx, sz);
+    stillZeit = sl > 0.12 || ich.inLuft ? 0 : stillZeit + dt;
     if (sl > 0.12) { const f = Math.min(1, sl); ich.vx += (sx / sl) * 22 * f * dt; ich.vz += (sz / sl) * 22 * f * dt; }
     if (randSchubs(ich, L, dt) && zeit - randPop > 3) { randPop = zeit; pop(T.randSchubs, "var(--paper)"); }
   }
@@ -200,7 +202,7 @@ function schritt(dt) {
 
   // Zonen, Punkte, erste Reihe
   const z = getragen ? "pit" : zone(ich.x, ich.z, L), nass = zeit < nassBis;
-  if (!getragen) punkte += punkteProSekunde(z, teil, nass) * dt * faktor * (zeit < geblendetBis ? 0.5 : 1);
+  if (!getragen) punkte += punkteProSekunde(z, teil, nass) * dt * faktor * (zeit < geblendetBis ? 0.5 : 1) * stillFaktor(stillZeit);
   if (z === "mitte") stats.mitteSekunden += dt;
   if (z === "reihe" && teil.name === "LETZTER REFRAIN") stats.reiheImLetztenRefrain = true;
   reiheSeit = z === "reihe" && !getragen ? reiheSeit + dt : 0;
@@ -214,7 +216,7 @@ function schritt(dt) {
   mikroAn = zeit >= song.mikro[0] && zeit < song.mikro[1];
   const stagediveBereit = !stagedive.fertig && reiheSeit >= STAGEDIVE_AB;
   $("pogo-stagedive").hidden = !stagediveBereit;
-  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : zeit < abguck.erklaertBis ? T.goldHinweis : mikroAn && z === "reihe" ? T.mikro : (T.zonen[z] || "");
+  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : zeit < abguck.erklaertBis ? T.goldHinweis : mikroAn && z === "reihe" ? T.mikro : stillFaktor(stillZeit) < 1 && z !== "rand" ? T.bewegDich : (T.zonen[z] || "");
 
   // Würfe von der Bühne
   for (const w of geplanteWuerfe) if (!w.los && zeit >= w.t) {
@@ -251,7 +253,8 @@ function schritt(dt) {
     if (sd.t >= STAGEDIVE.dauer) {
       stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; $("pogo-hinweis").textContent = "";
       stats.stagediveBier = bier;
-      if (bier > 0) { punkte += STAGEDIVE.bonus; pop(T.gelandet, "#58d26a"); } else pop(T.bierdusche);
+      const bonus = stagediveBonus(bier);
+      if (bonus) { punkte += bonus; pop(T.gelandet, "#58d26a"); } else if (bier > 0) pop(T.gelandetOhne, "var(--paper)"); else pop(T.bierdusche);
     }
   }
 
@@ -371,7 +374,7 @@ function starteZugabe() {
   phase = "zugabe"; faktor = ZUGABE.faktor;
   const zz = zugabeZeiten(song), start = zz.start; zeit = start; zugabeEnde = zz.ende;
   // die Uhr springt zurück: alle Zeitstempel aus dem Song gelten nicht mehr
-  nassBis = geblendetBis = sprungBis = 0; ich.inLuft = false; letzterSpritzer = randPop = -99; beruehrt = new Map();
+  nassBis = geblendetBis = sprungBis = 0; stillZeit = 0; ich.inLuft = false; letzterSpritzer = randPop = -99; beruehrt = new Map();
   if (schnoesel) { schnoesel.naechsterBlitz = start + 2; schnoesel.letzter = -99; }
   entferneFreibier(); entferneSurfer();
   musik.start(song.datei ? WURZEL + song.datei : null, start);
@@ -500,6 +503,7 @@ function ende(leer) {
   phase = "aus";
   laeuft = false; musik.stopp(); beendeZeiger(); tasten.clear();
   stagedive = { phase: "aus", fertig: true }; $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = "";
+  stats.bierEnde = leer ? 0 : Math.round(bier);
   const erledigt = aufgaben.filter((a) => a.erfuellt(stats));
   punkte += erledigt.length * AUFGABE_PUNKTE;
   if (andenken.length) { kutte = mitFang(kutte, andenken); schreibeKutte(speicher, kutte); }
@@ -521,7 +525,7 @@ function ende(leer) {
     tourEl.append(document.createElement("br"), T.motivAbgeguckt({ nr: m.nr, titel: sp === "en" ? m.titel_en : m.titel }), " · ", a);
   }
   aktualisiereLaeden();
-  $("pogo-ende-werte").textContent = `${T.punkte} ${p} × ${T.bier} ${b} %`;
+  $("pogo-ende-werte").textContent = `${T.punkte} ${p} × ${T.bier} ${b} %` + (b < BIER_MIN ? ` (${T.zaehltAls({ n: BIER_MIN })})` : "");
   zeigeBand();
   $("pogo-ende-andenken").textContent = andenken.length ? `${T.andenken}: ${andenken.map((a) => T[a].replace("!", "")).join(", ")}` : T.keineAndenken;
   $("pogo-ende").hidden = false; $("pogo-hud").hidden = true; $("pogo-tonbox").hidden = true;

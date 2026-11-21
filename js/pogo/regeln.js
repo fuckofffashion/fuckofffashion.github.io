@@ -54,7 +54,9 @@ export function verschuettet(schlag, { rucksack = false, inLuft = false } = {}) 
   return Math.min(14, (s - 1.6) * 4.5);
 }
 
-export const ergebnis = (punkte, bier) => Math.round(punkte * bier / 100);
+/** Ergebnis = Punkte × Bier; ein (fast) leerer Becher zählt wie BIER_MIN Prozent. */
+export const BIER_MIN = 25;
+export const ergebnis = (punkte, bier) => Math.round(punkte * Math.max(bier, BIER_MIN) / 100);
 
 /** Titel im Endbild aus Pogo-Punkten und Bier. */
 export function titelSchluessel(punkte, bier) {
@@ -83,7 +85,12 @@ export function sprungWertung(z, imTaktGesprungen) {
 export const songZeit = (audioZeit, start, latenz = 0) => Math.max(0, audioZeit - start - latenz);
 
 /** Stagedive: getragen werden bringt Punkte; wenige Hände greifen nach dem Becher, jede verpasste kostet wenig. */
-export const STAGEDIVE = { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 6, punkteProSekunde: 60, bonus: 600 };
+export const STAGEDIVE = { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 10, punkteProSekunde: 60, bonus: 600, bonusAbBier: 50 };
+/** Landebonus nur, wenn noch mindestens die Hälfte im Becher ist. */
+export const stagediveBonus = (bier) => (bier >= STAGEDIVE.bonusAbBier ? STAGEDIVE.bonus : 0);
+/** Wer im Pit länger als STILL_AB Sekunden weder läuft noch springt, bekommt nur halbe Punkte. */
+export const STILL_AB = 2;
+export const stillFaktor = (stillSekunden) => (stillSekunden > STILL_AB ? 0.5 : 1);
 /** Landung mitten im Pit, nicht am Rand (dort würde sofort zurückgeschubst). */
 export const landeZ = (laden) => (laden.gitterZ + laden.z[1]) / 2;
 /** Höchster möglicher Bierverlust eines Stagedives in Prozent (alle Griffe verpasst). */

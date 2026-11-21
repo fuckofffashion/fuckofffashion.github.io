@@ -9,7 +9,7 @@ export const AUFGABEN = [
   { id: "mitte10", erfuellt: (s) => s.mitteSekunden >= 10 },
   { id: "stagediveVoll", erfuellt: (s) => s.stagediveBier != null && s.stagediveBier >= 50 },
   { id: "takt8", erfuellt: (s) => s.taktSpruenge >= 8 },
-  { id: "surferUeberlebt", nurMitSurfer: true, erfuellt: (s) => s.surferGesehen > 0 && s.surferTreffer === 0 },
+  { id: "surferUeberlebt", nurMitSurfer: true, erfuellt: (s) => s.surferGesehen > 0 && s.surferTreffer === 0 && s.bierEnde !== 0 },
 ];
 
 /** Zwei verschiedene Aufgaben, passend zum Laden (ohne Crowdsurfer keine Surfer-Aufgabe). */
