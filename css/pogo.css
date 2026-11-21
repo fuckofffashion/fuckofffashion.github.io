@@ -10,8 +10,12 @@
 .pogo__wert--ergebnis b { color: var(--bier); }
 /* Etappe 5: Combo, Stimmung, Mitgrölen */
 .pogo__combo { align-self: flex-end; font: 400 1.5rem/1 var(--font-shout); color: #58d26a; }
-.pogo__stimmung { position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: 5px; background: rgba(241, 237, 228, .1); pointer-events: none; }
+.pogo__stimmung { position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: 9px; background: rgba(241, 237, 228, .12); pointer-events: none; }
 .pogo__stimmung i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--bier), var(--blood-hot)); transition: width .25s linear; }
+.pogo__stimmung small { position: absolute; right: .5rem; top: 10px; font: 700 .58rem/1 var(--font-zine); letter-spacing: .12em; text-transform: uppercase; color: var(--paper-2); text-shadow: 0 1px 4px #000; }
+.pogo__combo.puls, .pogo__groelen span.getroffen { animation: pogo-puls-klein .25s ease-out; }
+@keyframes pogo-puls-klein { from { transform: scale(1.35); } to { transform: scale(1); } }
+.pogo__pop--wichtig { font-size: clamp(1.6rem, 6vw, 2.9rem); z-index: 1; }
 .pogo__stimmung.kocht i { animation: pogo-koch .25s steps(2) infinite; }
 @keyframes pogo-koch { 50% { filter: brightness(1.9); } }
 .pogo .pogo__groelen { position: absolute; left: 0; right: 0; top: 21%; z-index: 1; display: flex; justify-content: center; gap: .45em; margin: 0; max-width: none; pointer-events: none; font: 400 clamp(1.3rem, 5vw, 2.6rem)/1 var(--font-shout); color: rgba(241, 237, 228, .3); text-shadow: 0 3px 10px #000; }
@@ -92,6 +96,7 @@
   .pogo__pop { animation: pogo-ruhig 1.1s linear forwards; }
   .pogo__stagedive { animation: none; }
   .pogo__stimmung.kocht i { animation: none; }
+  .pogo__combo.puls, .pogo__groelen span.getroffen { animation: none; }
   .pogo__groelen span { transition: none; }
   .pogo__blitz { background: #000; }
   .pogo__blitz.an { animation: pogo-blitz 1s linear; }

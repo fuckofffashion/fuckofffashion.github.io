@@ -26,6 +26,9 @@ export const SONGS = [
     // Mitgrölen: nur die Worte des Titels, je Schlag eines (Etappe 5)
     groelen: { worte: ["ES", "GEHT", "NOCH", "LAUTER!"], teile: ["REFRAIN!", "LETZTER REFRAIN"] },
     freigabe: { durch: "Dan Ganove", ueber: "Mark", datum: "2026-11-21", art: "mündlich, Datei von Mark geliefert" },
+    // GEMA (Repertoiresuche 2026-11-21): Dan Ganove ist Mitglied, Werk 28404850-001 und 28349843-001, ISWC T-305.133.841-7.
+    // Offen: ob Dans mündliches OK für die Website reicht; Mark klärt das mit Dan (Stand 2026-11-21).
+    gema: { werknummern: ["28404850-001", "28349843-001"], iswc: "T-305.133.841-7", klaerung: "offen" },
   },
 ];
 

@@ -15,8 +15,8 @@ export function comboTakt(combo, schlag) {
 
 /* ---------- Stimmung ---------- */
 export const STIMMUNG = {
-  max: 100, abfall: 1, kochtDauer: 10, nachKochen: 40, zugabeAb: 60, zugabeTreffer: 4,
-  plus: { takt: 2, combo: 5, groelen: 10, aufheben: 15, wall: 15, schnoesel: 15, fascho: 20 },
+  max: 100, abfall: 2, kochtDauer: 8, faktor: 1.5, nachKochen: 40, zugabeAb: 60, zugabeTreffer: 4,
+  plus: { takt: 1, combo: 4, groelen: 10, aufheben: 15, wall: 15, schnoesel: 15, fascho: 20 },
 };
 export function mitStimmung(wert, plus) {
   const neu = Math.min(STIMMUNG.max, wert + plus);

@@ -37,11 +37,14 @@ test("Stimmung: steigt, kocht bei 100, sinkt langsam; ab 60 reichen 4 Zugabe-Tre
   assert.equal(STIMMUNG.max, 100);
   assert.deepEqual(mitStimmung(50, 10), { wert: 60, kocht: false });
   assert.deepEqual(mitStimmung(95, 10), { wert: 100, kocht: true });
-  assert.equal(stimmungAbfall(10, 2), 8);
   assert.equal(stimmungAbfall(0.5, 2), 0);
+  assert.equal(stimmungAbfall(3, 1), 1);
   assert.equal(zugabeTreffer(59), ZUGABE.treffer);
   assert.equal(zugabeTreffer(60), 4);
-  assert.deepEqual(STIMMUNG.plus, { takt: 2, combo: 5, groelen: 10, aufheben: 15, wall: 15, schnoesel: 15, fascho: 20 });
+  assert.deepEqual(STIMMUNG.plus, { takt: 1, combo: 4, groelen: 10, aufheben: 15, wall: 15, schnoesel: 15, fascho: 20 });
+  // nach Spieletest 3: seltener und schwächer kochen (Höhepunkt statt Dauerzustand)
+  assert.equal(STIMMUNG.abfall, 2); assert.equal(STIMMUNG.kochtDauer, 8); assert.equal(STIMMUNG.faktor, 1.5);
+  assert.equal(stimmungAbfall(10, 2), 6);
 });
 
 test("Mitgrölen: nur in den Refrains, ein Wort pro Schlag, nur Titelworte", () => {
