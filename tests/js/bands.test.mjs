@@ -70,3 +70,21 @@ test("Bandtexte: beide Sprachen gleiche Schlüssel und Arten", () => {
   assert.equal(TEXTE.en.zettelKopf, "NEXT GIGS");
   assert.deepEqual(TEXTE.en.zettelStill, ["Quiet for now.", "They'll be back."]);
 });
+
+test("mulberry32 ist mit gleichem Samen gleich", async () => {
+  const { mulberry32 } = await import("../../js/bands/malen.js");
+  const a = mulberry32(7), b = mulberry32(7);
+  assert.deepEqual([a(), a(), a()], [b(), b(), b()]);
+});
+
+test("zettelZeilen: höchstens 4, Rest als mehr, Zeit angehängt", async () => {
+  const { zettelZeilen } = await import("../../js/bands/malen.js");
+  const ts = ["2026-11-26", "2026-11-29", "2027-02-13", "2027-03-06", "2027-04-15"]
+    .map((d, i) => ({ datum: d, zeit: i ? null : "18:00", laden: "L", stadt: "S" }));
+  const z = zettelZeilen(ts, "de");
+  assert.equal(z.zeilen.length, 4);
+  assert.equal(z.mehr, 1);
+  assert.deepEqual(z.zeilen[0], { datum: "DO 26.11.", ort: "S · L · 18:00" });
+  assert.equal(zettelZeilen(ts, "en").zeilen[0].datum, "THU 26 NOV");
+  assert.deepEqual(zettelZeilen([], "de"), { zeilen: [], mehr: 0 });
+});
