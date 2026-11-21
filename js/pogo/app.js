@@ -2,21 +2,21 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=39";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=39";
-import { sprache, TEXTE } from "./texte.js?v=39";
-import { LAEDEN } from "./laeden.js?v=39";
-import { erzeugeMusik } from "./musik.js?v=39";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=39";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=39";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=39";
-import { MOTIVE } from "./motive.js?v=39";
+} from "./regeln.js?v=40";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=40";
+import { sprache, TEXTE } from "./texte.js?v=40";
+import { LAEDEN } from "./laeden.js?v=40";
+import { erzeugeMusik } from "./musik.js?v=40";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=40";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=40";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=40";
+import { MOTIVE } from "./motive.js?v=40";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=39";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=39";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=39";
-import { tagDatum } from "../bands/texte.js?v=39";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=39";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=40";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=40";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=40";
+import { tagDatum } from "../bands/texte.js?v=40";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=40";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -184,7 +184,7 @@ function beendeZeiger(e) {
 }
 const tasten = new Set();
 addEventListener("keydown", (e) => {
-  if (outro && (e.key === " " || e.key === "Enter" || e.key === "Escape")) { e.preventDefault(); endeOutro(); return; }
+  if (outro && (e.key === " " || e.key === "Enter" || e.key === "Escape")) { e.preventDefault(); if (outroWegbar()) endeOutro(); return; }
   if (!laeuft) return;
   if (e.key === " ") { e.preventDefault(); if (!e.repeat) springe(); return; }
   if (stagedive.phase === "getragen" && (e.key === "ArrowLeft" || e.key === "a")) { wische(-1); return; }
@@ -677,6 +677,9 @@ function outroSchritt(dt) {
   f.ganove?.sprich(musik.pegel());
   if (o.t >= o.dauer) endeOutro();
 }
+/** Wegtippen erst nach einer kurzen Sperre: wer beim Rundenende noch tippt oder hüpft, soll das Outro nicht sofort beenden. */
+const OUTRO_SPERRE = 1.5;
+const outroWegbar = () => !!outro && outro.t >= OUTRO_SPERRE;
 function endeOutro() {
   if (!outro) return;
   musik.stoppeEinmal();
@@ -882,8 +885,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=39").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=39"),
+      import("./szene.js?v=40").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=40"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -891,7 +894,7 @@ async function los() {
     $("pogo-ohne3d").hidden = false; $("pogo-start").hidden = true; return;
   }
   const el = S.renderer.domElement;
-  el.addEventListener("pointerdown", (e) => { if (outro) { endeOutro(); return; } beginneZeiger(e); });
+  el.addEventListener("pointerdown", (e) => { if (outro) { if (outroWegbar()) endeOutro(); return; } beginneZeiger(e); });
   el.addEventListener("pointermove", bewegeZeiger);
   el.addEventListener("pointerup", beendeZeiger);
   el.addEventListener("pointercancel", () => { zeiger = null; stick.hidden = true; });

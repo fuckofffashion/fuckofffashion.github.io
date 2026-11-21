@@ -1,5 +1,5 @@
 // Umkreisstufen und Anfahrt in "Platten" (Szene-Einheit: eine Platte = 40 Minuten Anfahrt).
-import { sprache } from "./texte.js?v=39";
+import { sprache } from "./texte.js?v=40";
 
 // Stufen für den Umkreis-Schalter, km ist die Obergrenze
 export const STUFEN = [
