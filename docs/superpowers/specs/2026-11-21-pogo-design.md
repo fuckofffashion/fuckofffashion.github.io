@@ -1,0 +1,117 @@
+# Pogo – Browserspiel für Fuck Off Fashion – Design
+
+Stand: 21.11.2026. Vorlage für Aussehen und Grundgefühl: `docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html` (3D-Wegwerf-Entwurf, von Mark angespielt: „lustig und geht schon mal in die richtige Richtung“). Der 2D-Entwurf davor wurde verworfen („nicht nur ein paar Punkte, die auf einem Bild rumwuseln“).
+
+## Absicht
+
+Ein kurzes, lustiges Spiel auf der FOF-Seite: Du stehst im Moshpit, hältst dein Bier hoch und versuchst, so viel wie möglich zu pogen, ohne alles zu verschütten. Es soll Spaß machen, zur Haltung des Labels passen (kein Konto, kein Tracking, kein Kaufen) und am Ende zu den Bands der Säule und ihren Konzerten führen. Später läuft im Spiel echte Musik der Bands von der Säule und man spielt in echten Läden, in denen Mark und Co. oft waren.
+
+## Spielprinzip (Marks Entscheidungen und Wünsche)
+
+- Pit von schräg oben, **Kamera hinter deiner Figur** (Mark).
+- Figuren sind richtige 3D-Figuren im Comic-Stil (Iro, Jacken, Rückenaufnäher), nicht fotorealistisch, aber keine Punkte (Mark).
+- Man wählt den **Laden**, in dem gespielt wird (Mark). Jeder Laden hat Eigenheiten.
+- Später laufen **Songs der Bands von der Säule**; Mark fragt jede Band selbst, bevor ein Song ins Spiel kommt (Mark).
+- **Hinten stehen darf sich nicht lohnen** (Mark). Belohnt wird, wer **nach vorn zur Band** kommt (Mark).
+
+### Regeln (Claudes Vorschlag, mit Mark besprochen)
+
+- Eine Runde = ein Song-Ausschnitt (jetzt 60 s eigener Beat; mit echten Songs 60–90 s). Songteile: Intro, Strophe, Refrain, Break, Strophe, letzter Refrain; der Pit folgt der Musik (Strophe schubst, Refrain Gedränge, Break Luft holen).
+- **Zwei Werte:** Bier (0–100 %, sinkt durch Rempler) und Pogo-Punkte. **Ergebnis = Pogo-Punkte × Bier-Anteil.**
+- **Zonen** (von hinten nach vorn):
+  - *Rand*: keine Punkte. Die Leute am Rand schubsen dich zurück in den Pit („Was stehst du hier rum?“).
+  - *Pit* (leuchtet am Boden): Punkte pro Sekunde; Mitte doppelt.
+  - *Erste Reihe* (am Absperrgitter): doppelte Punkte, aber **Gedränge** (Becher schwappt langsam auch ohne Rempler) und der **Ordner** im gelben Shirt (spritzt Wasser, „ABKÜHLEN!“: Punkte kurz halbiert, Bier verwässert = kein Verlust, aber sichtbar heller).
+  - *Bühnenkante*: Knopf „Stagediven!“.
+- **Springen** per Antippen (bzw. Leertaste): in der Luft rempelt dich keiner; Landung auf dem Beat = Bonus; Sprung neben dem Takt schwappt etwas.
+- **Band bemerkt dich** (nur erste Reihe): Sänger zeigt im Refrain „DU DA!“ (Bonus); Gitarrist wirft **Plektrum**, Drummer am Ende **Drumstick**, selten **Setliste** – fangen = hinlaufen, solange es fliegt (Bonus).
+- **Mikro-Moment**: einmal pro Song hält der Sänger das Mikro in die erste Reihe; wer dort steht, tippt „OI! OI! OI!“ im Takt (je Treffer Punkte; größter Bonus der Runde).
+- **Stagedive**: von der Bühnenkante in die Menge, dann als Crowdsurfer über die Köpfe nach hinten getragen; Becher muss oben bleiben (Hände der Menge greifen danach, wischen = Becher wegziehen). Bier überlebt = riesiger Bonus; sonst Bierdusche.
+- Weiter wie im Entwurf: Crowdsurfer anderer Leute (Stiefel im Bier), Freibier am Boden (+25 %), Typ mit Rucksack (rempelt doppelt), Circle Pit und Wall of Death in der Halle, Pfeiler und niedrige Decke im Keller, Regen und Matsch auf der Wiese.
+- **Endbild**: Ergebnis, Pogo-Punkte, Bier, Titel aus beidem („Pit-König mit halbem Bier“, „Trocken, aber legendär“, „Rand-Steher mit vollem Becher – peinlich“), gefangene Andenken. Darunter Link zur Säule; mit echtem Song: Band und ihr nächstes Konzert aus `data/bands.json`.
+
+## Ziele
+
+1. Spielbar am Handy mit einem Finger (ziehen = laufen, tippen = springen) und am Rechner (Maus/Tasten).
+2. Eine Runde dauert einen Song, Neustart sofort.
+3. Deutsch und Englisch (`pogo.html`, `en/pogo.html`).
+4. Später: echte Läden, echte Songs, Einstieg über die Säule („POGO!“-Sticker, „Pogo zu [Band]“ im Terminblatt).
+
+## Nicht-Ziele
+
+- Keine Bestenliste auf einem Server, kein Konto, keine Daten an Dritte.
+- Kein fotorealistisches 3D, keine fremden 3D-Modelle.
+- Keine Musik ohne Freigabe; kein Download fremder Songs von irgendwo.
+
+## Anti-Ziele
+
+- Hinten-Stehen lohnt sich.
+- Frust: unfaire Treffer aus dem Nichts, zu lange Runden, lange Ladezeit.
+- Das Spiel bremst die restliche Seite (es lädt nur auf seiner eigenen Seite).
+- Handy wird heiß oder ruckelt stark.
+
+## Ansätze
+
+1. **Eigene Seite in der FOF-Seite, Code in `js/pogo/`, three.js aus `assets/vendor/` (gewählt; Mark hat das Wie überlassen).** Spielregeln als reine Module mit Node-Tests, wie bei der Bandseite. Zwischenstände zum Anspielen als Artefakt mit genau diesem Code.
+2. Eigenes Projekt neben der Seite – verworfen, Bands/Konzerte/Säule müssten später doppelt angebunden werden.
+3. Spiele-Engine (Phaser, Babylon) – verworfen, neue große Abhängigkeit, three.js reicht.
+
+## Etappen
+
+- **Etappe 1 (jetzt):** komplette Spielmechanik mit eigenem Beat und den drei Beispiel-Läden aus dem Entwurf (Kellerclub, AJZ-Halle, Festivalwiese): zwei Werte und Ergebnis, Zonen inkl. Rand schubst zurück, Springen mit Takt-Bonus, erste Reihe mit Gedränge und Ordner, „DU DA!“, Wurfgeschenke, Mikro-Moment, Stagedive, Endbild mit Titel und Link zur Säule. DE/EN. Test als Artefakt; **nicht** auf der Seite verlinkt und **nicht** veröffentlicht.
+- **Etappe 2:** echte Läden von Mark (Name, Eigenheiten, ggf. seine Fotos als Vorlage), Andenken-Sammlung (auf dem Gerät gespeichert), kleine Aufgaben pro Song.
+- **Etappe 3:** echte Songs mit Freigabe (Datei, Ausschnitt, Songteile von Hand markiert, Freigabe-Eintrag: Band, Datum, wer zugestimmt hat), Endbild mit Band und nächstem Konzert, Einstieg über die Säule, Veröffentlichung auf Marks Ja.
+
+## Technik (Claudes Entscheidungen)
+
+- three.js r169 per `import()` aus `assets/vendor/three.module.min.js`; Schriften aus `css/tokens.css`. Ohne WebGL: Hinweis und Link zur Säule.
+- Reine Logik ohne three.js/DOM in eigenen Modulen mit Node-Tests: Songteile und Takt, Zonen (Rand/Pit/Mitte/erste Reihe/Kante), Punkte pro Sekunde, Ergebnis und Titel, Takt-Treffer beim Springen und beim Mikro-Moment, Rempler → verschüttete Menge.
+- Höchstens ~40 Figuren, gemeinsame Geometrien/Materialien, Pixelverhältnis ≤ 1,75, Schatten nur vom mittleren Bühnenlicht, Rendern pausiert bei verstecktem Tab.
+- Musik: eigener Beat per WebAudio, startet erst nach Antippen, Ton-aus-Knopf.
+- Bewegung reduziert: kein Kamerawackeln, Texte ohne Flug-Animation.
+
+### Entscheidungen nach der Bauprüfung (Claude)
+
+- **Repo und Test:** Der Code liegt auf dem Zweig `pogo` als `pogo.html`, `en/pogo.html`, `js/pogo/`, `css/pogo.css`. Die Seiten kommen in Etappe 1 **nicht** in die Liste von `tools/veroeffentlichen.sh` und werden nirgends verlinkt. Zum Anspielen wird dieselbe Seite als Mehrdatei-Artefakt veröffentlicht (`files`: die Module, `assets/vendor/three.module.min.js`, die CSS-Dateien und die Schriften aus `assets/fonts/`); es gibt kein Build-Skript und keine zweite Fassung. Lädt das Artefakt die eigenen Schriften nicht, greifen die Ersatzschriften aus `css/tokens.css`; das ist für den Test in Ordnung.
+- **Aussehen:** Der Entwurf lief mit three r160 und alten Lichtwerten. Die Szene wird für r169 (physikalische Lichtstärken) neu abgestimmt; Ziel ist dieselbe Stimmung (dunkel, rotes/weißes Bühnenlicht, Nebel, Comic-Figuren mit Iro und Rückenaufnähern), nicht pixelgleich. Keine eigene Portierungs-Etappe.
+- **Leistung:** Zielgerät ist ein mittleres Handy (drei, vier Jahre alt); Ziel 30 Bilder pro Sekunde, am Rechner 60. Höchstens etwa 300 Zeichenaufrufe: feste Teile einer Figur (Rumpf, Kopf, Frisur, Aufnäher, Stiefel) werden je Figur zu einer Geometrie zusammengefügt, nur Arme und Beine bleiben beweglich. Schatten nur vom mittleren Bühnenlicht, auf Handys mit kleiner Schattenkarte. Eine versteckte Anzeige (`?fps` in der Adresse) zeigt Bilder pro Sekunde und Zeichenaufrufe zum Prüfen.
+
+## Dem Bauenden überlassen
+
+Genaue Punktwerte und Wahrscheinlichkeiten (Ziel: hinten < Pit < vorn, mit spürbarem Risiko vorn), Aussehen von Ordner, Gitter, Wurfgeschenken, Kamera beim Stagedive, Texte der Titel im Stil der Seite.
+
+## Nachtrag 21.11.2026: erster Song vorgezogen (aus Etappe 3)
+
+Mark wünscht als ersten Song „Es geht noch lauter“ von Dan Ganove; Dan hat Mark die Verwendung erlaubt (mündlich, Freund), Mark hat die MP3 geliefert. Auswertung (Claude, SoundCraft + eigene Messung): 135,94 BPM, erster Schlag 1,513 s, Song endet bei 58 s. Teile (Claudes Vorschlag, von Mark freigegeben, beim Anspielen korrigierbar): Intro 1,5–7, Strophe 7–22, Refrain 22–30, Strophe 30–37, Break 37–40, Aufbau 40–43, letzter Refrain 43–58 s.
+
+- Songs stehen in `js/pogo/songs.js` mit Datei, BPM, Startversatz, Ende, Teilen, Zeitpunkten (Mikro-Moment, Würfe, Wall of Death) und einem **Freigabe-Eintrag** (wer, über wen, wann, wie). Ohne Freigabe-Eintrag kein Song (Test).
+- Der eigene Beat bleibt als Auswahl „Eigener Beat“ und als Ersatz, wenn die Datei nicht lädt.
+- Am Start wählt man Laden und Song; am Ende stehen Band, Song und – wenn `data/bands.json` lädt – ihr nächstes Konzert.
+- Datei: `assets/audio/dan-ganove-es-geht-noch-lauter.mp3` (Original von Mark, 1,5 MB).
+
+## Etappe 2 (21.11.2026): echte Läden, Andenken, Aufgaben
+
+Marks Auswahl: Zentrum Altenberg (Oberhausen), Druckluft (Oberhausen, **Innen- und Außenbühne**), PITCHER (Düsseldorf). Mark: „nicht zu genau nehmen“ – ungefährer Nachbau im Stil des Spiels, Instagram-Fotos nur als grober Eindruck (keine fremden Fotos im Spiel).
+
+Die Beispiel-Läden (Kellerclub, AJZ-Halle, Festivalwiese) werden ersetzt durch:
+
+| Laden | Eindruck (Instagram/Web) | Eigenheit im Spiel (Claude) |
+|---|---|---|
+| PITCHER, Düsseldorf | dunkler, enger Raum, Bühne blau/lila mit hellen Spots, warmes Rot, Deckenventilatoren, Bilderwand hinter der Bühne | eng, niedrige Decke mit Ventilatoren (kein Crowdsurfen), Bilderwand, viele Rempler |
+| Druckluft innen, Oberhausen | Clubraum, Graffiti überall | kleiner Raum, Graffiti-Wände, Punkpublikum dicht |
+| Druckluft draußen, Oberhausen | flaches Gebäude mit großem „druckluft“-Schriftzug, Graffiti-Wände, Hof | Open Air am Abend, Gebäude mit Schriftzug hinter der Bühne, Bierbänke am Rand, Crowdsurfer |
+| Zentrum Altenberg, Oberhausen | große Halle (ehem. Zinkfabrik), Stahltraversen über der Bühne, blaues Licht | groß, hohe Halle mit Traversen, Circle Pit und Wall of Death |
+
+**Andenken-Sammlung (Claude):** Gefangene Plektren, Drumsticks und Setlisten bleiben auf dem Gerät gespeichert (localStorage, mit try/catch; ohne Speicher geht nur die Runde). Gezählt je Song bzw. Band. Im Startbild zeigt eine Zeile „Deine Kutte: 3 Plektren, 1 Drumstick, …“. Kein Server.
+
+**Aufgaben pro Runde (Claude):** Vor jeder Runde werden 2 Aufgaben aus einem Vorrat gezogen und im Startbild/HUD gezeigt; erfüllt = +250 Punkte, im Endbild abgehakt. Vorrat: im letzten Refrain in der ersten Reihe stehen; das Plektrum fangen; 10 s in der Mitte; Stagedive mit Bier > 50 % landen; 8-mal im Takt springen; einen Crowdsurfer überleben ohne Treffer (nur wo Crowdsurfer kommen).
+
+## Etappe 3 (21.11.2026): Motive, Schurken, Zugabe, Tour
+
+Marks Auswahl: Motive auf dem Rücken, Modeschnösel, Zugabe und Sänger in der Menge, Fascho rausschieben, Läden als Tour freispielen mit Punk-Rang. Ausgestaltung: Claude.
+
+1. **Motive auf dem Rücken.** Rückenaufnäher zeigen echte FOF-Motive (`tools/motive.json`, weiße Fassung aus `assets/img/`, als 256er-Textur). Ein Build-Skript schreibt die Motivliste nach `js/pogo/motive.js` (mit `--pruefen` wie die anderen Bauskripte). Pro Runde trägt **eine** Person ein seltenes Motiv mit goldenem Schimmer; wer 3 Sekunden direkt hinter ihr bleibt (≤ 1 m, dahinter), hat es „abgeguckt“: +200, das Motiv kommt in die Kutte und erscheint ab dann auf deinem eigenen Rücken. Im Endbild: „Abgeguckt: Motiv 007 · Skate or Die“ mit Link zur Motivwand der Seite.
+2. **Modeschnösel.** Ab der zweiten Strophe drängelt ein Schnösel (helle Markenjacke, weiße Sneaker, Handy am Selfie-Stick) nach vorn. Ist er in deiner Nähe (< 3 m), blitzt er alle ~4 s (Bild kurz hell; bei reduzierter Bewegung nur abgedunkelt) und du verlierst kurz Punkte-Tempo. Drei kräftige Rempler von dir → er fliegt raus: +300, „FUCK OFF FASHION!“.
+3. **Fascho rausschieben.** Einmal pro Runde taucht am Rand ein Fascho auf (Bomberjacke, Glatze, **keine** Symbole). „NAZIS RAUS!“: Der ganze Pit dreht sich zu ihm und schiebt ihn zum Ausgang. Bist du dabei (≤ 1,5 m), +200. Nach ~6 s ist er weg.
+4. **Zugabe und Sänger in der Menge.** Nach dem Song ruft die Menge „ZUGABE!“: 5 s im Takt tippen; ab 6 Treffern kommt eine Zugabe (letzter Refrain noch einmal, ~15 s, Punkte ×1,5). In der Zugabe springt der Sänger in die Menge und wird getragen; wer unter ihm bleibt (≤ 1 m), sammelt Punkte, wer ihn zu lange allein lässt (> 2 s), hört „ER FÄLLT!“ – keine Strafe, nur keine Punkte mehr.
+5. **Tour und Punk-Rang.** Reihenfolge PITCHER → Druckluft drinnen → Druckluft draußen → Zentrum Altenberg. Der nächste Laden ist frei, sobald im vorigen ein Ergebnis von mindestens 1500 / 2500 / 3500 erreicht wurde. Jeder Laden der Tour ist wilder (Kraft ×1,0 / 1,1 / 1,2 / 1,3). Punk-Rang aus der Summe aller Ergebnisse: Rand-Steher (0), Pogo-Lehrling (2000), Pit-Sau (8000), Pit-Legende (20000). Bestwerte, Rang und Freischaltung bleiben auf dem Gerät (localStorage, abgesichert wie die Kutte). Im Startbild: Rang, gesperrte Läden mit Schloss und „noch X Punkte“.

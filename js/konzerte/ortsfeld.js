@@ -1,8 +1,8 @@
 // Feld „PLZ / Ort“ mit Vorschlagsliste (Combobox nach ARIA-Muster).
 // Die Ortstabelle lädt erst beim ersten Fokus oder Tippen, danach bleibt dasselbe Objekt im Speicher
 // (sucheOrt() hängt seinen Index an genau dieses Objekt). Der getippte Ort wird nirgends gespeichert.
-import { sucheOrt } from "./ortssuche.js?v=31";
-import { t } from "./texte.js?v=31";
+import { sucheOrt } from "./ortssuche.js?v=32";
+import { t } from "./texte.js?v=32";
 
 const VERZOEGERUNG_MS = 150;
 

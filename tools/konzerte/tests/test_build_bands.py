@@ -52,5 +52,17 @@ class Seiten(unittest.TestCase):
         self.assertIn('class="plakat plakat--papier"', bb.ersetze(html, daten, "de"))
 
 
+    def test_pogo_knopf_nur_mit_song(self):
+        mit = dict(bb.lade()["bands"][0], id="xy", pogo="xy-song")
+        ohne = {k: v for k, v in dict(bb.lade()["bands"][1], id="ohne").items() if k != "pogo"}
+        html = "<!-- bands:plakate:start -->\n<!-- bands:plakate:end -->"
+        for sp, text in (("de", "POGO zu"), ("en", "POGO to")):
+            with self.subTest(sp):
+                aus = bb.ersetze(html, {"bands": [mit, ohne]}, sp)
+                self.assertEqual(aus.count('href="pogo.html?song=xy-song"'), 1)
+                self.assertIn(text, aus)
+                self.assertEqual(aus.count("plakat__pogo"), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

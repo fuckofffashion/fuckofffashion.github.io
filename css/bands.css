@@ -120,6 +120,11 @@
   font: 400 1rem/1.2 var(--font-edding); color: #a50f13; text-decoration: underline; text-underline-offset: .2em;
 }
 .plakat__web { font-size: .8rem; }
+.plakat__pogo { margin-top: .4rem; }
+.plakat__pogo .btn { display: inline-block; color: var(--paper); }
+.plakat__pogo .btn:hover { color: var(--ink); }
+.bs__pogo { margin-top: .6rem; font-weight: 700; }
+.bs__pogo a { display: inline-block; padding-block: .6rem; }
 .plakat__web a { display: inline-block; padding-block: .8rem; }
 
 /* Mit JS: Zettel liegt hinter dem Plakat, das Plakat reißt bis auf einen Streifen ab */

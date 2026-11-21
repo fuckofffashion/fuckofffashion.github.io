@@ -3,7 +3,7 @@
   "bands": [
     { "id": "dan-ganove", "name": "Dan Ganove", "logo": "dan-ganove.webp",
       "logo_quelle": "https://static.wixstatic.com/media/1093e8_c35bda69ecc54d05b6f301076c8a7d78~mv2.png",
-      "web": "https://dan66713.wixsite.com/dan-punkrock", "plakat": "papier",
+      "web": "https://dan66713.wixsite.com/dan-punkrock", "plakat": "papier", "pogo": "dan-ganove-lauter",
       "beschreibung": { "de": "Akustikpunk aus Oberhausen", "en": "Acoustic punk from Oberhausen" } },
     { "id": "alarmsignal", "name": "Alarmsignal", "logo": "alarmsignal.webp",
       "logo_quelle": "https://www.alarmsignal-punkrock.de/wp-content/uploads/2024/09/Alarmsignal_logo.webp",
