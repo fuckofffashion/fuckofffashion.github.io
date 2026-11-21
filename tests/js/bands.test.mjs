@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { isoLokal, tageBis, kuenftige, istBald, ordne, naechster, sichtbare } from "../../js/bands/saeulen.js";
+import { TEXTE, t as text } from "../../js/bands/texte.js";
 
 const HEUTE = "2026-11-21";
 const t = (datum) => ({ datum, zeit: null, laden: "L", stadt: "S" });
@@ -55,4 +56,17 @@ test("ordne: ohne Daten bleibt die Reihenfolge", () => {
 test("naechster: erster künftiger oder null", () => {
   assert.equal(naechster([t("2026-11-20"), t("2026-11-22")], HEUTE).datum, "2026-11-22");
   assert.equal(naechster([], HEUTE), null);
+});
+
+test("Bandtexte: beide Sprachen gleiche Schlüssel und Arten", () => {
+  assert.deepEqual(Object.keys(TEXTE.en).sort(), Object.keys(TEXTE.de).sort());
+  for (const k of Object.keys(TEXTE.de)) assert.equal(typeof TEXTE.en[k], typeof TEXTE.de[k], k);
+  assert.equal(TEXTE.de.bald, "BALD"); assert.equal(TEXTE.en.bald, "SOON");
+  assert.equal(text("mehr", { n: 2 }, "en"), "+ 2 more");
+  assert.equal(text("mehr", { n: 3 }, "de"), "+ 3 weitere");
+  assert.deepEqual(TEXTE.en.sticker.punk, ["PUNK'S", "ALIVE"]);
+  assert.deepEqual(TEXTE.de.sticker.kauf, ["KAUF", "NIX"]);
+  assert.equal(TEXTE.de.kopfzeile, "LIVE GESEHEN · FÜR GUT BEFUNDEN");
+  assert.equal(TEXTE.en.zettelKopf, "NEXT GIGS");
+  assert.deepEqual(TEXTE.en.zettelStill, ["Quiet for now.", "They'll be back."]);
 });
