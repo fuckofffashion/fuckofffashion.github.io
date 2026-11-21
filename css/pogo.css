@@ -51,7 +51,9 @@
 .pogo__ton .btn { min-height: 2.75rem; padding: 0 .8rem; font-size: .7rem; }
 .pogo__fps { position: absolute; left: .6rem; bottom: .6rem; margin: 0; font: 700 .75rem/1 var(--font-zine); color: #58d26a; background: rgba(0,0,0,.6); padding: .3rem .4rem; }
 
-.pogo__overlay { position: absolute; inset: 0; z-index: 3; display: grid; align-content: center; gap: .8rem; padding: 1.2rem; background: rgba(11,10,10,.84); overflow: auto; }
+.pogo__overlay { position: absolute; inset: 0; z-index: 3; display: grid; align-content: start; align-content: safe center; gap: .8rem; padding: 1.2rem; background: rgba(11,10,10,.84); overflow: auto; }
+/* Startknopf klebt unten, auch wenn das Startbild scrollt (Handy) */
+#pogo-los { position: sticky; bottom: 0; z-index: 1; justify-self: stretch; justify-content: center; }
 .pogo__overlay > * { margin: 0; }
 .pogo__overlay h2 { font: 400 clamp(1.8rem, 5.5vw, 2.6rem)/1 var(--font-shout); text-transform: uppercase; }
 .pogo__overlay p { color: var(--paper-2); max-width: 52ch; }
@@ -86,5 +88,10 @@
   .pogo__spiel { aspect-ratio: 2 / 3; width: min(100%, calc((100svh - 2rem) * .667)); }
   .pogo__overlay { gap: .55rem; padding: .9rem; }
   .pogo__laden span { display: none; }
+  #pogo-songs .pogo__laden span { display: block; }
+  #pogo-laeden { grid-template-columns: 1fr 1fr; gap: .4rem; }
+  #pogo-laeden .pogo__laden { padding: .4rem .5rem; min-height: 0; }
+  #pogo-laeden .pogo__laden b { font-size: .92rem; }
+  #pogo-laeden .pogo__laden em { font-size: .64rem; }
   .pogo__overlay p { font-size: .85rem; }
 }
