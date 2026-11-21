@@ -79,12 +79,16 @@ test("Pogo-Texte: DE und EN gleich aufgebaut, alle Titel da", async () => {
     assert.equal(typeof TEXTE[sp].titel[k], "string", `${sp} ${k}`);
   }
   assert.equal(TEXTE.de.randSchubs, "Was stehst du hier rum?");
-  assert.deepEqual(Object.keys(TEXTE.en.laeden).sort(), ["halle", "keller", "wiese"]);
+  assert.deepEqual(Object.keys(TEXTE.en.laeden).sort(), ["altenberg", "druckluftDraussen", "druckluftInnen", "pitcher"]);
+  assert.deepEqual(Object.keys(TEXTE.de.laeden).sort(), ["altenberg", "druckluftDraussen", "druckluftInnen", "pitcher"]);
 });
 
 test("Läden: Gitter vor dem Pit, Mitte liegt in der Mitte", async () => {
   const { LAEDEN } = await import("../../js/pogo/laeden.js");
-  assert.deepEqual(Object.keys(LAEDEN).sort(), ["halle", "keller", "wiese"]);
+  assert.deepEqual(Object.keys(LAEDEN).sort(), ["altenberg", "druckluftDraussen", "druckluftInnen", "pitcher"]);
+  assert.deepEqual(Object.entries(LAEDEN).filter(([, l]) => l.draussen).map(([id]) => id), ["druckluftDraussen"]);
+  assert.equal(LAEDEN.pitcher.surfer, false); assert.equal(LAEDEN.altenberg.wall, true);
+  for (const l of Object.values(LAEDEN)) assert.ok(Array.isArray(l.deko) && l.deko.length, "deko");
   for (const [id, l] of Object.entries(LAEDEN)) {
     assert.ok(l.gitterZ > l.z[0], id);
     assert.equal(zone(0, (l.gitterZ + l.z[1]) / 2, l), "mitte", id);

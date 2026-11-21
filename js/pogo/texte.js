@@ -28,9 +28,10 @@ export const TEXTE = {
       nass: "Mehr auf dem Shirt als im Becher.",
     },
     laeden: {
-      keller: { name: "Kellerclub", text: "Eng, Pfeiler mitten im Pit, Decke so tief, dass keiner crowdsurft." },
-      halle: { name: "AJZ-Halle", text: "Viel Platz, die Leute nehmen Anlauf. Circle Pit und Wall of Death." },
-      wiese: { name: "Festivalwiese", text: "Draußen, Regen, Matsch. Im Schlamm kommt keiner vom Fleck." },
+      pitcher: { name: "PITCHER, Düsseldorf", text: "Eng und dunkel, Deckenventilatoren, Bilderwand. Decke zu tief zum Crowdsurfen." },
+      druckluftInnen: { name: "Druckluft drinnen", text: "Kleiner Clubraum in Oberhausen, Graffiti überall, Punks dicht an dicht." },
+      druckluftDraussen: { name: "Druckluft draußen", text: "Open Air im Hof, Graffiti-Wände, Bierbänke. Crowdsurfer unterm Abendhimmel." },
+      altenberg: { name: "Zentrum Altenberg", text: "Große Halle der alten Zinkfabrik, Traversen über der Bühne. Circle Pit und Wall of Death." },
     },
   },
   en: {
@@ -56,9 +57,10 @@ export const TEXTE = {
       nass: "More on your shirt than in your cup.",
     },
     laeden: {
-      keller: { name: "Basement club", text: "Tight, a pillar in the middle of the pit, ceiling too low to crowdsurf." },
-      halle: { name: "Squat hall", text: "Lots of room, people take a run-up. Circle pit and wall of death." },
-      wiese: { name: "Festival field", text: "Outside, rain, mud. Nobody gets anywhere in the mud." },
+      pitcher: { name: "PITCHER, Düsseldorf", text: "Tight and dark, ceiling fans, a wall of pictures. Ceiling too low to crowdsurf." },
+      druckluftInnen: { name: "Druckluft inside", text: "Small club room in Oberhausen, graffiti everywhere, punks packed tight." },
+      druckluftDraussen: { name: "Druckluft outside", text: "Open air in the yard, graffiti walls, beer benches. Crowdsurfers under the evening sky." },
+      altenberg: { name: "Zentrum Altenberg", text: "Big hall of the old zinc factory, trusses over the stage. Circle pit and wall of death." },
     },
   },
 };

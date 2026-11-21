@@ -1,11 +1,14 @@
-// Beispiel-Läden für Etappe 1 (echte Läden folgen in Etappe 2). Maße in Metern.
+// Echte Läden (Etappe 2), ungefähr nachgebaut – Mark: „nicht zu genau nehmen“. Maße in Metern.
 // z[0] = Bühnenseite, z[1] = hinten; gitterZ = Absperrgitter vor der Bühne.
+// deko: Bauteile, die szene.js je Laden aufstellt; licht: Grundstimmung der Bühne.
 
 export const LAEDEN = {
-  keller: { x: 3.3, z: [-4.2, 4.2], gitterZ: -3.6, leute: 14, pfeiler: { x: 0.2, z: 0.4, r: 0.32 }, decke: 2.75,
-    surfer: false, wall: false, matsch: false, boden: "#24201d", wand: "#1d1715" },
-  halle: { x: 6.2, z: [-5.2, 6], gitterZ: -4.6, leute: 22, pfeiler: null, decke: null,
-    surfer: true, wall: true, matsch: false, boden: "#2a2420", wand: "#18120f" },
-  wiese: { x: 6.2, z: [-5.2, 6], gitterZ: -4.6, leute: 18, pfeiler: null, decke: null,
-    surfer: true, wall: false, matsch: true, boden: "#2d3020", wand: null },
+  pitcher: { x: 3.4, z: [-4.0, 4.0], gitterZ: -3.4, leute: 14, pfeiler: null, decke: 2.9, draussen: false,
+    surfer: false, wall: false, matsch: false, boden: "#2a1c18", wand: "#3a1612", deko: ["ventilatoren", "bilderwand"], licht: "lila" },
+  druckluftInnen: { x: 3.8, z: [-4.2, 4.6], gitterZ: -3.6, leute: 16, pfeiler: null, decke: 3.2, draussen: false,
+    surfer: false, wall: false, matsch: false, boden: "#22201e", wand: "#262422", deko: ["graffiti"], licht: "rot" },
+  druckluftDraussen: { x: 6.0, z: [-5.0, 6.0], gitterZ: -4.4, leute: 20, pfeiler: null, decke: null, draussen: true,
+    surfer: true, wall: false, matsch: false, boden: "#34312c", wand: null, deko: ["schriftzug", "graffiti", "baenke"], licht: "abend" },
+  altenberg: { x: 6.4, z: [-5.4, 6.4], gitterZ: -4.8, leute: 22, pfeiler: null, decke: null, draussen: false,
+    surfer: true, wall: true, matsch: false, boden: "#2a2522", wand: "#1c1714", deko: ["traversen"], licht: "blau" },
 };

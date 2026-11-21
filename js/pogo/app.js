@@ -22,7 +22,7 @@ const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
 let songId = SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
-let ladenId = "keller", L, leute = [], figuren = new Map(), ich, becher;
+let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
