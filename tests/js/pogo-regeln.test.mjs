@@ -41,8 +41,8 @@ test("imTakt: 80 ms um die Viertel", () => {
 test("verschuettet: in der Luft nichts, Schwelle, Deckel, Rucksack", () => {
   assert.equal(verschuettet(3, { inLuft: true }), 0);
   assert.equal(verschuettet(1.5, {}), 0);
-  assert.ok(Math.abs(verschuettet(3, {}) - 6.3) < 1e-9);
-  assert.equal(verschuettet(10, {}), 14);
+  assert.ok(Math.abs(verschuettet(3, {}) - 3.15) < 1e-9); // halbiert nach Spieletest 2
+  assert.equal(verschuettet(10, {}), 7);
   assert.ok(verschuettet(1.2, { rucksack: true }) > 0);
 });
 
@@ -70,7 +70,7 @@ test("geste: kurz tippen springt, ziehen läuft, langes Halten nichts", () => {
 
 test("Konstanten", () => {
   assert.equal(STAGEDIVE_AB, 4);
-  assert.equal(GEDRAENGE, 1.5);
+  assert.equal(GEDRAENGE, 0.75);
   assert.deepEqual(SPRUNG, { bonus: 15, daneben: 3 });
   assert.deepEqual(BONUS, { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600, abgeguckt: 200, schnoesel: 300, fascho: 200 });
 });
@@ -156,10 +156,10 @@ test("Stagedive lohnt sich: wenige Griffe, kleiner Verlust, Punkte beim Tragen, 
 
 test("Stagedive-Bonus nur mit mindestens halbem Becher", async () => {
   const { stagediveBonus } = await import("../../js/pogo/regeln.js");
-  assert.equal(stagediveBonus(100), 600);
-  assert.equal(stagediveBonus(50), 600);
-  assert.equal(stagediveBonus(49.9), 0);
-  assert.equal(stagediveBonus(0), 0);
+  assert.equal(stagediveBonus(100, 0, 0), 600);
+  assert.equal(stagediveBonus(50, 0, 0), 600);
+  assert.equal(stagediveBonus(49.9, 0, 0), 0);
+  assert.equal(stagediveBonus(0, 0, 0), 0);
 });
 
 test("Stillstehen: nach 2 s nur noch halbe Punkte", async () => {
@@ -169,4 +169,27 @@ test("Stillstehen: nach 2 s nur noch halbe Punkte", async () => {
   assert.equal(stillFaktor(2), 1);
   assert.equal(stillFaktor(2.01), 0.5);
   assert.equal(stillFaktor(30), 0.5);
+});
+
+test("Sprung ist kürzer als ein Schlag, damit jeder Tipp im Takt zählt", async () => {
+  const { sprungDauer } = await import("../../js/pogo/regeln.js");
+  for (const bpm of [100, 135.94, 176, 200]) assert.ok(sprungDauer(bpm) < 60 / bpm, String(bpm));
+  assert.equal(sprungDauer(60), 0.38);
+  assert.ok(Math.abs(sprungDauer(176) - 0.85 * 60 / 176) < 1e-9);
+});
+
+test("Stagedive-Bonus hängt an abgewehrten Griffen und halbem Becher", async () => {
+  const { stagediveBonus } = await import("../../js/pogo/regeln.js");
+  assert.equal(stagediveBonus(100, 3, 3), 600);
+  assert.equal(stagediveBonus(100, 0, 3), 0);
+  assert.equal(stagediveBonus(100, 2, 3), 400);
+  assert.equal(stagediveBonus(49, 3, 3), 0);
+  assert.equal(stagediveBonus(80, 0, 0), 600); // kein Griff kam: voller Bonus
+});
+
+test("Wilder Teil hängt am Song, nicht an der Kraft der Menge", async () => {
+  const { wilderTeil } = await import("../../js/pogo/regeln.js");
+  assert.equal(wilderTeil({ kraft: 1 }), true);
+  assert.equal(wilderTeil({ kraft: 1.4 }), true);
+  assert.equal(wilderTeil({ kraft: 0.8 }), false);
 });

@@ -7,6 +7,7 @@
 /* Kopf auf dem Rechner kompakt, damit Spielfeld und Startknopf ins Bild passen */
 @media (min-width: 760px) { .pogo__kopf .shout--1 { font-size: clamp(2.6rem, 5vw, 4rem); } .pogo__kopf { gap: .4rem; } }
 .pogo__overlay .pogo__kurz { font: 400 .78rem/1.45 var(--font-zine); }
+.pogo__wert--ergebnis b { color: var(--bier); }
 
 .pogo__spiel {
   position: relative; margin: var(--sp-4) auto 0; overflow: hidden; background: #151110;
@@ -57,7 +58,7 @@
 .pogo__overlay { position: absolute; inset: 0; z-index: 3; display: grid; align-content: start; align-content: safe center; gap: .8rem; padding: 1.2rem; background: rgba(11,10,10,.84); overflow: auto; }
 /* Startknopf klebt unten, auch wenn das Startbild scrollt (Handy) */
 #pogo-los { position: sticky; bottom: 0; z-index: 1; justify-self: stretch; justify-content: center; }
-.pogo__overlay > * { margin: 0; }
+.pogo .pogo__overlay > * { margin: 0; } /* stärker als .page h2, sonst erbt die Überschrift großen Abstand */
 .pogo__overlay h2 { font: 400 clamp(1.8rem, 5.5vw, 2.6rem)/1 var(--font-shout); text-transform: uppercase; }
 .pogo__overlay p { color: var(--paper-2); max-width: 52ch; }
 .pogo__beispiel { font: 700 .7rem/1 var(--font-zine); letter-spacing: .1em; text-transform: uppercase; color: var(--bier) !important; }

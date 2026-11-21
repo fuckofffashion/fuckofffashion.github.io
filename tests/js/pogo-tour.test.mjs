@@ -13,7 +13,7 @@ const kaputt = { getItem() { throw new Error("x"); }, setItem() { throw new Erro
 
 test("Tour: Reihenfolge, Ziele, Kraft", () => {
   assert.deepEqual(TOUR, ["pitcher", "druckluftInnen", "druckluftDraussen", "altenberg"]);
-  assert.deepEqual(ZIELE, [1500, 2500, 3500, 4500]);
+  assert.deepEqual(ZIELE, [750, 1250, 1750, 2250]);
   assert.deepEqual(KRAFT, [1, 1.1, 1.2, 1.3]);
   assert.equal(kraftFaktor("druckluftDraussen"), 1.2);
   assert.equal(kraftFaktor("unbekannt"), 1);
@@ -21,20 +21,20 @@ test("Tour: Reihenfolge, Ziele, Kraft", () => {
 
 test("Tour: alle Läden offen, Ziel je Laden als Abzeichen", () => {
   let t = leseTour(speicher());
-  assert.equal(fehlt(t, "altenberg"), 4500);
+  assert.equal(fehlt(t, "altenberg"), 2250);
   assert.equal(geschafft(t, "pitcher"), false);
-  t = mitErgebnis(t, "altenberg", 4499);
+  t = mitErgebnis(t, "altenberg", 2249);
   assert.equal(fehlt(t, "altenberg"), 1);
   assert.equal(geschafft(t, "altenberg"), false);
-  t = mitErgebnis(t, "altenberg", 4500);
+  t = mitErgebnis(t, "altenberg", 2250);
   assert.equal(geschafft(t, "altenberg"), true);
   assert.equal(fehlt(t, "altenberg"), 0);
-  t = mitErgebnis(t, "pitcher", 1500);
+  t = mitErgebnis(t, "pitcher", 750);
   assert.equal(geschafft(t, "pitcher"), true);
   assert.equal(geschafft(t, "druckluftInnen"), false);
   t = mitErgebnis(t, "pitcher", 200); // Bestwert bleibt
-  assert.equal(t.best.pitcher, 1500);
-  assert.equal(t.summe, 4499 + 4500 + 1500 + 200);
+  assert.equal(t.best.pitcher, 750);
+  assert.equal(t.summe, 2249 + 2250 + 750 + 200);
   assert.equal(geschafft(t, "unbekannt"), false);
 });
 

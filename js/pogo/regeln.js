@@ -42,7 +42,7 @@ export function imTakt(t, bpm = BPM, start = 0) {
 }
 
 export const SPRUNG = { bonus: 15, daneben: 3 };
-export const GEDRAENGE = 1.5;
+export const GEDRAENGE = 0.75; // halbiert nach Spieletest 2: Bier ist Ressource, kein Countdown
 export const STAGEDIVE_AB = 4;
 export const BONUS = { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600 };
 
@@ -51,7 +51,7 @@ export function verschuettet(schlag, { rucksack = false, inLuft = false } = {}) 
   if (inLuft) return 0;
   const s = schlag * (rucksack ? 1.6 : 1);
   if (s <= 1.6) return 0;
-  return Math.min(14, (s - 1.6) * 4.5);
+  return Math.min(7, (s - 1.6) * 2.25);
 }
 
 /** Ergebnis = Punkte × Bier; ein (fast) leerer Becher zählt wie BIER_MIN Prozent. */
@@ -86,8 +86,15 @@ export const songZeit = (audioZeit, start, latenz = 0) => Math.max(0, audioZeit 
 
 /** Stagedive: getragen werden bringt Punkte; wenige Hände greifen nach dem Becher, jede verpasste kostet wenig. */
 export const STAGEDIVE = { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 10, punkteProSekunde: 60, bonus: 600, bonusAbBier: 50 };
-/** Landebonus nur, wenn noch mindestens die Hälfte im Becher ist. */
-export const stagediveBonus = (bier) => (bier >= STAGEDIVE.bonusAbBier ? STAGEDIVE.bonus : 0);
+/** Landebonus: Anteil der abgewehrten Griffe, und nur mit mindestens halbem Becher. */
+export function stagediveBonus(bier, abgewehrt, griffe) {
+  if (bier < STAGEDIVE.bonusAbBier) return 0;
+  return griffe > 0 ? Math.round(STAGEDIVE.bonus * abgewehrt / griffe) : STAGEDIVE.bonus;
+}
+/** Sprungdauer: immer kürzer als ein Schlag, damit jeder Tipp im Takt zählt. */
+export const sprungDauer = (bpm) => Math.min(0.38, (0.85 * 60) / bpm);
+/** Wilder Teil (Refrain): bestimmt der Song, nicht die Kraft der Menge im Laden. */
+export const wilderTeil = (teil) => teil.kraft >= 1;
 /** Wer im Pit länger als STILL_AB Sekunden weder läuft noch springt, bekommt nur halbe Punkte. */
 export const STILL_AB = 2;
 export const stillFaktor = (stillSekunden) => (stillSekunden > STILL_AB ? 0.5 : 1);

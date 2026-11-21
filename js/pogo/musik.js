@@ -1,6 +1,6 @@
 // Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
-import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=32";
+import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=33";
 
 const ACHTEL = VIERTEL / 2;
 const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
@@ -51,11 +51,17 @@ export function erzeugeMusik() {
   }
   return {
     /** Lädt und dekodiert die Songdatei vorab (vor dem Antippen erlaubt); true, wenn sie bereit ist. */
-    async lade(url) {
-      if (puffer.has(url)) return true;
+    async lade(url, fortschritt = null) {
+      if (puffer.has(url)) { fortschritt?.(1); return true; }
       try {
         const ctx = kontext(); if (!ctx) return false;
-        const daten = await (await fetch(url)).arrayBuffer();
+        const antwort = await fetch(url), gesamt = Number(antwort.headers.get("content-length")) || 0;
+        let daten;
+        if (fortschritt && gesamt && antwort.body?.getReader) {
+          const leser = antwort.body.getReader(), teile = []; let n = 0;
+          for (;;) { const { done, value } = await leser.read(); if (done) break; teile.push(value); n += value.length; fortschritt(Math.min(1, n / gesamt)); }
+          const alles = new Uint8Array(n); let o = 0; for (const t of teile) { alles.set(t, o); o += t.length; } daten = alles.buffer;
+        } else daten = await antwort.arrayBuffer();
         puffer.set(url, await ctx.decodeAudioData(daten)); return true;
       } catch { return false; }
     },

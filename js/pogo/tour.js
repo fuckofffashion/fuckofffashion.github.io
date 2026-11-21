@@ -1,6 +1,6 @@
 // Tour: alle Läden offen; jeder Laden hat ein Punkteziel als Abzeichen. Punk-Rang aus allen Ergebnissen. Gespeichert auf dem Gerät.
 export const TOUR = ["pitcher", "druckluftInnen", "druckluftDraussen", "altenberg"];
-export const ZIELE = [1500, 2500, 3500, 4500];
+export const ZIELE = [750, 1250, 1750, 2250];
 export const KRAFT = [1, 1.1, 1.2, 1.3];
 export const RAENGE = [{ ab: 0, id: "randSteher" }, { ab: 2000, id: "pogoLehrling" }, { ab: 8000, id: "pitSau" }, { ab: 20000, id: "pitLegende" }];
 const SCHLUESSEL = "fof-pogo-tour-v1";

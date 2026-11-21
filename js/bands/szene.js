@@ -1,8 +1,8 @@
 // 3D-Litfaßsäule der Bandseite (three.js wird von app.js geladen und hereingereicht).
 // Vorlage für Aussehen und Verhalten: docs/superpowers/specs/2026-11-21-saeule-3d-entwurf.html.
-import { malCollage, malFOF, malPlakat, malZettel, malSprayA, malSticker, malRost, malFleck } from "./malen.js?v=32";
-import { R, BERUEHRUNG, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=32";
-import { TEXTE, tagDatum } from "./texte.js?v=32";
+import { malCollage, malFOF, malPlakat, malZettel, malSprayA, malSticker, malRost, malFleck } from "./malen.js?v=33";
+import { R, BERUEHRUNG, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=33";
+import { TEXTE, tagDatum } from "./texte.js?v=33";
 
 const KOERPER = { unten: 0.3, oben: 4.0 };
 const ZIEL = { y: 2.42 };

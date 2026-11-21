@@ -1,6 +1,6 @@
 // Szene von Pogo: Renderer, Licht, Laden mit Bühne, Band, Gitter und Ordner, Kamera hinter dir.
 // three.js wird hereingereicht (app.js lädt es aus assets/vendor/). Vorlage: docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html.
-import { baueFigur } from "./figuren.js?v=32";
+import { baueFigur } from "./figuren.js?v=33";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 
@@ -124,12 +124,13 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     if (deko.has("ventilatoren") && L.decke) {
       const blattGeo = new THREE.BoxGeometry(0.9, 0.02, 0.14), nabeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.18, 10);
       const schwarz = eigen(mat("#0e0e0e", { metalness: 0.3, roughness: 0.5 }));
-      for (const z of [L.gitterZ + 1.5, (L.gitterZ + L.z[1]) / 2, L.z[1] - 1.5]) {
-        const v = new THREE.Group(); v.position.set(0, L.decke - 0.25, z);
+      // seitlich und nicht direkt vor der Bühne, damit sie in der ersten Reihe nicht vor der Kamera hängen
+      [[-0.55, (L.gitterZ + L.z[1]) / 2], [0.55, L.z[1] - 1.5]].forEach(([fx, z]) => {
+        const v = new THREE.Group(); v.position.set(fx * L.x, L.decke - 0.15, z);
         const nabe = new THREE.Mesh(nabeGeo, schwarz); v.add(nabe);
         for (let k = 0; k < 4; k++) { const b = new THREE.Mesh(blattGeo, schwarz); b.rotation.y = (k * Math.PI) / 2; b.position.set(Math.cos((k * Math.PI) / 2) * 0.45, -0.05, -Math.sin((k * Math.PI) / 2) * 0.45); v.add(b); }
         raum.add(v); s.ventilatoren.push(v);
-      }
+      });
     }
     if (deko.has("bilderwand")) {
       const bilder = textur(leinwand(1024, 512, (x, w, h) => {
