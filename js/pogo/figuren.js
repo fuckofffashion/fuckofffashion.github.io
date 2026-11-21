@@ -167,44 +167,41 @@ export function becherStand(b, anteil, verwaessert = false) {
   b.userData.schaum.position.y = -0.065 + h + 0.005; b.userData.schaum.visible = anteil > 0.03;
 }
 
+/* ---------- Skelett für das Outro (Ansichten von Mark, im Stil von Dan Ganoves Logo) ---------- */
+export const SKELETT_BILDER = {
+  vorne: "assets/img/pogo/dan-skelett-vorne-oben.webp", kiefer: "assets/img/pogo/dan-skelett-vorne-kiefer.webp",
+  dreiviertel: "assets/img/pogo/dan-skelett-dreiviertel.webp", links: "assets/img/pogo/dan-skelett-links.webp",
+  rechts: "assets/img/pogo/dan-skelett-rechts.webp", hinten: "assets/img/pogo/dan-skelett-hinten.webp",
+};
+/** Welche Ansicht passt zum Blickwinkel (Grad; 0 = Kamera genau vor der Figur, positiv = Kamera rechts von ihr). */
+export function skelettAnsicht(winkel) {
+  const a = ((winkel + 540) % 360) - 180, b = Math.abs(a);
+  if (b <= 20) return { bild: "vorne", spiegeln: false };
+  if (b <= 55) return { bild: "dreiviertel", spiegeln: a < 0 };
+  if (b <= 125) return { bild: a > 0 ? "rechts" : "links", spiegeln: false };
+  return { bild: "hinten", spiegeln: false };
+}
 /**
- * Totenkopf wie im Bandlogo von Dan Ganove (Outro): knochenweißer Schädel, große runde Augen mit Ring,
- * Nase, Zahnreihen, beweglicher Unterkiefer, schwarzer Hut mit Krempe. Blickrichtung −z (wie das Gesicht der Figuren).
- * Wird über den Kopf einer Figur gesetzt (Mitte 0/1,56/0 im Körper) und überdeckt ihn.
+ * Skelett-Büste als Bildtafel (Kopf mit Mütze, Brustkorb, Schulterstummel), 0,95 m hoch.
+ * texturen: { vorne, kiefer, dreiviertel, links, rechts, hinten } als THREE.Texture.
+ * Mittelpunkt liegt auf Brusthöhe; Blickrichtung −z wie die Figuren (Tafel ist dafür gedreht).
  */
-export function baueSchaedel(THREE) {
-  const geos = [], mats = [];
-  const merk = (x, arr) => (arr.push(x), x);
-  const knochen = merk(new THREE.MeshStandardMaterial({ color: 0xf1ede4, roughness: 0.55, emissive: 0x2a2724 }), mats);
-  const schwarz = merk(new THREE.MeshBasicMaterial({ color: 0x0b0a0a }), mats);
-  const weiss = merk(new THREE.MeshBasicMaterial({ color: 0xf6f3ec }), mats);
-  const hutMat = merk(new THREE.MeshStandardMaterial({ color: 0x141212, roughness: 0.8 }), mats);
-  const teil = (geo, mat, x, y, z) => { geos.push(geo); const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); return m; };
+export function baueSkelett(THREE, texturen) {
+  const H = 0.95, B = H * 0.75, KIEFER_OBEN = 259 / 512, KIEFER_UNTEN = 299 / 512;
   const g = new THREE.Group();
-  // Schädel und Wangen
-  const schaedel = teil(new THREE.SphereGeometry(0.178, 20, 14), knochen, 0, 0.01, 0); schaedel.scale.set(1, 1.04, 0.98); g.add(schaedel);
-  const wangen = teil(new THREE.BoxGeometry(0.25, 0.08, 0.2), knochen, 0, -0.1, -0.02); g.add(wangen);
-  // Augen: schwarze Höhle, weißer Ring, weiße Pupille (rund wie im Logo)
-  for (const sx of [-1, 1]) {
-    const hoehle = teil(new THREE.CircleGeometry(0.056, 24), schwarz, sx * 0.068, 0.025, -0.172); hoehle.rotation.y = Math.PI; g.add(hoehle);
-    const ring = teil(new THREE.RingGeometry(0.03, 0.041, 24), weiss, sx * 0.068, 0.025, -0.1735); ring.rotation.y = Math.PI; g.add(ring);
-    const pupille = teil(new THREE.CircleGeometry(0.014, 12), weiss, sx * 0.068, 0.025, -0.1738); pupille.rotation.y = Math.PI; g.add(pupille);
-  }
-  // Nase: umgedrehtes Dreieck
-  const nase = teil(new THREE.CircleGeometry(0.026, 3), schwarz, 0, -0.045, -0.177); nase.rotation.set(0, Math.PI, Math.PI / 2); g.add(nase);
-  // obere Zahnreihe fest, Unterkiefer mit Zähnen drehbar
-  const mund = teil(new THREE.PlaneGeometry(0.15, 0.05), schwarz, 0, -0.095, -0.123); mund.rotation.y = Math.PI; g.add(mund);
-  const zahn = new THREE.BoxGeometry(0.02, 0.034, 0.012); geos.push(zahn);
-  for (let i = 0; i < 6; i++) { const z = new THREE.Mesh(zahn, weiss); z.position.set(-0.0625 + i * 0.025, -0.083, -0.125); g.add(z); }
-  const kiefer = new THREE.Group(); kiefer.position.set(0, -0.11, -0.02); g.add(kiefer);
-  const kinn = teil(new THREE.BoxGeometry(0.19, 0.05, 0.17), knochen, 0, -0.03, -0.01); kiefer.add(kinn);
-  for (let i = 0; i < 6; i++) { const z = new THREE.Mesh(zahn, weiss); z.position.set(-0.0625 + i * 0.025, 0.005, -0.098); kiefer.add(z); }
-  // Hut: Krempe und Kopf, leicht schief
-  const hut = new THREE.Group(); hut.position.set(0, 0.12, 0.01); hut.rotation.z = -0.08; g.add(hut);
-  hut.add(teil(new THREE.CylinderGeometry(0.255, 0.255, 0.018, 28), hutMat, 0, 0, 0));
-  hut.add(teil(new THREE.CylinderGeometry(0.15, 0.172, 0.15, 24), hutMat, 0, 0.083, 0));
-  hut.add(teil(new THREE.CylinderGeometry(0.173, 0.173, 0.032, 24), schwarz, 0, 0.02, 0)); // Hutband
-  /** Kiefer bewegen: pegel 0…1 (Lautstärke der Stimme). */
-  const sprich = (pegel) => { kiefer.rotation.x = -Math.max(0, Math.min(1, pegel)) * 0.42; }; // negativ: Kinn klappt nach unten
-  return { g, kiefer, hut, geos, mats, sprich };
+  const mats = {}, geos = [];
+  for (const [k, t] of Object.entries(texturen)) mats[k] = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.35, side: THREE.DoubleSide });
+  const tafelGeo = new THREE.PlaneGeometry(B, H); geos.push(tafelGeo);
+  const tafel = new THREE.Mesh(tafelGeo, mats.vorne); tafel.rotation.y = Math.PI; g.add(tafel);
+  // Kiefer: gleiche Tafel, nur der Unterkiefer ist sichtbar; liegt minimal davor und klappt beim Sprechen nach unten
+  const kiefer = new THREE.Mesh(tafelGeo, mats.kiefer); kiefer.rotation.y = Math.PI; kiefer.position.z = -0.002; g.add(kiefer);
+  const kieferRuhe = 0;
+  const hub = H * (KIEFER_UNTEN - KIEFER_OBEN) * 0.45;
+  const sprich = (pegel) => { kiefer.position.y = kieferRuhe - Math.max(0, Math.min(1, pegel)) * hub; };
+  const zeige = (winkel) => {
+    const a = skelettAnsicht(winkel), vorn = a.bild === "vorne";
+    tafel.material = mats[a.bild]; tafel.scale.x = (a.spiegeln ? -1 : 1) * (vorn || a.bild === "dreiviertel" || a.bild === "hinten" ? 1 : 0.65);
+    kiefer.visible = vorn;
+  };
+  return { g, kiefer, kieferRuhe, sprich, zeige, geos, mats: Object.values(mats), hoehe: H };
 }

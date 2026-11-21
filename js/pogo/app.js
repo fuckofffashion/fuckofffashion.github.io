@@ -2,20 +2,20 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=37";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=37";
-import { sprache, TEXTE } from "./texte.js?v=37";
-import { LAEDEN } from "./laeden.js?v=37";
-import { erzeugeMusik } from "./musik.js?v=37";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=37";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=37";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=37";
-import { MOTIVE } from "./motive.js?v=37";
+} from "./regeln.js?v=38";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=38";
+import { sprache, TEXTE } from "./texte.js?v=38";
+import { LAEDEN } from "./laeden.js?v=38";
+import { erzeugeMusik } from "./musik.js?v=38";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=38";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=38";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=38";
+import { MOTIVE } from "./motive.js?v=38";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=37";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=37";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=37";
-import { tagDatum } from "../bands/texte.js?v=37";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=38";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=38";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=38";
+import { tagDatum } from "../bands/texte.js?v=38";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,6 +25,7 @@ const zufall = (a, b) => a + Math.random() * (b - a);
 
 let THREE, S, F; // three.js, Szene, Figuren-Modul
 const bandLogos = new Map(); // Band-Id → geladenes Logo (assets/img/bands/<id>.webp)
+let skelettTexturen = null; // Ansichten des Skeletts fürs Outro (Marks Bild), als THREE.Texture
 const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
@@ -669,15 +670,19 @@ function outroSchritt(dt) {
   f.g.position.z = o.basisZ + 0.8 * vor; f.koerper.rotation.x = 0.15 * vor; f.arme[1].rotation.z = 1.25 + Math.sin(o.t * 5) * 0.08;
   // erst schwenken (0,8 s), dann heranzoomen
   S.kameraAuf(f.g.position, dt, Math.max(0, (o.t - 0.8) / 1.4));
-  // beim Heranzoomen wird der Kopf zum Totenkopf aus dem Bandlogo; der Kiefer spricht mit der Stimme
-  if (!o.schaedel && o.t >= 1.3) {
-    o.schaedel = F.baueSchaedel(THREE); o.schaedel.g.position.set(0, 1.56, 0); o.schaedel.g.scale.setScalar(0.01); f.koerper.add(o.schaedel.g);
-    strobo(1); stroboSchritt();
+  // beim Heranzoomen wird der Sänger zum Skelett aus Dans Logo (Marks Ansichten); der Kiefer spricht mit der Stimme
+  if (!o.schaedel && o.t >= 1.3 && skelettTexturen) {
+    o.schaedel = F.baueSkelett(THREE, skelettTexturen); o.schaedel.g.position.set(0, 1.43, -0.23); o.schaedel.g.scale.setScalar(0.01); f.koerper.add(o.schaedel.g);
+    f.arme.forEach((a) => (a.visible = false));
+    if (!ruhig) { const el = $("pogo-strobo"); el.classList.remove("an"); void el.offsetWidth; el.classList.add("an"); }
   }
   if (o.schaedel) {
     o.morphT += dt; const k = Math.min(1, o.morphT / 0.35);
     o.schaedel.g.scale.setScalar(ruhig ? 1 : 0.01 + k * (1.12 - 0.13 * k)); // ploppt kurz über die Größe und setzt sich
     o.schaedel.g.rotation.z = ruhig ? 0 : Math.sin(o.morphT * 30) * 0.12 * (1 - k);
+    // Ansicht nach Kamerawinkel (Figur schaut zur Bühnenkante, also +z in der Welt)
+    const cam = S.camera.position, w = (Math.atan2(cam.x - f.g.position.x, cam.z - f.g.position.z) * 180) / Math.PI;
+    o.schaedel.zeige(w);
     o.schaedel.sprich(musik.pegel());
   }
   if (o.t >= o.dauer) endeOutro();
@@ -687,6 +692,7 @@ function endeOutro() {
   musik.stoppeEinmal();
   const f = outro.figur; f.g.position.z = outro.basisZ; f.koerper.rotation.x = 0;
   if (outro.schaedel) { f.koerper.remove(outro.schaedel.g); outro.schaedel.geos.forEach((g) => g.dispose()); outro.schaedel.mats.forEach((m) => m.dispose()); }
+  f.arme.forEach((a) => (a.visible = true));
   outro = null; S.kameraNormal(); S.kamera(ich, 0, true);
   zeigeEndbild();
 }
@@ -879,8 +885,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=37").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=37"),
+      import("./szene.js?v=38").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=38"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -932,6 +938,12 @@ async function los() {
   neueRunde();
   requestAnimationFrame(bild);
   ladeMotive().then((n) => { if (n && !laeuft) neueRunde(false); });
+  // Skelett-Ansichten fürs Outro laden; fehlt eins, bleibt der Sänger einfach Sänger
+  Promise.all(Object.entries(F.SKELETT_BILDER).map(([k, pfad]) => new Promise((ok, nein) => {
+    const img = new Image(); img.onload = () => ok([k, img]); img.onerror = nein; img.src = WURZEL + pfad;
+  }))).then((liste) => {
+    skelettTexturen = Object.fromEntries(liste.map(([k, img]) => { const t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; return [k, t]; }));
+  }).catch(() => {});
   // echte Bandlogos fürs Banner hinter der Band
   for (const b of new Set(SONGS.map((s) => s.band).filter(Boolean))) {
     const img = new Image();

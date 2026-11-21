@@ -4,8 +4,8 @@
 // der Kartengrund unter dem Kopierer-Filter (Korn in Pixeln, bleibt beim Zoomen gleich grob) und die Marker
 // ohne Filter. Zoomen und Verschieben ändern nur die viewBox; die Haufen werden je Zoomstufe einmal gebildet.
 
-import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, umfasse, zoomUm } from "./kartenansicht.js?v=37";
-import { t as text, zahl } from "./texte.js?v=37";
+import { MIN_BREITE, begrenze, hoehe, maxBreite, passend, projiziere, stufeVon, umfasse, zoomUm } from "./kartenansicht.js?v=38";
+import { t as text, zahl } from "./texte.js?v=38";
 
 export { projiziere }; // Projektion und Ansichtsrechnung liegen in kartenansicht.js
 

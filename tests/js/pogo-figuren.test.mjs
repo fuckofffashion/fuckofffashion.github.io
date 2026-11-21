@@ -28,18 +28,29 @@ test("Füllring: zeigt den Anteil als Bogen, begrenzt auf 0 bis voll", async () 
   setzeFortschritt(geo, -1); assert.equal(geo.drawRange.count, 0);
 });
 
-test("Totenkopf wie im Bandlogo: Schädel, Augen, Hut, beweglicher Kiefer", async () => {
-  const { baueSchaedel } = await import("../../js/pogo/figuren.js");
-  const s = baueSchaedel(THREE);
-  assert.ok(s.g.isGroup);
-  assert.ok(s.kiefer && s.g.getObjectById(s.kiefer.id), "Kiefer hängt am Schädel");
-  assert.ok(s.hut && s.g.getObjectById(s.hut.id), "Hut wie im Logo");
-  let meshes = 0; s.g.traverse((o) => { if (o.isMesh) meshes++; });
-  assert.ok(meshes >= 10 && meshes <= 40, `Teile: ${meshes}`);
-  assert.ok(s.geos.length > 0 && s.mats.length > 0);
-  // Schädel überdeckt den Figurkopf (Radius 0,15)
-  const box = new THREE.Box3().setFromObject(s.g);
-  assert.ok(box.max.x - box.min.x > 0.32, "breiter als der Kopf");
-  s.sprich(1); assert.ok(s.kiefer.rotation.x < -0.3, "Kinn nach unten");
-  s.sprich(0); assert.equal(Math.abs(s.kiefer.rotation.x), 0);
+test("Skelett aus Marks Ansichten: Ansicht nach Kamerawinkel", async () => {
+  const { skelettAnsicht } = await import("../../js/pogo/figuren.js");
+  assert.deepEqual(skelettAnsicht(0), { bild: "vorne", spiegeln: false });
+  assert.deepEqual(skelettAnsicht(15), { bild: "vorne", spiegeln: false });
+  assert.equal(skelettAnsicht(40).bild, "dreiviertel");
+  assert.notEqual(skelettAnsicht(40).spiegeln, skelettAnsicht(-40).spiegeln);
+  assert.equal(skelettAnsicht(90).bild, "rechts");
+  assert.equal(skelettAnsicht(-90).bild, "links");
+  assert.equal(skelettAnsicht(170).bild, "hinten");
+  assert.equal(skelettAnsicht(-170).bild, "hinten");
+});
+
+test("Skelett: Bilder liegen bereit, Kiefer sprechen", async () => {
+  const { existsSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const { SKELETT_BILDER, baueSkelett } = await import("../../js/pogo/figuren.js");
+  const wurzel = fileURLToPath(new URL("../../", import.meta.url));
+  for (const p of Object.values(SKELETT_BILDER)) assert.ok(existsSync(wurzel + p), p);
+  const tex = Object.fromEntries(Object.keys(SKELETT_BILDER).map((k) => [k, new THREE.Texture()]));
+  const s = baueSkelett(THREE, tex);
+  assert.ok(s.g.isGroup && s.kiefer.isMesh);
+  s.sprich(1); assert.ok(s.kiefer.position.y < s.kieferRuhe - 0.02, "Kiefer klappt nach unten");
+  s.sprich(0); assert.equal(s.kiefer.position.y, s.kieferRuhe);
+  s.zeige(90); assert.equal(s.kiefer.visible, false, "Kiefer nur in der Vorderansicht");
+  s.zeige(0); assert.equal(s.kiefer.visible, true);
 });
