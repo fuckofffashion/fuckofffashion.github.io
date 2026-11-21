@@ -4453,5 +4453,18 @@
   "lat": 52.5422403,
   "lon": 13.6173176,
   "land": "DE"
+ },
+ "DE|pirna|uniwerk pirna": {
+  "lat": 50.961133,
+  "lon": 13.94433,
+  "land": "DE"
+ },
+ "|fr toulouse|interference": {
+  "nicht_gefunden": "2026-11-21"
+ },
+ "DE|themar|rasenmuhle": {
+  "lat": 50.5076441,
+  "lon": 10.6078038,
+  "land": "DE"
  }
 }
