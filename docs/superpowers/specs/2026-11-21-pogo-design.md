@@ -128,3 +128,10 @@ Marks Auswahl: Motive auf dem Rücken, Modeschnösel, Zugabe und Sänger in der 
   - Stagedive: Der Landebonus (600) gibt es nur mit mindestens 50 % Bier. Ein nicht abgewehrter Griff kostet 10 % statt 6 %.
   - Die Aufgabe „Kein Stiefel im Bier“ zählt nicht, wenn die Runde mit leerem Becher endet.
 - **Goldenes Motiv erklärt:** Beim ersten Nahekommen (3 m) pro Runde erscheinen „GOLDENES MOTIV!“ und 5 s lang der Hinweis. Ein grüner Füllring zeigt den Abguck-Fortschritt.
+- **Nach Spieletest 2 (Mark):**
+  - Bierverlust halbiert (Gedränge 0,75 %/s × Kraft, Rempler höchstens 7 %).
+  - Ziele halbiert: 750 / 1250 / 1750 / 2250.
+  - Das HUD zeigt das Ergebnis live; die Ziele nennen dieselbe Einheit.
+  - Der Stagedive-Bonus ist 600 × Anteil abgewehrter Griffe und gibt es nur mit mindestens 50 % Bier.
+  - Ein Sprung dauert höchstens 0,85 Schläge.
+  - Der wilde Teil kommt vom Song, nicht von der Kraft der Menge.
