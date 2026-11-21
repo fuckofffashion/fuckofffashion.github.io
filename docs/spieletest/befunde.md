@@ -54,17 +54,17 @@ Kurzfazit: Technisch ist Pogo in sehr gutem Zustand: 60 fps in allen acht Runden
 | PT-20261121-12 | Frage | hoch | Spielgefühl | Wertung, Bier | Becher läuft in jeder Runde leer (8 von 8), auch beim fehlerfreien Bot; Ergebnis ist immer Punkte ÷ 4, Titel immer „Becher leer.“ | mittel | erledigt (7cca1a1) |
 | PT-20261121-13 | Frage | hoch | Spielgefühl | Tour-Ziele | Ziele 2500 / 3500 / 4500 unerreichbar: bestes Bot-Ergebnis 1233 / 1053 / 717 | klein | erledigt (7cca1a1) |
 | PT-20261121-14 | Fehler | mittel | Design | HUD, Startbild, Endbild | „Punkte“ heißt im HUD Pogo-Punkte (5371), beim Ziel aber Ergebnis („noch 157 Punkte“) | klein | erledigt (7cca1a1) |
-| PT-20261121-15 | Vorschlag | mittel | Spielgefühl | Zugabe | Zugabe leert den Becher (Sänger führt durch die Menge) und kann das Ergebnis senken | klein | erledigt (Commit danach) |
+| PT-20261121-15 | Vorschlag | mittel | Spielgefühl | Zugabe | Zugabe leert den Becher (Sänger führt durch die Menge) und kann das Ergebnis senken | klein | erledigt (3100b4a) |
 | PT-20261121-16 | Vorschlag | mittel | Spielgefühl | Stagedive | Landebonus weiter ohne jede Abwehr sicher, schon im Intro (siehe erledigtes PT-20261121-05) | klein | erledigt (7cca1a1) |
 | PT-20261121-17 | Vorschlag | mittel | Spielgefühl | Springen, Mikro | Sprung (0,45 s) dauert länger als ein Schlag (0,441 s): jeder zweite Tipp im Takt verpufft ohne Rückmeldung | klein | erledigt (7cca1a1) |
 | PT-20261121-18 | Fehler | mittel | Design | Startbild, Handy | Klebender Startknopf verdeckt die Steuerungszeile, auf EN auch die Songkarte (siehe erledigtes PT-20261121-02) | klein | erledigt (7cca1a1) |
 | PT-20261121-19 | Vorschlag | mittel | Leistung | Laden, Handy | Fast 3G + CPU 4×: Startknopf erst nach 23,5 s, 14 s davon „Song lädt …“ ohne Fortschritt | mittel | erledigt (7cca1a1) |
-| PT-20261121-20 | Fehler | klein | Inhalt | Mikro-Moment | Spec: OI ist der „größte Bonus der Runde“; gemessen 4 × 40 = 160 Punkte, Stagedive 900 | klein | erledigt (Commit danach) |
+| PT-20261121-20 | Fehler | klein | Inhalt | Mikro-Moment | Spec: OI ist der „größte Bonus der Runde“; gemessen 4 × 40 = 160 Punkte, Stagedive 900 | klein | erledigt (3100b4a) |
 | PT-20261121-21 | Vorschlag | klein | Spielgefühl | Stillstand-Regel | Pfeil gegen das Gitter halten zählt als Bewegung: eine Taste, 0 % „still“, 1514 Punkte | klein | erledigt (7cca1a1) |
 | PT-20261121-22 | Vorschlag | klein | Design | Pitcher, erste Reihe | Deckenventilator hängt vor der Kamera und verdeckt die Bühne | klein | erledigt (7cca1a1) |
 | PT-20261121-23 | Vorschlag | klein | Leistung | Motive | Rückenaufnäher laden 1024-px-Bilder (vier größte zusammen 521 KB) | klein | erledigt (7cca1a1) |
 | PT-20261121-24 | Vorschlag | klein | Design | Pops | Pop-Texte überlagern sich („SLOSHHAND! →“), gerade beim Stagedive | klein | erledigt (7cca1a1) |
-| PT-20261121-25 | Vorschlag | klein | Leistung | Spielstart | Erste Sekunde 32–51 fps, einzelnes 50-ms-Bild: Shader kompilieren erst beim Start | klein | erledigt (Commit danach) |
+| PT-20261121-25 | Vorschlag | klein | Leistung | Spielstart | Erste Sekunde 32–51 fps, einzelnes 50-ms-Bild: Shader kompilieren erst beim Start | klein | erledigt (3100b4a) |
 | PT-20261121-26 | Frage | klein | Spielgefühl | Altenberg, Song | Mit Kraft ×1,3 wird der AUFBAU (0,8) zum „wilden Teil“: Punkte ×1,5, „DU DA!“, Ordner | klein | erledigt (7cca1a1) |
 
 ### PT-20261121-12 · Der Becher läuft in jeder Runde leer
