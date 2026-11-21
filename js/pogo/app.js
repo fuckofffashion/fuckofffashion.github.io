@@ -2,20 +2,20 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=36";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=36";
-import { sprache, TEXTE } from "./texte.js?v=36";
-import { LAEDEN } from "./laeden.js?v=36";
-import { erzeugeMusik } from "./musik.js?v=36";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=36";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=36";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=36";
-import { MOTIVE } from "./motive.js?v=36";
+} from "./regeln.js?v=37";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=37";
+import { sprache, TEXTE } from "./texte.js?v=37";
+import { LAEDEN } from "./laeden.js?v=37";
+import { erzeugeMusik } from "./musik.js?v=37";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=37";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=37";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=37";
+import { MOTIVE } from "./motive.js?v=37";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=36";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=36";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=36";
-import { tagDatum } from "../bands/texte.js?v=36";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=37";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=37";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=37";
+import { tagDatum } from "../bands/texte.js?v=37";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -656,7 +656,7 @@ function starteOutro() {
   const dauer = musik.spieleEinmal(url); if (!dauer) return false;
   if (saenger) { saenger.f.g.visible = false; saenger.ring.visible = false; } // getragener Sänger aus der Zugabe ist wieder auf der Bühne
   sanger.g.visible = true;
-  outro = { t: 0, dauer: dauer + 0.6, figur: sanger, basisZ: sanger.g.position.z };
+  outro = { t: 0, dauer: dauer + 0.6, figur: sanger, basisZ: sanger.g.position.z, schaedel: null, morphT: 0 };
   $("pogo-hinweis").textContent = T.outro({ band: song.bandName });
   return true;
 }
@@ -669,12 +669,24 @@ function outroSchritt(dt) {
   f.g.position.z = o.basisZ + 0.8 * vor; f.koerper.rotation.x = 0.15 * vor; f.arme[1].rotation.z = 1.25 + Math.sin(o.t * 5) * 0.08;
   // erst schwenken (0,8 s), dann heranzoomen
   S.kameraAuf(f.g.position, dt, Math.max(0, (o.t - 0.8) / 1.4));
+  // beim Heranzoomen wird der Kopf zum Totenkopf aus dem Bandlogo; der Kiefer spricht mit der Stimme
+  if (!o.schaedel && o.t >= 1.3) {
+    o.schaedel = F.baueSchaedel(THREE); o.schaedel.g.position.set(0, 1.56, 0); o.schaedel.g.scale.setScalar(0.01); f.koerper.add(o.schaedel.g);
+    strobo(1); stroboSchritt();
+  }
+  if (o.schaedel) {
+    o.morphT += dt; const k = Math.min(1, o.morphT / 0.35);
+    o.schaedel.g.scale.setScalar(ruhig ? 1 : 0.01 + k * (1.12 - 0.13 * k)); // ploppt kurz über die Größe und setzt sich
+    o.schaedel.g.rotation.z = ruhig ? 0 : Math.sin(o.morphT * 30) * 0.12 * (1 - k);
+    o.schaedel.sprich(musik.pegel());
+  }
   if (o.t >= o.dauer) endeOutro();
 }
 function endeOutro() {
   if (!outro) return;
   musik.stoppeEinmal();
   const f = outro.figur; f.g.position.z = outro.basisZ; f.koerper.rotation.x = 0;
+  if (outro.schaedel) { f.koerper.remove(outro.schaedel.g); outro.schaedel.geos.forEach((g) => g.dispose()); outro.schaedel.mats.forEach((m) => m.dispose()); }
   outro = null; S.kameraNormal(); S.kamera(ich, 0, true);
   zeigeEndbild();
 }
@@ -867,8 +879,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=36").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=36"),
+      import("./szene.js?v=37").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=37"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {

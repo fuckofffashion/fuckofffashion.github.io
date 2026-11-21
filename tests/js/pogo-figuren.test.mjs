@@ -27,3 +27,19 @@ test("Füllring: zeigt den Anteil als Bogen, begrenzt auf 0 bis voll", async () 
   setzeFortschritt(geo, 1.7); assert.equal(geo.drawRange.count, geo.index.count);
   setzeFortschritt(geo, -1); assert.equal(geo.drawRange.count, 0);
 });
+
+test("Totenkopf wie im Bandlogo: Schädel, Augen, Hut, beweglicher Kiefer", async () => {
+  const { baueSchaedel } = await import("../../js/pogo/figuren.js");
+  const s = baueSchaedel(THREE);
+  assert.ok(s.g.isGroup);
+  assert.ok(s.kiefer && s.g.getObjectById(s.kiefer.id), "Kiefer hängt am Schädel");
+  assert.ok(s.hut && s.g.getObjectById(s.hut.id), "Hut wie im Logo");
+  let meshes = 0; s.g.traverse((o) => { if (o.isMesh) meshes++; });
+  assert.ok(meshes >= 10 && meshes <= 40, `Teile: ${meshes}`);
+  assert.ok(s.geos.length > 0 && s.mats.length > 0);
+  // Schädel überdeckt den Figurkopf (Radius 0,15)
+  const box = new THREE.Box3().setFromObject(s.g);
+  assert.ok(box.max.x - box.min.x > 0.32, "breiter als der Kopf");
+  s.sprich(1); assert.ok(s.kiefer.rotation.x < -0.3, "Kinn nach unten");
+  s.sprich(0); assert.equal(Math.abs(s.kiefer.rotation.x), 0);
+});

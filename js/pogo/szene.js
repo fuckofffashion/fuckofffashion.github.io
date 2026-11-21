@@ -1,6 +1,6 @@
 // Szene von Pogo: Renderer, Licht, Laden mit Bühne, Band, Gitter und Ordner, Kamera hinter dir.
 // three.js wird hereingereicht (app.js lädt es aus assets/vendor/). Vorlage: docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html.
-import { baueFigur } from "./figuren.js?v=36";
+import { baueFigur } from "./figuren.js?v=37";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 
@@ -99,7 +99,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     // Band: links Gitarre, Mitte Gesang mit Mikroständer, rechts Bass
     s.band = [];
     for (const [bx, gitarre] of [[-1.6, true], [0, false], [1.6, true]]) {
-      const f = baueFigur(THREE, { aufnaeher: false }); f.g.position.set(bx, 0.9, bz - 1.0); f.g.rotation.y = Math.PI; raum.add(f.g);
+      const f = baueFigur(THREE, gitarre ? { aufnaeher: false } : { aufnaeher: false, haar: ["glatze"] }); f.g.position.set(bx, 0.9, bz - 1.0); f.g.rotation.y = Math.PI; raum.add(f.g);
       if (gitarre) { const gi = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.75, 0.06), eigen(mat("#d4161b", { roughness: 0.3, metalness: 0.3 }))); gi.position.set(0.05, 0.95, -0.25); gi.rotation.z = 0.9; f.koerper.add(gi); }
       else { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.5, 6), eigen(mat("#999999", { metalness: 0.8, roughness: 0.3 }))); st.position.set(0, 0.75, -0.45); f.g.add(st); }
       f.basisX = bx; f.phase = Math.random() * 6; s.band.push(f);
