@@ -60,3 +60,12 @@
   .pogo__stagedive { animation: none; }
   .pogo__bierstand, .pogo__laden { transition: none; }
 }
+
+/* Overlays dürfen auf dem Handy scrollen; schmale Bildschirme: Ladenbeschreibung weg */
+.pogo__overlay { touch-action: pan-y; }
+@media (max-width: 420px) {
+  .pogo__spiel { aspect-ratio: 2 / 3; width: min(100%, calc((100svh - 2rem) * .667)); }
+  .pogo__overlay { gap: .55rem; padding: .9rem; }
+  .pogo__laden span { display: none; }
+  .pogo__overlay p { font-size: .85rem; }
+}
