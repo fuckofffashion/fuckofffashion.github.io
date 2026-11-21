@@ -1,6 +1,6 @@
 // Bandseite: Plakate in Säulen ordnen, Termine aus data/bands.json füllen, Plakate abreißen.
 // Die Plakate stehen fertig im HTML (tools/build-bands.py); dieses Modul verschiebt sie nur.
-import { gruppiere, isoLokal, kuenftige, monatsSpanne, sichtbare } from "./saeulen.js";
+import { isoLokal, kuenftige, ordne, sichtbare } from "./saeulen.js";
 import { sprache, t, tagDatum, TEXTE } from "./texte.js";
 
 const WURZEL = document.documentElement.dataset.wurzel || "";
@@ -125,7 +125,7 @@ function baue(daten) {
   const heute = isoLokal(new Date());
 
   // erst alles rechnen, dann das DOM ändern: wirft etwas, bleibt die Seite unberührt (Aufrufer baut ohne Daten)
-  const gruppen = daten ? gruppiere([...nachId.keys()], daten, heute) : [{ saeule: "alle", ids: [...nachId.keys()] }];
+  const gruppen = [{ saeule: "alle", ids: ordne([...nachId.keys()], daten, heute) }];
   const termineVon = new Map(plakate.map((p) => [p, daten ? kuenftige(daten.bands?.[p.dataset.band]?.termine, heute) : null]));
 
   plakate.forEach((p) => {
@@ -146,7 +146,7 @@ function baue(daten) {
 
   const neu = document.createDocumentFragment();
   for (const g of gruppen) {
-    const zeit = g.saeule === "still" ? TEXTE[sp].stillZeit : monatsSpanne(heute, g.saeule, sp);
+    const zeit = "";
     const { s, plakate: ort } = saeule(TEXTE[sp].saeule[g.saeule], zeit, g.saeule);
     g.ids.forEach((id) => ort.append(nachId.get(id)));
     neu.append(s);

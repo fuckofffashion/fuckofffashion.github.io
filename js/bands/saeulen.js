@@ -1,17 +1,11 @@
-// Säulen-Logik der Bandseite, ohne DOM (Node-Tests: tests/js/bands.test.mjs).
-// Säulen nach dem Abstand des nächsten Termins zu heute: bald 0–30 Tage, demnaechst 31–90, spaeter > 90, still = keiner.
+// Ordnungs-Logik der Bandseite, ohne DOM (Node-Tests: tests/js/bands.test.mjs).
+// Eine Säule: Bands nach nächstem Termin, wer nicht spielt danach. Bald = nächster Termin 0–30 Tage entfernt.
 
-export const SAEULEN = ["bald", "demnaechst", "spaeter", "still"];
-const GRENZEN = { bald: [0, 30], demnaechst: [31, 90], spaeter: [91, null] };
-const MONATE = {
-  de: ["Jan", "Feb", "März", "Apr", "Mai", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dez"],
-  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-};
+const BALD_TAGE = 30;
 const SICHTBAR = 4;
 
 const zahl = (n) => String(n).padStart(2, "0");
 const utc = (iso) => { const [j, m, t] = iso.split("-").map(Number); return Date.UTC(j, m - 1, t); };
-const plusTage = (iso, n) => new Date(utc(iso) + n * 864e5);
 
 /** Datum nach lokaler Zeit als YYYY-MM-DD (nicht toISOString: das wäre UTC). */
 export function isoLokal(d) {
@@ -29,35 +23,24 @@ export function kuenftige(termine, heuteIso) {
   return termine.filter((t) => typeof t?.datum === "string" && t.datum >= heuteIso);
 }
 
-export function saeuleFuer(termine, heuteIso) {
-  const naechster = kuenftige(termine, heuteIso)[0];
-  if (!naechster) return "still";
-  const tage = tageBis(naechster.datum, heuteIso);
-  if (tage <= GRENZEN.bald[1]) return "bald";
-  if (tage <= GRENZEN.demnaechst[1]) return "demnaechst";
-  return "spaeter";
+/** Erster künftiger Termin oder null. */
+export function naechster(termine, heuteIso) {
+  return kuenftige(termine, heuteIso)[0] ?? null;
 }
 
-/** ids in Reihenfolge des HTML (alphabetisch); fehlende Bands oder fehlende Daten zählen als still. */
-export function gruppiere(ids, daten, heuteIso) {
-  const termineVon = (id) => kuenftige(daten?.bands?.[id]?.termine, heuteIso);
-  const gruppen = Object.fromEntries(SAEULEN.map((s) => [s, []]));
-  for (const id of ids) gruppen[saeuleFuer(termineVon(id), heuteIso)].push(id);
-  for (const s of ["bald", "demnaechst", "spaeter"]) {
-    gruppen[s].sort((a, b) => termineVon(a)[0].datum.localeCompare(termineVon(b)[0].datum));
-  }
-  return SAEULEN.filter((s) => gruppen[s].length).map((s) => ({ saeule: s, ids: gruppen[s] }));
+/** Spielt die Band in den nächsten 30 Tagen (Tag 30 zählt noch)? */
+export function istBald(termine, heuteIso) {
+  const n = naechster(termine, heuteIso);
+  return !!n && tageBis(n.datum, heuteIso) <= BALD_TAGE;
 }
 
-/** Zeitraum der Säule als Monatsnamen, z. B. „Nov · Dez“; „ab Feb“ für später, leer für still. */
-export function monatsSpanne(heuteIso, saeule, sp = "de") {
-  const grenze = GRENZEN[saeule];
-  if (!grenze) return "";
-  const monat = (d) => MONATE[sp === "en" ? "en" : "de"][d.getUTCMonth()];
-  const von = monat(plusTage(heuteIso, grenze[0]));
-  if (grenze[1] === null) return `${sp === "en" ? "from" : "ab"} ${von}`;
-  const bis = monat(plusTage(heuteIso, grenze[1]));
-  return von === bis ? von : `${von} · ${bis}`;
+/** ids nach nächstem Termin aufsteigend; ohne Termin danach, in Eingangsreihenfolge (stabil). */
+export function ordne(ids, daten, heuteIso) {
+  const erster = (id) => naechster(daten?.bands?.[id]?.termine, heuteIso)?.datum ?? null;
+  return ids
+    .map((id, i) => ({ id, i, d: erster(id) }))
+    .sort((a, b) => (a.d && b.d ? a.d.localeCompare(b.d) || a.i - b.i : a.d ? -1 : b.d ? 1 : a.i - b.i))
+    .map((x) => x.id);
 }
 
 export function sichtbare(termine, alle) {
