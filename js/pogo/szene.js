@@ -188,7 +188,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `uniform vec3 uFarbe; uniform float uStaerke; varying float vT; varying float vRand;
-        void main() { float a = uStaerke * (1.0 - vT * 0.8) * pow(vRand, 1.6); gl_FragColor = vec4(uFarbe * a, a); }`,
+        void main() { float a = uStaerke * (1.0 - vT * 0.75) * pow(vRand, 1.2); gl_FragColor = vec4(uFarbe, a); }`,
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     kegelMat.userData.geteilt = true;
@@ -196,7 +196,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     kegelGeo.userData.geteilt = true;
     s.spots.forEach((sp, i) => {
       const m = new THREE.Mesh(kegelGeo, kegelMat.clone()); m.material.userData.einmalig = true; m.material.uniforms.uFarbe.value.setHex(sp.color.getHex());
-      m.material.uniforms.uStaerke.value = handy ? 0.22 : 0.32; m.userData.grund = m.material.uniforms.uStaerke.value;
+      m.material.uniforms.uStaerke.value = handy ? 0.3 : 0.42; m.userData.grund = m.material.uniforms.uStaerke.value;
       m.renderOrder = 5; raum.add(m); s.kegel.push(m);
     });
     // Gegenlicht hinter der Band, damit sie sich vom dunklen Hintergrund abhebt

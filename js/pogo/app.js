@@ -92,7 +92,7 @@ function pop(text, farbe = "var(--bier)", wichtig = false) {
   // feste Bahnen: Hand-Hinweise an den Rand, Ansagen oben mittig, Rest gestapelt darunter
   const links = text.startsWith("← "), rechts = text.endsWith(" →");
   p.style.left = links ? "22%" : rechts ? "78%" : "50%";
-  p.style.top = wichtig ? "16%" : links || rechts ? "48%" : (30 + 9 * [...popsEl.children].filter((x) => !x.dataset.wichtig).length) + "%";
+  p.style.top = wichtig ? "16%" : links || rechts ? "48%" : (31 + 12 * [...popsEl.children].filter((x) => !x.dataset.wichtig).length) + "%";
   popsEl.append(p); setTimeout(() => p.remove(), wichtig ? 1800 : 1100);
 }
 const ansage = (text, farbe = "var(--blood-hot)") => pop(text, farbe, true);
