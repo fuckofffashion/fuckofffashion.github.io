@@ -70,3 +70,23 @@ test("Konstanten", () => {
   assert.deepEqual(SPRUNG, { bonus: 15, daneben: 3 });
   assert.deepEqual(BONUS, { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600 });
 });
+
+test("Pogo-Texte: DE und EN gleich aufgebaut, alle Titel da", async () => {
+  const { TEXTE } = await import("../../js/pogo/texte.js");
+  assert.deepEqual(Object.keys(TEXTE.en).sort(), Object.keys(TEXTE.de).sort());
+  for (const k of Object.keys(TEXTE.de)) assert.equal(typeof TEXTE.en[k], typeof TEXTE.de[k], k);
+  for (const sp of ["de", "en"]) for (const k of ["leer", "randSteher", "legendaer", "koenig", "solide", "nass"]) {
+    assert.equal(typeof TEXTE[sp].titel[k], "string", `${sp} ${k}`);
+  }
+  assert.equal(TEXTE.de.randSchubs, "Was stehst du hier rum?");
+  assert.deepEqual(Object.keys(TEXTE.en.laeden).sort(), ["halle", "keller", "wiese"]);
+});
+
+test("Läden: Gitter vor dem Pit, Mitte liegt in der Mitte", async () => {
+  const { LAEDEN } = await import("../../js/pogo/laeden.js");
+  assert.deepEqual(Object.keys(LAEDEN).sort(), ["halle", "keller", "wiese"]);
+  for (const [id, l] of Object.entries(LAEDEN)) {
+    assert.ok(l.gitterZ > l.z[0], id);
+    assert.equal(zone(0, (l.gitterZ + l.z[1]) / 2, l), "mitte", id);
+  }
+});
