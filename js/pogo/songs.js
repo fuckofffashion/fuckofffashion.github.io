@@ -30,5 +30,5 @@ export const SONGS = [
 /** Song-Id aus der Adresse (?song=…), nur wenn es den Song gibt; sonst null. */
 export function songAusAdresse(suche) {
   const id = new URLSearchParams(suche).get("song");
-  return id && (id === BEAT.id || SONGS.some((s) => s.id === id)) ? id : null;
+  return id && SONGS.some((s) => s.id === id) ? id : null;
 }

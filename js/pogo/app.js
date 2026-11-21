@@ -9,7 +9,7 @@ import { LAEDEN } from "./laeden.js?v=32";
 import { erzeugeMusik } from "./musik.js?v=32";
 import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=32";
 import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=32";
-import { TOUR, leseTour, schreibeTour, mitErgebnis, frei, fehlt, rang, kraftFaktor } from "./tour.js?v=32";
+import { TOUR, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=32";
 import { MOTIVE } from "./motive.js?v=32";
 import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=32";
 import { isoLokal, naechster } from "../bands/saeulen.js?v=32";
@@ -379,13 +379,11 @@ function starteZugabe() {
   pop(T.zugabe, "#58d26a"); $("pogo-hinweis").textContent = T.saenger;
 }
 function aktualisiereLaeden() {
-  const offen = frei(tour);
-  TOUR.forEach((id, i) => {
-    const b = $("pogo-laden-" + id); if (!b) return;
-    const n = fehlt(tour, id); b.disabled = n > 0;
-    b.querySelector("span").textContent = n > 0 ? T.gesperrt({ n, laden: T.laeden[TOUR[i - 1]].name }) : T.laeden[id].text;
-  });
-  if (!offen.has(ladenId)) { ladenId = "pitcher"; }
+  for (const id of TOUR) {
+    const b = $("pogo-laden-" + id); if (!b) continue;
+    const n = fehlt(tour, id); b.querySelector("em").textContent = n > 0 ? T.ziel({ n }) : T.geschafft;
+    b.classList.toggle("ist-geschafft", n === 0);
+  }
   document.querySelectorAll(".pogo__laden[id^='pogo-laden-']").forEach((x) => x.setAttribute("aria-pressed", String(x.id === "pogo-laden-" + ladenId)));
 }
 
@@ -478,7 +476,10 @@ function zeigeAufgabenUndKutte() {
   const text = aufgaben.map((a) => "□ " + T.aufgaben[a.id]).join("  ·  ");
   $("pogo-aufgaben").textContent = text;
   $("pogo-aufgaben-start").textContent = `${T.aufgabenTitel}: ${text}`;
-  $("pogo-kutte").textContent = `${T.rang}: ${T.raenge[rang(tour.summe)]} · ${T.kutte}: ${kutteText(kutte, sp)}`;
+  $("pogo-kutte").textContent = `${T.rang}: ${T.raenge[rang(tour.summe)]} · ${tourText()} · ${T.kutte}: ${kutteText(kutte, sp)}`;
+}
+function tourText() {
+  return T.tour({ n: TOUR.filter((id) => geschafft(tour, id)).length, von: TOUR.length });
 }
 
 function starte() {
@@ -506,10 +507,10 @@ function ende(leer) {
   $("pogo-ende-titel").textContent = T.titel[titelSchluessel(p, b)];
   const erg = ergebnis(p, b);
   $("pogo-ende-zahl").textContent = erg;
-  const vorher = frei(tour); tour = mitErgebnis(tour, ladenId, erg); schreibeTour(speicher, tour);
-  const neu = [...frei(tour)].filter((id) => !vorher.has(id));
-  const tourEl = $("pogo-ende-tour"); tourEl.replaceChildren(`${T.rang}: ${T.raenge[rang(tour.summe)]}`);
-  for (const id of neu) tourEl.append(document.createElement("br"), T.neuFrei({ laden: T.laeden[id].name }));
+  const schonGeschafft = geschafft(tour, ladenId); tour = mitErgebnis(tour, ladenId, erg); schreibeTour(speicher, tour);
+  const tourEl = $("pogo-ende-tour"); tourEl.replaceChildren(`${T.rang}: ${T.raenge[rang(tour.summe)]} · ${tourText()}`);
+  if (!schonGeschafft && geschafft(tour, ladenId)) tourEl.append(document.createElement("br"), T.ladenGeschafft({ laden: T.laeden[ladenId].name }));
+  else if (!geschafft(tour, ladenId)) tourEl.append(document.createElement("br"), T.ziel({ n: fehlt(tour, ladenId) }));
   if (abgeguckt) {
     const m = MOTIVE.find((x) => x.nr === abgeguckt); const a = document.createElement("a");
     a.href = "index.html#wand"; a.textContent = T.zurVorlage;
@@ -568,22 +569,24 @@ async function los() {
   for (const id of TOUR) {
     const b = document.createElement("button"); b.type = "button"; b.className = "pogo__laden"; b.id = "pogo-laden-" + id;
     b.setAttribute("aria-pressed", String(id === ladenId));
-    b.innerHTML = "<b></b><span></span>"; b.querySelector("b").textContent = T.laeden[id].name; b.querySelector("span").textContent = T.laeden[id].text;
+    b.innerHTML = "<b></b><span></span><em></em>"; b.querySelector("b").textContent = T.laeden[id].name; b.querySelector("span").textContent = T.laeden[id].text;
     b.addEventListener("click", () => { ladenId = id; laedenEl.querySelectorAll(".pogo__laden").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); neueRunde(); });
     laedenEl.append(b);
   }
   aktualisiereLaeden();
   const songsEl = $("pogo-songs");
-  for (const s of [...SONGS, BEAT]) {
+  for (const s of SONGS) {
     const b = document.createElement("button"); b.type = "button"; b.className = "pogo__laden"; b.id = "pogo-song-" + s.id;
     b.setAttribute("aria-pressed", String(s.id === songId));
     b.innerHTML = "<b></b><span></span>";
-    b.querySelector("b").textContent = s.band ? s.bandName : T.eigenerBeat;
-    b.querySelector("span").textContent = s.band ? `„${s.titel}“` : T.eigenerBeatText;
+    b.querySelector("b").textContent = s.bandName; b.querySelector("span").textContent = `„${s.titel}“`;
     b.addEventListener("click", () => { songId = s.id; songsEl.querySelectorAll(".pogo__laden").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
     songsEl.append(b);
   }
-  for (const s of SONGS) musik.lade(WURZEL + s.datei);
+  // „Rein in den Pit“ wartet, bis der gewählte Song geladen ist (sonst Ersatz-Beat)
+  const los = $("pogo-los"), losText = los.textContent;
+  los.disabled = true; los.textContent = T.laedt;
+  Promise.all(SONGS.map((s) => musik.lade(WURZEL + s.datei))).finally(() => { los.disabled = false; los.textContent = losText; });
   fetch(WURZEL + "data/bands.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((d) => { bandDaten = d; }).catch(() => {});
   $("pogo-los").addEventListener("click", starte);
   $("pogo-nochmal").addEventListener("click", starte);

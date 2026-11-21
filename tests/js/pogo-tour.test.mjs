@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { TOUR, SCHWELLEN, KRAFT, RAENGE, leseTour, schreibeTour, mitErgebnis, frei, fehlt, rang, kraftFaktor } from "../../js/pogo/tour.js";
+import { TOUR, ZIELE, KRAFT, RAENGE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "../../js/pogo/tour.js";
 import { istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, BONUS } from "../../js/pogo/regeln.js";
 import { MOTIVE } from "../../js/pogo/motive.js";
 import { SONGS, BEAT } from "../../js/pogo/songs.js";
@@ -11,29 +11,31 @@ import { SONGS, BEAT } from "../../js/pogo/songs.js";
 const speicher = () => { const m = new Map(); return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)) }; };
 const kaputt = { getItem() { throw new Error("x"); }, setItem() { throw new Error("x"); } };
 
-test("Tour: Reihenfolge, Schwellen, Kraft", () => {
+test("Tour: Reihenfolge, Ziele, Kraft", () => {
   assert.deepEqual(TOUR, ["pitcher", "druckluftInnen", "druckluftDraussen", "altenberg"]);
-  assert.deepEqual(SCHWELLEN, [1500, 2500, 3500]);
+  assert.deepEqual(ZIELE, [1500, 2500, 3500, 4500]);
   assert.deepEqual(KRAFT, [1, 1.1, 1.2, 1.3]);
   assert.equal(kraftFaktor("druckluftDraussen"), 1.2);
   assert.equal(kraftFaktor("unbekannt"), 1);
 });
 
-test("Tour: am Anfang nur PITCHER frei, dann der Reihe nach", () => {
+test("Tour: alle Läden offen, Ziel je Laden als Abzeichen", () => {
   let t = leseTour(speicher());
-  assert.deepEqual([...frei(t)], ["pitcher"]);
-  assert.equal(fehlt(t, "druckluftInnen"), 1500);
-  t = mitErgebnis(t, "pitcher", 1499);
-  assert.equal(fehlt(t, "druckluftInnen"), 1);
+  assert.equal(fehlt(t, "altenberg"), 4500);
+  assert.equal(geschafft(t, "pitcher"), false);
+  t = mitErgebnis(t, "altenberg", 4499);
+  assert.equal(fehlt(t, "altenberg"), 1);
+  assert.equal(geschafft(t, "altenberg"), false);
+  t = mitErgebnis(t, "altenberg", 4500);
+  assert.equal(geschafft(t, "altenberg"), true);
+  assert.equal(fehlt(t, "altenberg"), 0);
   t = mitErgebnis(t, "pitcher", 1500);
-  assert.deepEqual([...frei(t)], ["pitcher", "druckluftInnen"]);
-  assert.equal(t.best.pitcher, 1500);
+  assert.equal(geschafft(t, "pitcher"), true);
+  assert.equal(geschafft(t, "druckluftInnen"), false);
   t = mitErgebnis(t, "pitcher", 200); // Bestwert bleibt
   assert.equal(t.best.pitcher, 1500);
-  assert.equal(t.summe, 1499 + 1500 + 200);
-  t = mitErgebnis(mitErgebnis(t, "druckluftInnen", 2500), "druckluftDraussen", 3500);
-  assert.deepEqual([...frei(t)], TOUR);
-  assert.equal(fehlt(t, "altenberg"), 0);
+  assert.equal(t.summe, 4499 + 4500 + 1500 + 200);
+  assert.equal(geschafft(t, "unbekannt"), false);
 });
 
 test("Tour: Speicher hin und zurück, kaputt ergibt Anfang", () => {
@@ -116,7 +118,7 @@ test("Pogo-Knöpfe der Säule zeigen auf echte Songs der Band", () => {
 test("Song aus der Adresse: nur bekannte Songs", async () => {
   const { songAusAdresse } = await import("../../js/pogo/songs.js");
   assert.equal(songAusAdresse("?song=dan-ganove-lauter"), "dan-ganove-lauter");
-  assert.equal(songAusAdresse("?song=beat"), "beat");
+  assert.equal(songAusAdresse("?song=beat"), null); // eigener Beat ist nicht mehr wählbar
   assert.equal(songAusAdresse("?song=<x>"), null);
   assert.equal(songAusAdresse(""), null);
 });

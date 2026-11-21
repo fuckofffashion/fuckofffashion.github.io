@@ -36,7 +36,10 @@
 @keyframes pogo-blitz { from { opacity: .85; } to { opacity: 0; } }
 .pogo__tour { color: var(--paper) !important; font: 700 .85rem/1.4 var(--font-zine); }
 .pogo__tour a { color: var(--bier); }
-.pogo__laden:disabled { opacity: .45; cursor: not-allowed; }
+.pogo__laden em { font: 700 .72rem/1.3 var(--font-zine); font-style: normal; color: var(--bier); }
+.pogo__laden.ist-geschafft em { color: #58d26a; }
+.pogo__laden[aria-pressed="true"] em { color: var(--blood); }
+#pogo-los:disabled { opacity: .6; cursor: progress; }
 .pogo__pop { position: absolute; top: 34%; translate: -50% 0; white-space: nowrap; font: 400 clamp(1.3rem, 4.5vw, 2.3rem)/1 var(--font-edding); text-shadow: 0 3px 10px #000; animation: pogo-hoch 1.1s ease-out forwards; }
 @keyframes pogo-hoch { from { opacity: 1; transform: translateY(0) scale(1.15); } to { opacity: 0; transform: translateY(-50px) scale(1); } }
 .pogo__stick { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border: 2px solid rgba(241,237,228,.35); border-radius: 50%; pointer-events: none; }
