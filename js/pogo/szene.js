@@ -4,6 +4,7 @@ import { baueFigur } from "./figuren.js?v=33";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 
+let kegelMat = null, kegelGeo = null;
 export function baueSzene(THREE, { container, ruhig = false }) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const handy = Math.min(innerWidth, innerHeight) < 600;
@@ -70,7 +71,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     // Bühne, Boxen, Schlagzeug, Banner
     const bz = L.z[0] - 0.2;
     const buehne = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 2, 0.9, 3), eigen(mat("#111111"))); buehne.position.set(0, 0.45, bz - 1.5); buehne.receiveShadow = true; raum.add(buehne);
-    const kante = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 2, 0.06, 0.06), eigen(new THREE.MeshStandardMaterial({ color: 0xd4161b, emissive: 0x6a0a0a }))); kante.position.set(0, 0.9, bz); raum.add(kante);
+    const kante = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 2, 0.07, 0.07), eigen(new THREE.MeshStandardMaterial({ color: 0xd4161b, emissive: 0xff2a1a, emissiveIntensity: 0.5 }))); kante.position.set(0, 0.9, bz); raum.add(kante);
     for (const sx of [-1, 1]) for (let k = 0; k < 2; k++) {
       const box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.7), eigen(mat("#1a1817"))); box.position.set(sx * (L.x - 0.2), 1.35 + k * 0.9, bz - 0.6); box.castShadow = true; raum.add(box);
     }
@@ -174,6 +175,33 @@ export function baueSzene(THREE, { container, ruhig = false }) {
       spot.userData.grund = spot.intensity; s.spots.push(spot);
     });
     const fuell = new THREE.PointLight(0xffd0a0, 25, 0, 2); fuell.position.set(0, 3, L.z[1]); raum.add(fuell);
+    // Lichtkegel im Dunst: ein offener Kegel je Spot, additiv, weich zum Rand und zum Boden hin
+    s.kegel = [];
+    kegelMat ??= new THREE.ShaderMaterial({
+      uniforms: { uFarbe: { value: new THREE.Color() }, uStaerke: { value: 0.35 } },
+      vertexShader: `varying float vT; varying float vRand;
+        void main() {
+          vT = position.z;
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          vec3 n = normalize(normalMatrix * normal);
+          vRand = abs(dot(n, normalize(-mv.xyz)));
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `uniform vec3 uFarbe; uniform float uStaerke; varying float vT; varying float vRand;
+        void main() { float a = uStaerke * (1.0 - vT * 0.8) * pow(vRand, 1.6); gl_FragColor = vec4(uFarbe * a, a); }`,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    });
+    kegelMat.userData.geteilt = true;
+    kegelGeo ??= new THREE.ConeGeometry(1, 1, 24, 1, true).translate(0, -0.5, 0).rotateX(-Math.PI / 2);
+    kegelGeo.userData.geteilt = true;
+    s.spots.forEach((sp, i) => {
+      const m = new THREE.Mesh(kegelGeo, kegelMat.clone()); m.material.userData.einmalig = true; m.material.uniforms.uFarbe.value.setHex(sp.color.getHex());
+      m.material.uniforms.uStaerke.value = handy ? 0.22 : 0.32; m.userData.grund = m.material.uniforms.uStaerke.value;
+      m.renderOrder = 5; raum.add(m); s.kegel.push(m);
+    });
+    // Gegenlicht hinter der Band, damit sie sich vom dunklen Hintergrund abhebt
+    const gegen = new THREE.SpotLight(0xfff2e0, 140, 0, 0.6, 0.5, 2); gegen.position.set(0, 4.2, bz - 3.6); gegen.target.position.set(0, 1.4, bz - 0.8); raum.add(gegen, gegen.target);
+    s.kante = kante;
 
     s.regen = null;
     if (L.regen) {
@@ -187,14 +215,20 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     return s;
   };
 
-  /** Licht im Takt, Spots wandern über den Pit. */
-  s.setzeLicht = (kraft, zeit, takt) => {
+  /** Licht im Takt, Spots wandern über den Pit. schlag: Schläge seit Songbeginn (Bruchteil = Phase im Schlag). */
+  s.setzeLicht = (kraft, zeit, takt, schlag = null) => {
     const L = s.laden, mz = (L.gitterZ + L.z[1]) / 2;
+    const phase = schlag == null ? 0.5 : schlag - Math.floor(schlag), puls = ruhig ? 0.3 : Math.pow(1 - phase, 3); // kurz nach jedem Schlag hell
     s.spots.forEach((sp, i) => {
       sp.target.position.x = Math.sin(zeit * (0.7 + i * 0.3) + i) * L.x * 0.7;
       sp.target.position.z = mz + Math.cos(zeit * 0.5 + i) * 2.5;
       sp.intensity = sp.userData.grund * (0.7 + 0.5 * kraft) * (1 + 0.25 * Math.max(0, Math.sin(zeit * takt * 2)));
+      const k = s.kegel?.[i]; if (!k) return;
+      k.position.copy(sp.position); k.lookAt(sp.target.position);
+      const len = k.position.distanceTo(sp.target.position) * 1.05, r = len * Math.tan(sp.angle) * 0.75; k.scale.set(r, r, len);
+      k.material.uniforms.uStaerke.value = k.userData.grund * (0.6 + 0.35 * Math.min(kraft, 1.6)) * (0.8 + 0.35 * puls);
     });
+    if (s.kante) s.kante.material.emissiveIntensity = 0.35 + (0.4 + 2.2 * puls) * Math.min(1.4, 0.4 + kraft);
     for (const v of s.ventilatoren || []) v.rotation.y = ruhig ? 0 : zeit * 6;
     if (s.regen) { s.regen.position.y -= 0.15; if (s.regen.position.y < -4) s.regen.position.y += 4; }
   };
