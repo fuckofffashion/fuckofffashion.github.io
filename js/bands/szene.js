@@ -188,6 +188,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
       zeiger.x = e.clientX;
       return;
     }
+    if (e.pointerType === "mouse" && modus !== "gesamt") leinwand.style.cursor = triff(e) === POGO ? "pointer" : "";
     if (e.pointerType === "mouse" && modus === "gesamt") {
       const neu = triff(e);
       if (neu !== schwebt) { schwebt = neu; zeichne = true; }

@@ -368,7 +368,7 @@ function starteZugabe() {
   const zz = zugabeZeiten(song), start = zz.start; zeit = start; zugabeEnde = zz.ende;
   // die Uhr springt zurück: alle Zeitstempel aus dem Song gelten nicht mehr
   nassBis = geblendetBis = sprungBis = 0; ich.inLuft = false; letzterSpritzer = randPop = -99; beruehrt = new Map();
-  if (schnoesel) schnoesel.naechsterBlitz = start + 2;
+  if (schnoesel) { schnoesel.naechsterBlitz = start + 2; schnoesel.letzter = -99; }
   entferneFreibier(); entferneSurfer();
   musik.start(song.datei ? WURZEL + song.datei : null, start);
   const f = F.baueFigur(THREE, { aufnaeher: false }); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
