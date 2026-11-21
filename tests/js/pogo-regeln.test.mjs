@@ -90,3 +90,17 @@ test("Läden: Gitter vor dem Pit, Mitte liegt in der Mitte", async () => {
     assert.equal(zone(0, (l.gitterZ + l.z[1]) / 2, l), "mitte", id);
   }
 });
+
+test("sprungWertung: Takt-Bonus nur außerhalb vom Rand, daneben kostet Bier", async () => {
+  const { sprungWertung } = await import("../../js/pogo/regeln.js");
+  assert.deepEqual(sprungWertung("pit", true), { punkte: 15, bier: 0 });
+  assert.deepEqual(sprungWertung("rand", true), { punkte: 0, bier: 0 });
+  assert.deepEqual(sprungWertung("rand", false), { punkte: 0, bier: 3 });
+  assert.deepEqual(sprungWertung("reihe", false), { punkte: 0, bier: 3 });
+});
+
+test("songZeit: Spielzeit folgt der Audiouhr samt Latenz, nie negativ", async () => {
+  const { songZeit } = await import("../../js/pogo/regeln.js");
+  assert.ok(Math.abs(songZeit(12.5, 2.0, 0.03) - 10.47) < 1e-9);
+  assert.equal(songZeit(1.0, 2.0, 0.03), 0);
+});

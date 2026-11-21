@@ -72,3 +72,12 @@ export function geste(dauerMs, wegPx) {
   if (dauerMs <= 250) return "tippen";
   return null;
 }
+
+/** Wertung eines Sprungs: im Takt Bonus (nicht am Rand, sonst lohnt Hinten-Stehen), daneben schwappt Bier. */
+export function sprungWertung(z, imTaktGesprungen) {
+  if (!imTaktGesprungen) return { punkte: 0, bier: SPRUNG.daneben };
+  return { punkte: z === "rand" ? 0 : SPRUNG.bonus, bier: 0 };
+}
+
+/** Songzeit aus der Audiouhr: Sekunden seit Songbeginn minus Ausgabelatenz, nie negativ. */
+export const songZeit = (audioZeit, start, latenz = 0) => Math.max(0, audioZeit - start - latenz);

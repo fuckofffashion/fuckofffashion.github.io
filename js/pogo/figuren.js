@@ -67,6 +67,7 @@ function teile(THREE) {
     farbe: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.72, metalness: 0.04 }),
     aufnaeher: aufnaeher.map((map) => new THREE.MeshStandardMaterial({ map, roughness: 0.9 })),
   };
+  for (const g of Object.values(geteilt)) if (g?.isBufferGeometry) g.userData.geteilt = true;
   return geteilt;
 }
 

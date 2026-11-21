@@ -34,7 +34,11 @@ export function baueSzene(THREE, { container, ruhig = false }) {
   s.baueRaum = (L) => {
     if (s.raum) {
       scene.remove(s.raum);
-      s.raum.traverse((o) => { if (o.isMesh || o.isLineSegments) { o.geometry.dispose(); if (o.userData.eigenesMaterial) o.material.dispose(); } });
+      s.raum.traverse((o) => {
+        if ((o.isMesh || o.isLineSegments) && !o.geometry.userData.geteilt) o.geometry.dispose();
+        if ((o.isMesh || o.isLineSegments) && (o.userData.eigenesMaterial || o.material.userData?.einmalig)) o.material.dispose();
+        if (o.isLight) o.dispose?.();
+      });
       texturen.forEach((t) => t.dispose()); texturen = [];
     }
     const raum = new THREE.Group(); scene.add(raum); s.raum = raum;

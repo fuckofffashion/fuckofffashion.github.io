@@ -1,7 +1,7 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  SPRUNG, GEDRAENGE, STAGEDIVE_AB, BONUS,
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS,
 } from "./regeln.js?v=31";
 import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=31";
 import { sprache, TEXTE } from "./texte.js?v=31";
@@ -23,11 +23,12 @@ let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibi
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
 function neueRunde() {
+  raeumeAuf();
   L = LAEDEN[ladenId];
   S.baueRaum(L);
   leute = []; figuren = new Map();
   const zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
-  for (let z = zMin + 0.6; z < zMax; z += 0.75) for (const sx of [-1, 1]) leute.push(person({ x: sx * (L.x - 0.3), z, rand: true }));
+  for (let z = zMin + 0.6; z < zMax; z += 1.1) for (const sx of [-1, 1]) leute.push(person({ x: sx * (L.x - 0.3), z, rand: true }));
   for (let i = 0; i < L.leute; i++) leute.push(person({ x: zufall(-L.x + 1, L.x - 1), z: zufall(zMin + 1, zMax - 1.5), rucksack: i === 2 }));
   ich = person({ x: 0, z: zMax - 1.2, ich: true });
   leute.push(ich);
@@ -54,9 +55,11 @@ function pop(text, farbe = "var(--bier)") {
   p.style.left = (50 + zufall(-14, 14)) + "%"; popsEl.append(p); setTimeout(() => p.remove(), 1200);
 }
 const welt = () => new THREE.Vector3();
+const tropfenTeile = new Map();
 function spritzer(menge, farbe = 0xf2b632) {
   const pos = welt(); becher.getWorldPosition(pos);
-  const mat = new THREE.MeshBasicMaterial({ color: farbe }), geo = new THREE.SphereGeometry(0.03, 6, 5);
+  if (!tropfenTeile.has(farbe)) { const g = new THREE.SphereGeometry(0.03, 6, 5); g.userData.geteilt = true; tropfenTeile.set(farbe, { geo: g, mat: new THREE.MeshBasicMaterial({ color: farbe }) }); }
+  const { geo, mat } = tropfenTeile.get(farbe);
   for (let i = 0; i < Math.min(16, 3 + menge * 1.3); i++) {
     const m = new THREE.Mesh(geo, mat); m.position.copy(pos); S.raum.add(m);
     tropfen.push({ m, v: new THREE.Vector3(zufall(-1.6, 1.6), zufall(0.5, 2.5), zufall(-1.6, 1.6)), t: 0 });
@@ -69,19 +72,22 @@ function verschuette(menge, grund) {
 }
 
 /* ---------- Aktionen ---------- */
-function springe() {
+function springe(t = zeit) {
   if (!laeuft || pausiert || stagedive.phase === "getragen" || ich.inLuft) return;
   ich.inLuft = true; sprungBis = zeit + 0.45;
-  if (mikroAn && zone(ich.x, ich.z, L) === "reihe") {
-    if (imTakt(zeit)) { punkte += BONUS.oi; pop(T.oi, "var(--paper)"); } else pop(T.daneben, "var(--paper-2)");
+  const z = zone(ich.x, ich.z, L);
+  if (mikroAn && z === "reihe") {
+    if (imTakt(t)) { punkte += BONUS.oi; pop(T.oi, "var(--paper)"); } else pop(T.daneben, "var(--paper-2)");
     return;
   }
-  if (imTakt(zeit)) { punkte += SPRUNG.bonus; pop(T.takt, "#58d26a"); }
-  else { bier = Math.max(0, bier - SPRUNG.daneben); spritzer(2); }
+  const w = sprungWertung(z, imTakt(t));
+  if (w.punkte) { punkte += w.punkte; pop(T.takt, "#58d26a"); }
+  if (w.bier) { bier = Math.max(0, bier - w.bier); spritzer(2); }
 }
 function wische(seite) {
   if (stagedive.phase !== "getragen" || !stagedive.griff) return;
-  if (seite === -stagedive.griff.seite) { pop(T.abgewehrt, "#58d26a"); stagedive.griff = null; }
+  const richtig = seite === -stagedive.griff.seite; stagedive.griff = null;
+  if (richtig) pop(T.abgewehrt, "#58d26a"); else verschuette(12, T.schwapp);
 }
 function starteStagedive() {
   if (stagedive.phase !== "aus" || stagedive.fertig) return;
@@ -96,7 +102,7 @@ let zeiger = null;
 function beginneZeiger(e) {
   if (!laeuft) return;
   const r = spielEl.getBoundingClientRect();
-  zeiger = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now(), dx: 0, dy: 0, weg: 0, ziehen: false, rx: e.clientX - r.left, ry: e.clientY - r.top };
+  zeiger = { id: e.pointerId, druckZeit: zeit, x0: e.clientX, y0: e.clientY, t0: performance.now(), dx: 0, dy: 0, weg: 0, ziehen: false, rx: e.clientX - r.left, ry: e.clientY - r.top };
   S.renderer.domElement.setPointerCapture?.(e.pointerId);
 }
 function bewegeZeiger(e) {
@@ -112,7 +118,7 @@ function bewegeZeiger(e) {
 }
 function beendeZeiger(e) {
   if (!zeiger || (e && e.pointerId !== zeiger.id)) return;
-  if (geste(performance.now() - zeiger.t0, zeiger.weg) === "tippen") springe();
+  if (geste(performance.now() - zeiger.t0, zeiger.weg) === "tippen") springe(zeiger.druckZeit);
   zeiger = null; stick.hidden = true;
 }
 const tasten = new Set();
@@ -196,7 +202,7 @@ function schritt(dt) {
       w.weg = true; punkte += BONUS[w.art]; andenken.push(w.art); pop(T[w.art], "var(--paper)");
     }
     if (w.liegt > 2) w.weg = true;
-    if (w.weg) S.raum.remove(w.m);
+    if (w.weg) { S.raum.remove(w.m); w.m.geometry.dispose(); w.m.material.dispose(); }
   }
   wuerfe = wuerfe.filter((w) => !w.weg);
 
@@ -221,18 +227,20 @@ function schritt(dt) {
   if (surfer) {
     surfer.z += 1.5 * dt; surfer.x += Math.sin(zeit * 2) * 0.3 * dt; surfer.f.g.position.set(surfer.x, 2.15 + Math.sin(zeit * 9) * 0.06, surfer.z);
     if (!getragen && !surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; verschuette(14, T.stiefel); }
-    if (surfer.z > zMax + 1.5) { S.raum.remove(surfer.f.g); surfer = null; }
+    if (surfer.z > zMax + 1.5) { entferneSurfer(); }
   }
 
   // Freibier
   if (!freibier && Math.random() < dt * 0.06) {
-    const g = F.baueBecher(THREE); g.scale.setScalar(2.4); const licht = new THREE.PointLight(0xffc040, 4, 3, 2); licht.position.y = 0.4; g.add(licht);
+    const g = F.baueBecher(THREE); g.scale.setScalar(2.4);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.08, 0.14, 24), new THREE.MeshBasicMaterial({ color: 0xffc040, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = -0.09; g.add(ring);
     freibier = { g, x: zufall(-L.x + 1, L.x - 1), z: zufall(zMin + 1.5, zMax - 0.5), t: 0 }; g.position.set(freibier.x, 0.25, freibier.z); S.raum.add(g);
   }
   if (freibier) {
     freibier.t += dt; freibier.g.rotation.y += dt * 2; freibier.g.position.y = 0.25 + Math.sin(zeit * 4) * 0.05;
-    if (!getragen && Math.hypot(freibier.x - ich.x, freibier.z - ich.z) < 0.55) { bier = Math.min(100, bier + 25); pop(T.freibier, "#58d26a"); S.raum.remove(freibier.g); freibier = null; }
-    else if (freibier.t > 7) { S.raum.remove(freibier.g); freibier = null; }
+    if (!getragen && Math.hypot(freibier.x - ich.x, freibier.z - ich.z) < 0.55) { bier = Math.min(100, bier + 25); pop(T.freibier, "#58d26a"); entferneFreibier(); }
+    else if (freibier.t > 7) entferneFreibier();
   }
 
   bewegeFiguren(dt, kraft, getragen);
@@ -243,6 +251,20 @@ function schritt(dt) {
 
   if (bier <= 0) ende(true);
   else if (zeit >= DAUER) ende(false);
+}
+
+/* ---------- Aufräumen ---------- */
+function gibFrei(obj) { obj.traverse((o) => { if (o.isMesh) { if (!o.geometry.userData.geteilt) o.geometry.dispose(); if (!o.material.vertexColors && !o.material.map) o.material.dispose(); } }); }
+function entferneFreibier() { if (!freibier) return; S.raum.remove(freibier.g); gibFrei(freibier.g); freibier = null; }
+function entferneSurfer() { if (!surfer) return; S.raum.remove(surfer.f.g); surfer.f.geos.forEach((g) => g.dispose()); surfer = null; }
+function raeumeAuf() {
+  if (!S?.raum) return;
+  entferneFreibier(); entferneSurfer();
+  for (const w of wuerfe || []) { S.raum.remove(w.m); w.m.geometry.dispose(); w.m.material.dispose(); }
+  for (const d of tropfen || []) S.raum.remove(d.m);
+  for (const f of figuren.values()) f.geos.forEach((g) => g.dispose());
+  if (becher) gibFrei(becher);
+  wuerfe = []; tropfen = [];
 }
 
 /* ---------- Figuren bewegen ---------- */
@@ -293,7 +315,11 @@ function bild(jetzt) {
   const echt = Math.min(0.25, (jetzt - letzte) / 1000 || 0); letzte = jetzt;
   const dt = Math.min(0.05, echt);
   if (!pausiert) {
-    if (laeuft) { let rest = echt; while (rest > 1e-6 && laeuft) { const d = Math.min(0.05, rest); schritt(d); rest -= d; } }
+    if (laeuft) {
+      const uhr = musik.uhr();
+      let rest = uhr === null ? echt : Math.min(0.25, Math.max(0, uhr - zeit));
+      while (rest > 1e-6 && laeuft) { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
+    }
     else if (L) { bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.3 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.3, false); S.setzeLicht(0.3, performance.now() / 1000, 3); }
     if (L) S.kamera(ich, dt, false, stagedive?.phase === "getragen");
     S.render();
@@ -314,8 +340,8 @@ function starte() {
   neueRunde();
   $("pogo-start").hidden = true; $("pogo-ende").hidden = true; $("pogo-hud").hidden = false; $("pogo-tonbox").hidden = false;
   spielEl.scrollIntoView({ block: "nearest" });
-  laeuft = true; pausiert = false;
-  musik.start(() => zeit);
+  laeuft = true; pausiert = false; letzte = performance.now();
+  musik.start();
 }
 function ende(leer) {
   laeuft = false; musik.stopp(); beendeZeiger(); tasten.clear();
@@ -331,7 +357,7 @@ function ende(leer) {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) { pausiert = true; if (laeuft) musik.pause(); }
+  if (document.hidden) { pausiert = true; tasten.clear(); zeiger = null; stick.hidden = true; if (laeuft) musik.pause(); }
   else { pausiert = false; letzte = performance.now(); if (laeuft) musik.weiter(); }
 });
 
