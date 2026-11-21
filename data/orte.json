@@ -4469,5 +4469,10 @@
  },
  "|graz (auatria)|ppc": {
   "nicht_gefunden": "2026-11-21"
+ },
+ "DE|stuttgart|jugendhaus hallschlag": {
+  "lat": 48.8133294,
+  "lon": 9.2014959,
+  "land": "DE"
  }
 }
