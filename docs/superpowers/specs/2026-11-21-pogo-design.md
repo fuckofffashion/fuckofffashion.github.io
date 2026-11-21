@@ -180,3 +180,27 @@ Ziel: Das Spiel soll sich mehr nach Konzert anfühlen und öfter „nochmal“ a
    - Geteilt wird per Teilen-Menü des Geräts (Web Share); ohne Teilen-Menü wird das Bild heruntergeladen.
 
 Reihenfolge der Umsetzung: Combo und Stimmung (Grundlage), Mitgrölen, Aufheben, Wall, Circle Pit, Schultern, Teilen. Jede Mechanik: Regeln mit Tests in `regeln.js`, dann Spielablauf, Texte DE/EN, Testbrowser.
+
+### Etappe 5, nach Codeprüfung und Spieletest 3 (Mark: „entflechten, dann neu messen“; „IM TAKT! weg, Ansagen Vorrang“)
+
+- **Combo:** wirkt nur noch auf den Takt-Bonus, nicht auf die Pit-Punkte. Auf den Schultern und beim Stagedive pausiert sie.
+- **Stimmung:**
+  - Takt-Sprung +1, neue Combo-Stufe +4, Abfall 2 pro Sekunde.
+  - Bei „Kocht“: 8 s lang ×1,5 auf Pit-Punkte und Takt-Bonus.
+  - Nie in der Zugabe; die Zugabe setzt Kochen, Combo und Mitgrölen zurück.
+- **Pops:** Kein „IM TAKT!“ mehr, der Combo-Zähler pulsiert. Ansagen (LOS, UMDREHEN, KOCHT, Gefallener, Circle Pit, Wall, Fascho, Zugabe) haben Vorrang und stehen 1,8 s.
+- **Ziele** (je etwa 70 % einer guten Runde des Mensch-Bots mit 45 ms Streuung und 8 % ausgelassenen Schlägen):
+
+  | Laden | gemessen | Ziel |
+  |---|---|---|
+  | PITCHER | 10.434 | 7000 |
+  | Druckluft drinnen | 6.246 | 4500 |
+  | Druckluft draußen | 4.708 | 3500 |
+  | Altenberg | 6.196 | 4500 |
+
+- **Ränge:** 0 / 10.000 / 40.000 / 100.000.
+- **Grafik (Mark):**
+  - Lichtkegel je Scheinwerfer, additiv und weich; Gegenlicht hinter der Band.
+  - LED-Bühnenkante blitzt auf jedem Schlag.
+  - Stroboskop: 4 Blitze bei „Kocht“, 2 bei „LOS!“. Höchstens einer je Schlag, aus ab einer Schlaglänge unter 0,34 s, nie bei reduzierter Bewegung.
+  - HUD auf Klebeband; Pops als Stempel-Sticker mit festen Bahnen (Hand-Hinweise am Rand, Ansagen oben mittig); Stimmung als Gaffer-Tape.

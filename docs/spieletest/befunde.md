@@ -8,6 +8,168 @@ Hier schreibt der Spieletester-Agent (`.claude/agents/pogo-spieletester.md`) sei
 
 ## Läufe
 
+## Lauf 2026-11-21 (3) · lokal (Branch etappe5, b047876) · Rechner 1280×800 + Handy 375×812 · DE
+
+Kurzfazit: Technisch bleibt Pogo sauber: 60 fps in allen Runden, auch mit Circle Pit am Handy bei 4× gedrosselter CPU (p95 16,7 ms, höchstens 209 Zeichenaufrufe), keine Konsolenfehler, Teilen erzeugt ein gutes Plakatbild und lädt es ohne Teilen-Menü herunter. Die Wertung ist aber aus dem Gleichgewicht: Combo ×4, „Stimmung kocht“ ×2, Mitgrölen und Kreis multiplizieren sich, der Profi-Bot holt das 8- bis 36-Fache der Ziele (Pitcher 27 289 bei Ziel 750), ein Bot mit menschlicher Zeitstreuung immer noch das 2,6-Fache, und zwei Tasten reichen für das Vierfache. „Stimmung kocht“ läuft 20–45 s pro Runde und in der Zugabe sogar über die ganze Zugabe weiter. Die neuen Ereignisse sind einzeln gut gemacht (Wall-Start, Aufheben, Grölzeile), stören sich aber gegenseitig: Schultern und Kreis-Wende bestrafen gute Spieler, und rund 250 Pops pro Minute verdrängen genau die wichtigen Ansagen.
+
+**Grenzen des Laufs:** Gespielt haben Skripte mit Lesesonde (`window.__pogo`, nur im Testbrowser per Playwright-`route` angehängt, keine Codeänderung); Eingaben über echte Tastatur- bzw. CDP-Touch-Ereignisse. Profi-Bot = Obergrenze (jeder Schlag genau im Takt, kennt alle Positionen). Mensch-Bot: Sprünge mit Gauß-Streuung σ = 45 ms um den Schlag, 8 % Schläge ausgelassen, reagiert aber ohne Suchzeit auf Ereignisse. Handy-Runden: Runde 7 war ein Fehler im Testgeschirr (Zwei-Finger-Tipps per CDP kamen nicht an, nur 3 `pointerdown` in der ganzen Runde), Runde 8 einfingrig; beide endeten mit leerem Becher, Ursache nicht ermittelt, daher **keine Wertungsaussage fürs Handy**, nur Leistung, Touch-Balance und Teilen. Grafik: echte GPU (Chromium headless, ANGLE/D3D11, RTX 4070 SUPER), kein Handy-Grafikchip. Nur ein Song (Dan Ganove). Nicht geprüft: englische Seite, Web Share auf echten Geräten, Bildschirmleser.
+
+**Gespielte Runden (8)**
+
+| Runde | Gerät | Laden | Spielweise | Punkte | Bier | Ergebnis | Ziel | × Ziel | „kocht“ |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | PC | Zentrum Altenberg | Profi-Bot: jeder Schlag, alle Ereignisse, Schultern, Kreis, Wall | 24 621 | 78 % | **19 204** | 2250 | 8,5 | 37,3 s |
+| 2 | PC | Pitcher | Profi-Bot | 27 565 | 99 % | **27 289** | 750 | 36 | 44,8 s |
+| 3 | PC | Druckluft drinnen | Profi-Bot | 24 244 | 78 % | **18 910** | 1250 | 15 | 40,0 s |
+| 4 | PC | Druckluft draußen | Profi-Bot | 26 121 | 77 % | **20 113** | 1750 | 11,5 | 30,0 s |
+| 5 | PC | Zentrum Altenberg | Mensch-Bot (σ 45 ms, 8 % Lücken), Schultern „gegenhalten“ | 10 863 | 54 % | **5 866** | 2250 | 2,6 | 20,0 s |
+| 6 | PC | Pitcher | Zwei Tasten: Pfeil hoch halten + Leertaste (σ 45 ms), sonst nichts | 11 825 | 16 % (zählt 25 %) | **2 956** | 750 | 3,9 | 33,5 s |
+| 7 | Handy, Touch, CPU 4× | Zentrum Altenberg | Touch-Bot (Testgeschirr-Fehler, siehe oben) | 295 | 0 % | 74 | 2250 | – | 0 s |
+| 8 | Handy, Touch, CPU 4× | Zentrum Altenberg | Touch-Bot einfingrig: ziehen, tippen, Schultern per Ziehen | 1 979 | 0 % | 495 | 2250 | – | 0 s |
+
+Höchstes gemessenes Ergebnis je Laden: Pitcher 27 289 · Druckluft drinnen 18 910 · Druckluft draußen 20 113 · Zentrum Altenberg 19 204 (alle Profi-Bot, Rechner).
+
+**Leistung (Messweg: `requestAnimationFrame`-Abstände über die ganze Runde ohne Zugabe-Ruf, `renderer.info.render.calls` je Bild, `?fps`, `performance.memory` nach `gc()`)**
+
+| Messung | Wert |
+|---|---|
+| Bildzeit Rechner, Runden 1–6 | Mittel 16,7 ms, p95 16,7–16,8 ms, p99 16,8 ms, 0 Bilder > 50 ms (je ein Bild mit genau 50 ms in der ersten Sekunde, r1, r2, r5) |
+| Circle Pit Rechner (r1, r4, r5) | p95 16,7–16,8 ms; Zeichenaufrufe Mittel 138–145, höchstens 186–203; `?fps` 56–60 |
+| Handy 375×812, DPR 2, CPU 4×, Altenberg mit Circle Pit (r7, r8) | Mittel 16,8 ms, p95 16,7 ms, je 4 Bilder > 50 ms (max 116,8 / 116,7 ms, wie Lauf 2); im Kreis Mittel 17,0 ms, p95 16,7 / 16,8 ms; Zeichenaufrufe im Kreis Mittel 168 / 88, höchstens 204 / 146; ganze Runde höchstens 209 (Spec-Grenze ~300) |
+| Speicher | Heap nach den Runden 9,7–10,9 MB; Geometrien je Laden wie Lauf 2 (Pitcher 104 → 105 in einer anderen Sitzung nach zwei Runden), kein Hinweis auf ein Leck |
+| Pops (Profi / Mensch / zwei Tasten) | 243–265 / 193 / 177 pro Minute; 55–58 % davon „IM TAKT!“ |
+| Konsole | In allen 8 Runden keine Fehler, keine Warnungen, keine 404 |
+| Teilen | Rechner: kein `navigator.canShare` → Download `pogo-ergebnis.png` (1080×1350). Handy-Emulation: ebenso Download. Bild: `docs/spieletest/bilder/2026-11-21-L3-teilen-pc.png`, `docs/spieletest/bilder/2026-11-21-L3-teilen-handy.png` |
+
+**Was gut ist (so lassen):** Wall-Start mit „PERFEKTER START!“ (2/2 geschafft, klare Ansage), Aufheben (+150, Bier auf 100 %, „Danke, Alter!“ – kurz und herzlich), die Grölzeile groß über der Bühne, das Teilen-Bild (Anton-Schrift, Rot-Gelb, Motiv, Adresse; Fonts und Motiv werden korrekt gezeichnet).
+
+| ID | Art | Schwere | Bereich | Wo | Befund | Aufwand | Status |
+|---|---|---|---|---|---|---|---|
+| PT-20261121-27 | Frage | hoch | Spielgefühl | Wertung, Ziele | Multiplikatoren stapeln sich: Profi 8–36 × Ziel, Mensch-Bot 2,6 ×, zwei Tasten 3,9 ×; Pitcher bringt am meisten | mittel | offen |
+| PT-20261121-28 | Fehler | hoch | Technik | Zugabe, Stimmung | „Stimmung kocht“ läuft in die Zugabe weiter und verdoppelt dort alle 15 s (Spec: 10 s) | klein | offen |
+| PT-20261121-29 | Vorschlag | mittel | Spielgefühl | Stimmung | Stimmung kocht 20–45 s pro Runde, in 6 von 6 PC-Runden; 4-Treffer-Zugabe greift immer | klein | offen |
+| PT-20261121-30 | Fehler | mittel | Spielgefühl | Circle Pit | „UMDREHEN!“ bestraft sofort: im selben Bild „UMGERANNT!“, Combo weg, −4 % Bier, auch beim fehlerfreien Bot | klein | offen |
+| PT-20261121-31 | Fehler | mittel | Spielgefühl | Schultern | Balance ist verkehrt herum: wer „gegenhält“, fällt nach 0,3 s; man muss zur Neigung hin drücken | klein | offen |
+| PT-20261121-32 | Vorschlag | mittel | Spielgefühl | Schultern | Auf den Schultern bricht die Combo und die Stimmung sinkt: 48 Punkte/s oben gegen 391 davor | klein | offen |
+| PT-20261121-33 | Vorschlag | mittel | Design | Pops | Pop-Flut: ~250 Pops/min, meist „IM TAKT!“; „LOS!“ 2/2 und „UMDREHEN!“ 3/3 nach < 0,5 s verdrängt (vgl. erledigtes PT-20261121-24) | klein | offen |
+| PT-20261121-34 | Vorschlag | mittel | Design | Aufheben, Schultern | Gefallene und Kumpel liegen oft hinter dir außerhalb des Bildes (9 von 15 bzw. 2 von 3) | klein | offen |
+| PT-20261121-35 | Frage | mittel | Spielgefühl | Rang | Rang „Pit-Legende“ (20 000) nach einer einzigen Pitcher-Runde; Stufen 2000 / 8000 / 20 000 passen nicht mehr | klein | offen |
+| PT-20261121-36 | Vorschlag | mittel | Design | Stimmungsbalken | Balken 5 px, ohne Beschriftung; „kocht“ nur als 1,1-s-Pop, der oft verdrängt wird | klein | offen |
+| PT-20261121-37 | Frage | mittel | Technik | Handy, Eingabe | Gleichzeitig ziehen und tippen (zwei Daumen) – geht das? Code ersetzt den Zieh-Finger | klein | offen |
+| PT-20261121-38 | Vorschlag | klein | Design | Grüne Ringe | Grüner Ring heißt dreierlei: eigene Combo ab ×3, Kumpel-Schultern, Sänger | klein | offen |
+| PT-20261121-39 | Vorschlag | klein | Zugänglichkeit | Hinweiszeile, Circle Pit | Hinweis flattert „MIT DEM STROM!“ ↔ „Lauf mit dem Strom im Kreis!“ (8 Wechsel in 6 s), Zeile ist `aria-live` | klein | offen |
+| PT-20261121-40 | Frage | klein | Technik | Teilen | Web Share auf echten Geräten ungetestet; geteilt wird erst nach drei `await` (Schriften, Motivbild, `toBlob`) | klein | offen |
+
+### PT-20261121-27 · Multiplikatoren stapeln sich, Ziele bedeuten nichts mehr
+- **Schritte:** 1. Je Laden eine Runde mit dem Profi-Bot (jeder Schlag im Takt, alle Ereignisse). 2. Altenberg mit dem Mensch-Bot (σ 45 ms, 8 % Lücken). 3. Pitcher nur mit zwei Tasten (Pfeil hoch halten, Leertaste im Takt, σ 45 ms).
+- **Erwartet:** Ziele 750 / 1250 / 1750 / 2250 „schwer, aber schaffbar“ (Nachtrag nach Spieletest 2); spätere Läden spürbar härter.
+- **Beobachtet:** Profi 27 289 / 18 910 / 20 113 / 19 204 (das 36-, 15-, 11,5- und 8,5-Fache). Mensch-Bot Altenberg 5 866 (2,6-fach). Zwei Tasten in Pitcher 2 956 (3,9-fach), obwohl der Becher bei 16 % war. Pitcher, der leichteste Laden, bringt das höchste Ergebnis (99 % Bier). Ursache: Combo ×4, „kocht“ ×2, Kreis ×1,5, Schultern ×2 und Zugabe ×1,5 multiplizieren sich, und Combo und „kocht“ wirken jetzt auch auf den Takt-Bonus und das Grölen. Profi-Runden: Combo ×4 während 18–31 s, „kocht“ während 30–45 s.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r2-ende.png`, `docs/spieletest/bilder/2026-11-21-L3-r5-ende.png`, `docs/spieletest/bilder/2026-11-21-L3-r6-ende.png`
+- **Messwert:** Endbilder r1–r6. Rechnung erste Reihe im Refrain: vor Etappe 5 höchstens 30 Punkte/s + 15 je Sprung × 2,27 Schläge/s ≈ 64 Punkte/s; jetzt 30 × 4 × 2 = 240 + 15 × 4 × 2 × 2,27 ≈ 272 + Grölzeile 400 je 4 Schläge ≈ 227, zusammen ≈ 740 Punkte/s (11,5-fach). Lauf 2 Profi: 2 868–5 371 Punkte, jetzt 24 244–27 565.
+- **Idee zur Lösung:** Combo nur auf den Takt-Bonus, nicht auf die Pit-Punkte; „kocht“ ×1,5 und nicht auf Combo-Punkte; Gesamtfaktor deckeln (z. B. ×3). Danach Ziele mit Mensch-Bot neu messen; Pitcher muss unter Altenberg liegen.
+
+### PT-20261121-28 · „Stimmung kocht“ verdoppelt die ganze Zugabe
+- **Schritte:** 1. Profi-Runde, die Stimmung kocht kurz vor Songende (r1: ab 55,8 s). 2. Zugabe-Ruf schaffen.
+- **Erwartet:** Spec Etappe 5, Punkt 6: „10 s doppelte Punkte“.
+- **Beobachtet:** `starteZugabe` setzt die Spielzeit von 58 s auf 43 s zurück, `kochtBis` bleibt stehen (r1: 65,8; r2: 58,3; r6: 59,6). Damit kocht die Stimmung in der Zugabe weiter (r1: 2,2 s im Song + 15 s Zugabe = 17,2 s statt 10 s). In 3 von 6 PC-Runden (r1, r2, r6), jeweils über die ganze Zugabe. Die Zugabe zählt ohnehin ×1,5.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-ruf.png`
+- **Messwert:** Sonde beim Beginn der Zugabe: r1 `zeit 43,1 · kochtBis 65,8 · kocht true`; r2 `43,1 · 58,3 · true`; r6 `43,0 · 59,6 · true`.
+- **Idee zur Lösung:** In `starteZugabe` die Restdauer mitnehmen (`kochtBis = start + max(0, kochtBis − alteZeit)`) oder „kocht“ beim Ruf beenden.
+
+### PT-20261121-29 · Die Stimmung kocht fast immer
+- **Schritte:** Sechs PC-Runden, beliebige Spielweise.
+- **Erwartet:** „STIMMUNG KOCHT!“ als Höhepunkt (Spec: „Bei 100 … 10 s doppelte Punkte, das Licht flackert wild“); die leichtere Zugabe (4 statt 6 Treffer) als Belohnung für gute Stimmung.
+- **Beobachtet:** In 6 von 6 Runden Stimmung 100, „kocht“ 20–45 s von etwa 73 s Spielzeit, auch mit zwei Tasten (33,5 s). Jeder Takt-Sprung gibt +2, bei 2,27 Schlägen/s also +4,5/s gegen −1/s Abfall; nach dem Kochen geht es bei 40 weiter und ist 10–15 s später wieder voll. Stimmung bei Songende 70–100 in 6 von 6 Runden, die 4-Treffer-Zugabe gilt also immer.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-kocht.png`
+- **Messwert:** Sonde je Bild: Summe der Zeit mit `zeit < kochtBis`; `stimmungEnde` beim Ruf.
+- **Idee zur Lösung:** Takt +1 statt +2 und Abfall 2/s, damit nur Ereignisse (Aufheben, Wall, Fascho, Grölen) die Stimmung zum Kochen bringen; höchstens einmal pro Song.
+
+### PT-20261121-30 · Kreis-Wende rennt einen sofort um
+- **Schritte:** 1. Altenberg oder Druckluft draußen, im ersten Refrain mit dem Strom laufen. 2. Bei „UMDREHEN!“ sofort umkehren.
+- **Erwartet:** Wer umdreht, bleibt im Strom (Spec Etappe 5, Punkt 2: „Nach 5 s dreht der Kreis“); „gegen“ heißt: man läuft absichtlich dagegen.
+- **Beobachtet:** Im selben Bild wie „UMDREHEN!“ kommen „UMGERANNT!“, „COMBO WEG“ (wenn eine Combo lief) und −4 % Bier. Die Geschwindigkeit kann nicht in null Sekunden kippen, also trifft es jeden, auch den Bot, der im selben Bild umlenkt. In 3 von 3 PC-Runden mit Kreis (r1, r4, r5); der Pop „UMDREHEN!“ ist danach in 3 von 3 Fällen nach weniger als 0,5 s verdrängt.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-groelen.png` („UMGERANNT!“ über dem verdeckten Pop)
+- **Messwert:** Ereignisprotokoll r1: „26.0 POP UMDREHEN! · 26.0 POP COMBO WEG · 26.0 POP UMGERANNT! [p3524 b96 x1]“; r4 und r5 gleich.
+- **Idee zur Lösung:** Nach der Wende 1–2 Schläge Schonfrist, in denen „gegen“ nicht zählt.
+
+### PT-20261121-31 · Schulter-Balance verkehrt herum
+- **Schritte:** 1. Auf die Schultern. 2. Die Figur kippt nach links. 3. Wie im Hinweis „links und rechts gegenhalten“ nach rechts drücken.
+- **Erwartet:** Spec Etappe 5, Punkt 7: „mit links/rechts … hältst du dagegen“.
+- **Beobachtet:** Kippt die Figur nach links, korrigiert nur die Taste **links**. Der Bot, der gegen die Neigung drückt, fiel nach 0,3 s („RUNTERGEFALLEN!“, −15 % Bier); mit der Taste zur Neigung hin blieb er 4 von 4 Mal die vollen 8 s oben (r1, r3, r4 Tastatur, r8 Touch-Ziehen). Im Code: `wackle(...) − eingabe × korrektur`, Neigung `rotation.z = −wackel × 0,45`.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r5-schulter-kipp.png` (Figur kippt nach links, Bot drückt rechts)
+- **Messwert:** r5: „15.6 AUF DIE SCHULTERN! [b89] · 15.9 RUNTERGEFALLEN! [b74]“.
+- **Idee zur Lösung:** Vorzeichen der Eingabe umdrehen, dann stimmt „gegenhalten“.
+
+### PT-20261121-32 · Schultern kosten Punkte
+- **Schritte:** Druckluft drinnen, Profi-Bot mit Combo ×4 und kochender Stimmung nimmt das Schulter-Angebot an.
+- **Erwartet:** „8 s oben, Kamera höher, ×2 Punkte“ als Belohnung.
+- **Beobachtet:** Oben kann man nicht springen (`tippAktion` schluckt jedes Tippen), die Combo bricht 0,7 s nach dem Aufsteigen, die Stimmung fällt von 100 auf 37. Oben zählt die Zone als Pit (10/s × 2). r3: 391 Punkte/s in den 2,9 s davor, 48 Punkte/s in den 7,9 s oben; Verlust etwa 2 700 Punkte. Ein guter Spieler lernt: Kumpel ignorieren.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r3-schultern.png`
+- **Messwert:** Ereignisprotokoll r3: „13.9 COMBO ×4! [p1866] … 16.9 AUF DIE SCHULTERN! [p3004 x4] · 17.6 COMBO WEG · 24.8 SAUBER RUNTER! [p3387 x1 st37]“.
+- **Idee zur Lösung:** Combo oben einfrieren statt brechen und Tippen oben als Takt-Sprung werten (Arme hoch), oder Zone oben als „erste Reihe“ zählen.
+
+### PT-20261121-33 · Pop-Flut verdrängt die wichtigen Ansagen (erneut, vgl. PT-20261121-24)
+- **Schritte:** Eine Runde im Takt springen, im Refrain mit Kreis und Grölzeile.
+- **Erwartet:** Ereignisse wie „LOS!“, „UMDREHEN!“, „STIMMUNG KOCHT!“ sind lesbar (PT-20261121-24 ist als erledigt markiert).
+- **Beobachtet:** 243–265 Pops pro Minute (Profi), 177–193 (Mensch-Bot, zwei Tasten); 55–58 % davon „IM TAKT!“. Höchstens 3 Pops gleichzeitig, also verdrängt jeder Takt-Sprung den ältesten. Unter 0,5 s sichtbar: 216 von 1 258 Pops, darunter „LOS!“ 2/2, „UMDREHEN!“ 3/3, „STIMMUNG KOCHT!“ 6/17. Am Rechner liegt der dritte Pop auf der Grölzeile, am Handy auf der Aufgabenzeile und dem Ton-Knopf.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-kocht.png` („CIRCLE PIT!“ über „IM TAKT“ und „schwapp“, „KOCHT“ schon weg), `docs/spieletest/bilder/2026-11-21-L3-r1-groelen.png`, `docs/spieletest/bilder/2026-11-21-L3-r8-schultern.png` (Handy)
+- **Messwert:** Pop-Protokoll je Bild, nachgespielt mit der Regel „höchstens 3, Lebensdauer 1,2 s“ (r1–r6).
+- **Idee zur Lösung:** „IM TAKT!“ nicht mehr als Pop, sondern das Grölwort bzw. der Combo-Zähler pulsiert; wichtige Pops (LOS, UMDREHEN, KOCHT, Combo-Stufe) verdrängen nur unwichtige.
+
+### PT-20261121-34 · Gefallene und Kumpel liegen außerhalb des Bildes
+- **Schritte:** Runde spielen, nach vorn laufen; bei „PUNK AM BODEN!“ den roten Ring suchen.
+- **Erwartet:** Spec Etappe 5, Punkt 3: „Hinlaufen (≤ 0,8 m) und tippen“ – man muss sehen, wohin.
+- **Beobachtet:** Gefallene erscheinen irgendwo im Pit. Die Kamera steht 4,1 m hinter dir (Handy 4,6 m) mit 55° Blickwinkel; was mehr als etwa 0,8 m hinter dir am Boden liegt, ist unter dem Bildrand (gerechnet). 9 von 15 Gefallenen und 2 von 3 Schulter-Kumpeln lagen beim Erscheinen so weit hinter dir (bis 8,6 m). Der Hinweis sagt „Hinlaufen und antippen!“, aber nicht wohin. Der Bot kennt die Position; ein Mensch muss rückwärts suchen und verliert dabei die erste Reihe.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-gefallen.png` (Hinweis da, kein roter Ring im Bild)
+- **Messwert:** Sonde beim Erscheinen: Abstand nach hinten r2 −0,7 / −1,0 / 2,6 m, r3 1,7 / 3,0 / 2,7, r4 −0,3 / −2,0 / 0,4, r5 0,4 / 1,8 / 8,6, r6 1,2 / 3,5 / 4,0; Kumpel r3 1,3, r4 −1,1, r5 2,4.
+- **Idee zur Lösung:** Nur vor dir hinfallen lassen (z kleiner als deins) oder einen Pfeil am Bildrand zeigen.
+
+### PT-20261121-35 · Rang ist nach einer Runde ausgereizt
+- **Schritte:** Mit leerem Spielstand eine Profi-Runde (Sitzung A: Altenberg; Sitzung B: Pitcher); Sitzung C: Mensch-Bot, dann zwei Tasten.
+- **Erwartet:** Rang wächst über viele Runden (Spec Etappe 3: Rand-Steher 0, Pogo-Lehrling 2000, Pit-Sau 8000, Pit-Legende 20 000).
+- **Beobachtet:** Altenberg allein: 19 204 → „Pit-Sau“. Pitcher allein: 27 289 → „Pit-Legende“ nach der ersten Runde. Mensch-Bot plus Zwei-Tasten-Runde: 8 822 → „Pit-Sau“ nach zwei Runden. Für die fünfte Runde bleibt nichts zu erreichen.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r2-ende.png` („Rang: Pit-Legende · Tour 1/4“), `docs/spieletest/bilder/2026-11-21-L3-r6-ende.png`
+- **Messwert:** Endbilder r1, r2, r5, r6.
+- **Idee zur Lösung:** Erst PT-20261121-27 entscheiden, dann Rangstufen mit dem Mensch-Bot neu setzen (etwa 10 Runden bis Pit-Legende).
+
+### PT-20261121-36 · Stimmungsbalken ohne Erklärung
+- **Schritte:** Erste Runde ohne Vorwissen spielen.
+- **Erwartet:** Man versteht, was der Balken ist, was ihn füllt und was bei 100 passiert.
+- **Beobachtet:** 5 px hoher Verlaufsstreifen am oberen Spielrand, ohne Wort, `aria-hidden`. Der Text „Stimmung“ / „Mood“ steht in `texte.js`, wird aber nirgends benutzt. „Kocht“ zeigt sich nur als Pop (1,1 s, in 6 von 17 Fällen nach < 0,5 s verdrängt), als Flackern des 5-px-Streifens und als etwas helleres Licht (`setzeLicht` mit 1,6 statt 1,0–1,5); ein „wildes Flackern“ ist auf den Bildern nicht zu sehen.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-kocht.png`, `docs/spieletest/bilder/2026-11-21-L3-r1-kreis.png`
+- **Idee zur Lösung:** „STIMMUNG“ klein an den Balken, Balken 8–10 px; beim Kochen „×2“ neben dem Ergebnis und kurzer Lichtwechsel auf Rot.
+
+### PT-20261121-37 · Zwei Daumen am Handy (offen)
+- **Schritte:** Am Handy mit einem Daumen ziehen (laufen), mit dem anderen im Takt tippen – wie im Circle Pit nötig, um Strom ×1,5 und Combo gleichzeitig zu halten.
+- **Erwartet:** Laufen und Springen gehen gleichzeitig.
+- **Beobachtet:** Nicht belegt: der Zwei-Finger-Test per CDP kam im Testbrowser nicht an (Testgeschirr). Im Code setzt `beginneZeiger` bei jedem `pointerdown` den Zeiger neu; ein zweiter Finger beendet damit das Ziehen des ersten, bis dieser neu aufsetzt.
+- **Beleg:** `js/pogo/app.js`, `beginneZeiger` (Zeile 142–147)
+- **Idee zur Lösung:** Auf einem echten Handy prüfen; falls bestätigt, zweiten Finger nur als Tipp werten und den Zieh-Finger behalten.
+
+### PT-20261121-38 · Grüner Ring heißt dreierlei
+- **Schritte:** Combo ×3 erreichen; Schulter-Angebot abwarten; Zugabe.
+- **Erwartet:** Spec Etappe 5: „Kumpel mit grünem Ring“; „ab ×3 leuchtet die eigene Figur“.
+- **Beobachtet:** Ab ×3 liegt ein grüner Ring unter deinen Füßen (`0x58d26a`), gleiche Farbe wie der Ring des Schulter-Kumpels und der Ring des Sängers. Wer den Hinweis „Kumpel mit grünem Ring“ liest, sieht zuerst den Ring unter sich selbst.
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-r1-gefallen.png`, `docs/spieletest/bilder/2026-11-21-L3-r1-ruf.png`
+- **Idee zur Lösung:** Eigenes Leuchten als Schimmer auf der Figur oder in Gelb; Grün nur für „hier hin“.
+
+### PT-20261121-39 · Hinweiszeile flattert im Circle Pit
+- **Schritte:** Im Kreis mit dem Strom laufen.
+- **Beobachtet:** Die Hinweiszeile wechselt zwischen „MIT DEM STROM!“ und „Lauf mit dem Strom im Kreis!“, sobald die Geschwindigkeit kurz unter 0,8 m/s fällt: r1 8 Wechsel zwischen 22,0 und 28,2 s; Runden mit Kreis 35–38 Wechsel, ohne Kreis 11–24. Die Zeile ist `aria-live="polite"`, ein Bildschirmleser liest jeden Wechsel.
+- **Messwert:** Hinweis-Protokoll je Bild, r1 und r5.
+- **Idee zur Lösung:** Hinweis im Kreis fest lassen, „MIT DEM STROM!“ nur als einmaligen Pop.
+
+### PT-20261121-40 · Web Share auf echten Geräten offen
+- **Schritte:** Endbild → „Ergebnis teilen“.
+- **Beobachtet:** Ohne Teilen-Menü (Rechner-Chromium, Handy-Emulation) kommt der Download `pogo-ergebnis.png`, 1080×1350, Inhalt wie Spec (Laden, Titel, Ergebnis, Rang, Motiv, Adresse). Ohne abgeguckten Motiv bleibt eine große Lücke über der Adresse; Band und Song stehen nicht auf dem Bild. Nicht prüfbar: der Weg über `navigator.share`. Er kommt erst nach drei `await` (Schriften, Motivbild, `toBlob`); ob Safari das noch als Nutzergeste wertet, ist offen (sonst greift der Download).
+- **Beleg:** `docs/spieletest/bilder/2026-11-21-L3-teilen-pc.png`, `docs/spieletest/bilder/2026-11-21-L3-teilen-handy.png`
+- **Idee zur Lösung:** Auf iPhone und Android einmal teilen; „Dan Ganove · Es geht noch lauter“ in die Lücke setzen.
+
+### Top 3 für mehr Spaß
+1. **Multiplikatoren entflechten (PT-20261121-27, -28, -29):** Combo nur auf den Takt-Bonus, „kocht“ seltener und ×1,5, Zugabe ohne geerbtes Kochen, dann Ziele und Rang mit dem Mensch-Bot neu messen. Erst dann bedeuten Ziel, Rang und das Teilen-Bild wieder etwas, und „STIMMUNG KOCHT!“ wird ein Höhepunkt statt Dauerzustand.
+2. **Pop-Diät (PT-20261121-33, -36):** „IM TAKT!“ als Pop streichen und stattdessen Grölwort und Combo-Zähler pulsieren lassen; wichtige Ansagen mit Vorrang. Das halbiert den Lärm und macht LOS, UMDREHEN und KOCHT überhaupt erst lesbar.
+3. **Neue Ereignisse belohnen statt bestrafen (PT-20261121-30, -31, -32, -34):** Combo auf den Schultern einfrieren, Balance-Richtung umdrehen, nach der Kreis-Wende eine Schonfrist, Gefallene vor dir hinfallen lassen. Alles kleine Änderungen, und danach lohnt es sich, die neuen Mechaniken mitzunehmen statt sie zu meiden.
+
 ## Lauf 2026-11-21 (2) · lokal (master = live) · Rechner 1280×800 + Handy 375×812 · DE + EN
 
 Kurzfazit: Technisch ist Pogo in sehr gutem Zustand: 60 fps in allen acht Runden, p95 der Bildzeit 16,7 ms, kein Speicherleck, keine Konsolenfehler, Touch-Takt auf die Millisekunde fair. Die neue Wertung hat das Faulenzen erledigt (Ergebnis 88 statt 1343), aber das Bier ist zum reinen Zeitlimit geworden: **alle 8 Runden endeten mit leerem Becher**, auch die eines Bots mit 100 % Takt-Treffern und jeder abgewehrten Hand. Damit ist das Ergebnis immer Punkte ÷ 4, der Titel immer „Becher leer.“, und die Ziele 2500, 3500 und 4500 sind nicht erreichbar. Am meisten stört außerdem, dass HUD („Punkte 5371“) und Ziel („noch 157 Punkte“) dasselbe Wort für zwei verschiedene Zahlen benutzen.
