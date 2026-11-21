@@ -1,0 +1,21 @@
+{
+  "_hinweis": "Einzige Liste der Bands. Nach jeder Änderung: python tools/build-bands.py und python -m tools.konzerte.bands",
+  "bands": [
+    { "id": "dan-ganove", "name": "Dan Ganove", "logo": "dan-ganove.webp",
+      "logo_quelle": "https://static.wixstatic.com/media/1093e8_c35bda69ecc54d05b6f301076c8a7d78~mv2.png",
+      "web": "https://dan66713.wixsite.com/dan-punkrock",
+      "beschreibung": { "de": "Akustikpunk aus Oberhausen", "en": "Acoustic punk from Oberhausen" } },
+    { "id": "alarmsignal", "name": "Alarmsignal", "logo": "alarmsignal.webp",
+      "logo_quelle": "https://www.alarmsignal-punkrock.de/wp-content/uploads/2024/09/Alarmsignal_logo.webp",
+      "web": "https://www.alarmsignal-punkrock.de/",
+      "beschreibung": { "de": "Deutschpunk", "en": "German punk" } },
+    { "id": "los-fastidios", "name": "Los Fastidios", "logo": "los-fastidios.webp",
+      "logo_quelle": "https://globaluserfiles.com/media/287625_f24588bbb1474289b12a4f18a6189574ee94fde2.png",
+      "web": "https://losfastidios.net",
+      "beschreibung": { "de": "Streetpunk und Ska aus Italien", "en": "Street punk and ska from Italy" } },
+    { "id": "trijahnity", "name": "Trijahnity", "logo": "trijahnity.webp",
+      "logo_quelle": "https://www.trijahnity.de/images/Trijahnity_logo_wei%C3%9F.png",
+      "web": "https://www.trijahnity.de",
+      "beschreibung": { "de": "Reggae'n Roll", "en": "Reggae'n Roll" } }
+  ]
+}
