@@ -20,13 +20,13 @@ Gespielte Runden (8): PC/DE Pitcher aktiv · PC/EN Druckluft drinnen aktiv · PC
 |---|---|---|---|---|---|
 | PT-20261121-01 | Fehler | mittel | HUD, Handy | Aufgaben-Zeile läuft unter den „Ton an“-Knopf; Schrift nur 10,9 px | erledigt (66aa037) |
 | PT-20261121-02 | Fehler | mittel | Startbild, Handy | Startknopf verdeckt die Songauswahl; Startbild scrollt innen | erledigt (f27c9dd: Knopf klebt unten, Läden zweispaltig) |
-| PT-20261121-03 | Frage | mittel | Wertung | Nur im Pit stehen bringt 327 Punkte und die ganze Runde | erledigt (Wertung, siehe Commit danach) |
-| PT-20261121-04 | Frage | mittel | Wertung | Leerer Becher = Ergebnis 0, auch mit 500–1300 Punkten | erledigt (Wertung, siehe Commit danach) |
-| PT-20261121-05 | Vorschlag | mittel | Stagedive | Ein Klick ohne Abwehr bringt rund 900 Punkte | erledigt (Wertung, siehe Commit danach) |
+| PT-20261121-03 | Frage | mittel | Wertung | Nur im Pit stehen bringt 327 Punkte und die ganze Runde | erledigt (2887381) |
+| PT-20261121-04 | Frage | mittel | Wertung | Leerer Becher = Ergebnis 0, auch mit 500–1300 Punkten | erledigt (2887381) |
+| PT-20261121-05 | Vorschlag | mittel | Stagedive | Ein Klick ohne Abwehr bringt rund 900 Punkte | erledigt (2887381) |
 | PT-20261121-06 | Fehler | klein | Kopf der Seite | „Spiel · Entwurf, Etappe 1“ steht noch auf der Seite (DE und EN) | erledigt (66aa037) |
 | PT-20261121-07 | Vorschlag | klein | Startbild | Steuerung steht nur unter dem Spielfeld, nicht im Startbild | erledigt (66aa037) |
 | PT-20261121-08 | Vorschlag | klein | Startbild, Rechner | Startknopf liegt bei 1280×800 unter dem sichtbaren Bereich | erledigt (66aa037: Links springen aufs Spielfeld) |
-| PT-20261121-09 | Frage | klein | Aufgaben | „Kein Stiefel im Bier (+250)“ wird auch bei leerem Becher gutgeschrieben | erledigt (Wertung, siehe Commit danach) |
+| PT-20261121-09 | Frage | klein | Aufgaben | „Kein Stiefel im Bier (+250)“ wird auch bei leerem Becher gutgeschrieben | erledigt (2887381) |
 | PT-20261121-10 | Vorschlag | klein | Tastatur | Tab/Enter im Spiel: Seite wurde verlassen | verworfen (Tab/Enter sind normales Browserverhalten; abfangen würde Tastaturnutzer einsperren) |
 | PT-20261121-11 | Frage | klein | Konsole | Bei jedem Laden die Warnung „CONTEXT_LOST_WEBGL: loseContext“ | offen (harmlos, Ursache nicht geprüft) |
 
