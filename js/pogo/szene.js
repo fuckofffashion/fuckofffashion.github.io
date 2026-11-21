@@ -44,9 +44,9 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     const raum = new THREE.Group(); scene.add(raum); s.raum = raum;
     const eigen = (m) => { m.userData.eigenesMaterial = true; return m; };
     const textur = (t) => { texturen.push(t); return t; };
-    const draussen = L.matsch;
-    scene.background = new THREE.Color(draussen ? 0x0b1220 : 0x070505);
-    scene.fog = new THREE.FogExp2(draussen ? 0x0e1522 : 0x120c0a, draussen ? 0.05 : 0.07);
+    const draussen = L.draussen || L.matsch;
+    scene.background = new THREE.Color(draussen ? 0x15203a : 0x070505);
+    scene.fog = new THREE.FogExp2(draussen ? 0x1a2440 : 0x120c0a, draussen ? 0.035 : 0.07);
 
     raum.add(new THREE.HemisphereLight(draussen ? 0x4a5a7a : 0x5a3a30, 0x0a0807, draussen ? 1.6 : 1.1));
     raum.add(new THREE.AmbientLight(0xffffff, 0.25));
@@ -104,9 +104,67 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     if (L.decke) { const d = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 2 + 2, 30), eigen(mat("#141010"))); d.rotation.x = Math.PI / 2; d.position.set(0, L.decke, 0); raum.add(d); }
     if (L.pfeiler) { const h = L.decke || 4; const p = new THREE.Mesh(new THREE.CylinderGeometry(L.pfeiler.r, L.pfeiler.r, h, 20), eigen(mat("#3a3330"))); p.position.set(L.pfeiler.x, h / 2, L.pfeiler.z); p.castShadow = true; p.receiveShadow = true; raum.add(p); }
 
+    // Deko je Laden (ungefährer Nachbau, siehe Design „Etappe 2“)
+    s.ventilatoren = [];
+    const deko = new Set(L.deko || []);
+    const graffitiTex = deko.has("graffiti") ? textur(leinwand(1024, 512, (x, w, h) => {
+      x.fillStyle = "#2b2826"; x.fillRect(0, 0, w, h);
+      const farben = ["#e3262b", "#4fd15f", "#f2b632", "#3aa0ff", "#ff5fd2", "#f1ede4", "#111111"];
+      const worte = ["PUNK", "OI!", "DIY", "KRACH", "LAUT", "FCK", "PIT", "RUHRPOTT", "NO FUTURE", "SKA"];
+      for (let i = 0; i < 60; i++) { x.strokeStyle = farben[i % farben.length]; x.lineWidth = zufall(3, 12); x.globalAlpha = zufall(0.4, 0.9); x.beginPath(); x.moveTo(zufall(0, w), zufall(0, h)); x.bezierCurveTo(zufall(0, w), zufall(0, h), zufall(0, w), zufall(0, h), zufall(0, w), zufall(0, h)); x.stroke(); }
+      for (let i = 0; i < 14; i++) { x.globalAlpha = 0.95; x.fillStyle = farben[(i * 3) % farben.length]; x.font = `${Math.floor(zufall(50, 120))}px 'Permanent Marker', cursive`; x.save(); x.translate(zufall(0, w), zufall(60, h)); x.rotate(zufall(-0.3, 0.3)); x.fillText(worte[i % worte.length], 0, 0); x.restore(); }
+      x.globalAlpha = 1;
+    })) : null;
+    if (graffitiTex) { graffitiTex.wrapS = THREE.RepeatWrapping; graffitiTex.repeat.set(2, 1); }
+    if (graffitiTex && L.wand) for (const sx of [-1, 1]) { // Graffiti auf den Innenwänden
+      const g = new THREE.Mesh(new THREE.PlaneGeometry(L.z[1] - L.z[0] + 2, 3.2), eigen(new THREE.MeshStandardMaterial({ map: graffitiTex, roughness: 0.9 })));
+      g.rotation.y = -sx * Math.PI / 2; g.position.set(sx * (L.x + 0.29), 1.7, (L.z[0] + L.z[1]) / 2); raum.add(g);
+    }
+
+    if (deko.has("ventilatoren") && L.decke) {
+      const blattGeo = new THREE.BoxGeometry(0.9, 0.02, 0.14), nabeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.18, 10);
+      const schwarz = eigen(mat("#0e0e0e", { metalness: 0.3, roughness: 0.5 }));
+      for (const z of [L.gitterZ + 1.5, (L.gitterZ + L.z[1]) / 2, L.z[1] - 1.5]) {
+        const v = new THREE.Group(); v.position.set(0, L.decke - 0.25, z);
+        const nabe = new THREE.Mesh(nabeGeo, schwarz); v.add(nabe);
+        for (let k = 0; k < 4; k++) { const b = new THREE.Mesh(blattGeo, schwarz); b.rotation.y = (k * Math.PI) / 2; b.position.set(Math.cos((k * Math.PI) / 2) * 0.45, -0.05, -Math.sin((k * Math.PI) / 2) * 0.45); v.add(b); }
+        raum.add(v); s.ventilatoren.push(v);
+      }
+    }
+    if (deko.has("bilderwand")) {
+      const bilder = textur(leinwand(1024, 512, (x, w, h) => {
+        x.fillStyle = "#3a1612"; x.fillRect(0, 0, w, h);
+        const farben = ["#d9a441", "#b8261f", "#f1ede4", "#3a6ea5", "#6b8e23", "#8b4513", "#e3262b", "#111"];
+        for (let i = 0; i < 70; i++) { const bw = zufall(40, 120), bh = zufall(40, 140), px = zufall(0, w - bw), py = zufall(0, h - bh); x.fillStyle = "#c9a227"; x.fillRect(px - 5, py - 5, bw + 10, bh + 10); x.fillStyle = farben[i % farben.length]; x.fillRect(px, py, bw, bh); }
+      }));
+      const wand = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 2 + 2, 2.6), eigen(new THREE.MeshStandardMaterial({ map: bilder, roughness: 0.8 })));
+      wand.position.set(0, 2.2, bz - 2.9); raum.add(wand);
+    }
+    if (deko.has("traversen")) {
+      const stahl = eigen(mat("#8a8d90", { metalness: 0.8, roughness: 0.35 }));
+      const quer = new THREE.BoxGeometry(L.x * 2 + 1, 0.12, 0.12), senk = new THREE.BoxGeometry(0.12, 5.2, 0.12);
+      for (const z of [bz - 0.4, bz - 2.4]) for (const y of [4.9, 5.4]) { const t = new THREE.Mesh(quer, stahl); t.position.set(0, y, z); raum.add(t); }
+      for (const x of [-L.x - 0.2, L.x + 0.2]) for (const z of [bz - 0.4, bz - 2.4]) { const t = new THREE.Mesh(senk, stahl); t.position.set(x, 2.6, z); raum.add(t); }
+      const lampe = new THREE.CylinderGeometry(0.12, 0.16, 0.3, 10), lampenMat = eigen(new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x4060ff, emissiveIntensity: 0.8 }));
+      for (let i = -3; i <= 3; i++) { const l = new THREE.Mesh(lampe, lampenMat); l.position.set(i * L.x * 0.28, 4.7, bz - 0.4); raum.add(l); }
+    }
+    if (deko.has("schriftzug")) {
+      const haus = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 6, 4.2, 3), eigen(new THREE.MeshStandardMaterial({ map: graffitiTex || null, color: graffitiTex ? 0xffffff : 0x3a3633, roughness: 0.9 })));
+      haus.position.set(0, 2.1, bz - 4.8); raum.add(haus);
+      const schrift = new THREE.Mesh(new THREE.PlaneGeometry(7, 1.5), eigen(new THREE.MeshBasicMaterial({ transparent: true, map: textur(leinwand(1024, 220, (x, w, h) => { x.fillStyle = "#f1ede4"; x.font = "180px Anton, Impact"; x.textAlign = "center"; x.fillText("druckluft", w / 2, 190); })) })));
+      schrift.position.set(0, 5.0, bz - 3.25); raum.add(schrift);
+    }
+    if (deko.has("baenke")) {
+      const holz = eigen(mat("#7a5a3a", { roughness: 0.9 })), tisch = new THREE.BoxGeometry(0.6, 0.08, 2.2), bank = new THREE.BoxGeometry(0.25, 0.06, 2.2);
+      for (const sx of [-1, 1]) for (const z of [L.z[0] + 2, L.z[0] + 5, L.z[0] + 8]) {
+        const t = new THREE.Mesh(tisch, holz); t.position.set(sx * (L.x + 1.4), 0.75, z); t.castShadow = true; raum.add(t);
+        for (const dx of [-0.5, 0.5]) { const b = new THREE.Mesh(bank, holz); b.position.set(sx * (L.x + 1.4) + dx, 0.45, z); raum.add(b); }
+      }
+    }
+
     // Bühnenlicht (physikalische Lichtstärken, three r169)
     s.spots = [];
-    const farben = [0xff2a1a, 0xfff0d8, 0xff6a20];
+    const farben = { lila: [0x9a3cff, 0xffe8ff, 0x3c6cff], rot: [0xff2a1a, 0xfff0d8, 0xff6a20], blau: [0x2a6aff, 0xe8f0ff, 0x2ad0ff], abend: [0xff8a40, 0xfff0d8, 0xff4a80] }[L.licht] || [0xff2a1a, 0xfff0d8, 0xff6a20];
     [-L.x * 0.6, 0, L.x * 0.6].forEach((sx, i) => {
       const spot = new THREE.SpotLight(farben[i], i === 1 ? 190 : 135, 0, 0.5, 0.6, 2);
       spot.position.set(sx, L.decke ? L.decke - 0.15 : 5.5, bz - 0.5);
@@ -117,7 +175,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     const fuell = new THREE.PointLight(0xffd0a0, 25, 0, 2); fuell.position.set(0, 3, L.z[1]); raum.add(fuell);
 
     s.regen = null;
-    if (draussen) {
+    if (L.regen) {
       const n = 900, pos = new Float32Array(n * 6);
       for (let i = 0; i < n; i++) { const x = zufall(-9, 9), y = zufall(0, 8), z = zufall(-8, 9); pos.set([x, y, z, x + 0.03, y + 0.35, z], i * 6); }
       const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
@@ -136,6 +194,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
       sp.target.position.z = mz + Math.cos(zeit * 0.5 + i) * 2.5;
       sp.intensity = sp.userData.grund * (0.7 + 0.5 * kraft) * (1 + 0.25 * Math.max(0, Math.sin(zeit * takt * 2)));
     });
+    for (const v of s.ventilatoren || []) v.rotation.y += 0.12;
     if (s.regen) { s.regen.position.y -= 0.15; if (s.regen.position.y < -4) s.regen.position.y += 4; }
   };
 

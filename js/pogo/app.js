@@ -8,6 +8,8 @@ import { sprache, TEXTE } from "./texte.js?v=31";
 import { LAEDEN } from "./laeden.js?v=31";
 import { erzeugeMusik } from "./musik.js?v=31";
 import { SONGS, BEAT } from "./songs.js?v=31";
+import { leseKutte, schreibeKutte, mitFang, kutteText } from "./andenken.js?v=31";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=31";
 import { isoLokal, naechster } from "../bands/saeulen.js?v=31";
 import { tagDatum } from "../bands/texte.js?v=31";
 
@@ -22,6 +24,8 @@ const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
 let songId = SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
+let speicher = null; try { speicher = globalThis.localStorage; } catch { speicher = null; }
+let kutte = leseKutte(speicher), stats, aufgaben = [];
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
@@ -47,6 +51,10 @@ function neueRunde() {
   geplanteWuerfe = [{ art: "plektrum", t: song.wuerfe.plektrum }, { art: "drumstick", t: song.wuerfe.drumstick }];
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
   stagedive = { phase: "aus", fertig: false }; mikroAn = false;
+  stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
+  aufgaben = ziehe(L);
+  $("pogo-aufgaben").textContent = aufgaben.map((a) => "□ " + T.aufgaben[a.id]).join("  ·  ");
+  $("pogo-kutte").textContent = `${T.kutte}: ${kutteText(kutte, sp)}`;
   $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = "";
   S.kamera(ich, 0, true);
 }
@@ -85,7 +93,7 @@ function springe(t = zeit) {
     return;
   }
   const w = sprungWertung(z, imTakt(t, song.bpm, song.start));
-  if (w.punkte) { punkte += w.punkte; pop(T.takt, "#58d26a"); }
+  if (w.punkte) { punkte += w.punkte; stats.taktSpruenge++; pop(T.takt, "#58d26a"); }
   if (w.bier) { bier = Math.max(0, bier - w.bier); spritzer(2); }
 }
 function wische(seite) {
@@ -176,6 +184,8 @@ function schritt(dt) {
   // Zonen, Punkte, erste Reihe
   const z = getragen ? "pit" : zone(ich.x, ich.z, L), nass = zeit < nassBis;
   if (!getragen) punkte += punkteProSekunde(z, teil, nass) * dt;
+  if (z === "mitte") stats.mitteSekunden += dt;
+  if (z === "reihe" && teil.name === "LETZTER REFRAIN") stats.reiheImLetztenRefrain = true;
   reiheSeit = z === "reihe" && !getragen ? reiheSeit + dt : 0;
   if (z === "reihe") bier = Math.max(0, bier - GEDRAENGE * kraft * dt);
   if (z === "reihe" && kraft >= 1 && reiheSeit > 3 && zeit - letzterSpritzer > 8) {
@@ -223,6 +233,7 @@ function schritt(dt) {
     if (sd.griff && zeit > sd.griff.bis) { sd.griff = null; verschuette(STAGEDIVE.verlust, T.schwapp); }
     if (sd.t >= STAGEDIVE.dauer) {
       stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; $("pogo-hinweis").textContent = "";
+      stats.stagediveBier = bier;
       if (bier > 0) { punkte += STAGEDIVE.bonus; pop(T.gelandet, "#58d26a"); } else pop(T.bierdusche);
     }
   }
@@ -230,11 +241,11 @@ function schritt(dt) {
   // Crowdsurfer (andere)
   if (L.surfer && !surfer && kraft >= 0.9 && Math.random() < dt * 0.3) {
     const f = F.baueFigur(THREE); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
-    surfer = { f, x: zufall(-L.x + 1.5, L.x - 1.5), z: zMin, traf: false }; f.g.position.set(surfer.x, 2.15, surfer.z); S.raum.add(f.g); pop(T.crowdsurfer, "var(--paper)");
+    surfer = { f, x: zufall(-L.x + 1.5, L.x - 1.5), z: zMin, traf: false }; stats.surferGesehen++; f.g.position.set(surfer.x, 2.15, surfer.z); S.raum.add(f.g); pop(T.crowdsurfer, "var(--paper)");
   }
   if (surfer) {
     surfer.z += 1.5 * dt; surfer.x += Math.sin(zeit * 2) * 0.3 * dt; surfer.f.g.position.set(surfer.x, 2.15 + Math.sin(zeit * 9) * 0.06, surfer.z);
-    if (!getragen && !surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; verschuette(14, T.stiefel); }
+    if (!getragen && !surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; stats.surferTreffer++; verschuette(14, T.stiefel); }
     if (surfer.z > zMax + 1.5) { entferneSurfer(); }
   }
 
@@ -356,6 +367,11 @@ function starte() {
 function ende(leer) {
   laeuft = false; musik.stopp(); beendeZeiger(); tasten.clear();
   stagedive = { phase: "aus", fertig: true }; $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = "";
+  const erledigt = aufgaben.filter((a) => a.erfuellt(stats));
+  punkte += erledigt.length * AUFGABE_PUNKTE;
+  if (andenken.length) { kutte = mitFang(kutte, andenken); schreibeKutte(speicher, kutte); }
+  const liste = $("pogo-ende-aufgaben"); liste.replaceChildren();
+  for (const a of aufgaben) { const li = document.createElement("li"); const ok = erledigt.includes(a); li.textContent = `${ok ? "✓" : "✗"} ${T.aufgaben[a.id]}${ok ? ` (+${AUFGABE_PUNKTE})` : ""}`; li.className = ok ? "ist-erledigt" : ""; liste.append(li); }
   const b = leer ? 0 : Math.round(bier), p = Math.round(punkte);
   $("pogo-ende-laden").textContent = T.laeden[ladenId].name;
   $("pogo-ende-titel").textContent = T.titel[titelSchluessel(p, b)];
