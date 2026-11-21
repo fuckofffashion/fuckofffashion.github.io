@@ -45,20 +45,20 @@ Höchstes gemessenes Ergebnis je Laden: Pitcher 27 289 · Druckluft drinnen 18 9
 
 | ID | Art | Schwere | Bereich | Wo | Befund | Aufwand | Status |
 |---|---|---|---|---|---|---|---|
-| PT-20261121-27 | Frage | hoch | Spielgefühl | Wertung, Ziele | Multiplikatoren stapeln sich: Profi 8–36 × Ziel, Mensch-Bot 2,6 ×, zwei Tasten 3,9 ×; Pitcher bringt am meisten | mittel | offen |
-| PT-20261121-28 | Fehler | hoch | Technik | Zugabe, Stimmung | „Stimmung kocht“ läuft in die Zugabe weiter und verdoppelt dort alle 15 s (Spec: 10 s) | klein | offen |
-| PT-20261121-29 | Vorschlag | mittel | Spielgefühl | Stimmung | Stimmung kocht 20–45 s pro Runde, in 6 von 6 PC-Runden; 4-Treffer-Zugabe greift immer | klein | offen |
-| PT-20261121-30 | Fehler | mittel | Spielgefühl | Circle Pit | „UMDREHEN!“ bestraft sofort: im selben Bild „UMGERANNT!“, Combo weg, −4 % Bier, auch beim fehlerfreien Bot | klein | offen |
-| PT-20261121-31 | Fehler | mittel | Spielgefühl | Schultern | Balance ist verkehrt herum: wer „gegenhält“, fällt nach 0,3 s; man muss zur Neigung hin drücken | klein | offen |
-| PT-20261121-32 | Vorschlag | mittel | Spielgefühl | Schultern | Auf den Schultern bricht die Combo und die Stimmung sinkt: 48 Punkte/s oben gegen 391 davor | klein | offen |
-| PT-20261121-33 | Vorschlag | mittel | Design | Pops | Pop-Flut: ~250 Pops/min, meist „IM TAKT!“; „LOS!“ 2/2 und „UMDREHEN!“ 3/3 nach < 0,5 s verdrängt (vgl. erledigtes PT-20261121-24) | klein | offen |
-| PT-20261121-34 | Vorschlag | mittel | Design | Aufheben, Schultern | Gefallene und Kumpel liegen oft hinter dir außerhalb des Bildes (9 von 15 bzw. 2 von 3) | klein | offen |
-| PT-20261121-35 | Frage | mittel | Spielgefühl | Rang | Rang „Pit-Legende“ (20 000) nach einer einzigen Pitcher-Runde; Stufen 2000 / 8000 / 20 000 passen nicht mehr | klein | offen |
-| PT-20261121-36 | Vorschlag | mittel | Design | Stimmungsbalken | Balken 5 px, ohne Beschriftung; „kocht“ nur als 1,1-s-Pop, der oft verdrängt wird | klein | offen |
-| PT-20261121-37 | Frage | mittel | Technik | Handy, Eingabe | Gleichzeitig ziehen und tippen (zwei Daumen) – geht das? Code ersetzt den Zieh-Finger | klein | offen |
-| PT-20261121-38 | Vorschlag | klein | Design | Grüne Ringe | Grüner Ring heißt dreierlei: eigene Combo ab ×3, Kumpel-Schultern, Sänger | klein | offen |
-| PT-20261121-39 | Vorschlag | klein | Zugänglichkeit | Hinweiszeile, Circle Pit | Hinweis flattert „MIT DEM STROM!“ ↔ „Lauf mit dem Strom im Kreis!“ (8 Wechsel in 6 s), Zeile ist `aria-live` | klein | offen |
-| PT-20261121-40 | Frage | klein | Technik | Teilen | Web Share auf echten Geräten ungetestet; geteilt wird erst nach drei `await` (Schriften, Motivbild, `toBlob`) | klein | offen |
+| PT-20261121-27 | Frage | hoch | Spielgefühl | Wertung, Ziele | Multiplikatoren stapeln sich: Profi 8–36 × Ziel, Mensch-Bot 2,6 ×, zwei Tasten 3,9 ×; Pitcher bringt am meisten | mittel | erledigt (275f407) |
+| PT-20261121-28 | Fehler | hoch | Technik | Zugabe, Stimmung | „Stimmung kocht“ läuft in die Zugabe weiter und verdoppelt dort alle 15 s (Spec: 10 s) | klein | erledigt (275f407) |
+| PT-20261121-29 | Vorschlag | mittel | Spielgefühl | Stimmung | Stimmung kocht 20–45 s pro Runde, in 6 von 6 PC-Runden; 4-Treffer-Zugabe greift immer | klein | erledigt (275f407) |
+| PT-20261121-30 | Fehler | mittel | Spielgefühl | Circle Pit | „UMDREHEN!“ bestraft sofort: im selben Bild „UMGERANNT!“, Combo weg, −4 % Bier, auch beim fehlerfreien Bot | klein | erledigt (275f407) |
+| PT-20261121-31 | Fehler | mittel | Spielgefühl | Schultern | Balance ist verkehrt herum: wer „gegenhält“, fällt nach 0,3 s; man muss zur Neigung hin drücken | klein | erledigt (275f407) |
+| PT-20261121-32 | Vorschlag | mittel | Spielgefühl | Schultern | Auf den Schultern bricht die Combo und die Stimmung sinkt: 48 Punkte/s oben gegen 391 davor | klein | erledigt (275f407) |
+| PT-20261121-33 | Vorschlag | mittel | Design | Pops | Pop-Flut: ~250 Pops/min, meist „IM TAKT!“; „LOS!“ 2/2 und „UMDREHEN!“ 3/3 nach < 0,5 s verdrängt (vgl. erledigtes PT-20261121-24) | klein | erledigt (275f407) |
+| PT-20261121-34 | Vorschlag | mittel | Design | Aufheben, Schultern | Gefallene und Kumpel liegen oft hinter dir außerhalb des Bildes (9 von 15 bzw. 2 von 3) | klein | erledigt (275f407) |
+| PT-20261121-35 | Frage | mittel | Spielgefühl | Rang | Rang „Pit-Legende“ (20 000) nach einer einzigen Pitcher-Runde; Stufen 2000 / 8000 / 20 000 passen nicht mehr | klein | erledigt (275f407) |
+| PT-20261121-36 | Vorschlag | mittel | Design | Stimmungsbalken | Balken 5 px, ohne Beschriftung; „kocht“ nur als 1,1-s-Pop, der oft verdrängt wird | klein | erledigt (275f407) |
+| PT-20261121-37 | Frage | mittel | Technik | Handy, Eingabe | Gleichzeitig ziehen und tippen (zwei Daumen) – geht das? Code ersetzt den Zieh-Finger | klein | offen (auf echtem Handy prüfen) |
+| PT-20261121-38 | Vorschlag | klein | Design | Grüne Ringe | Grüner Ring heißt dreierlei: eigene Combo ab ×3, Kumpel-Schultern, Sänger | klein | erledigt (275f407) |
+| PT-20261121-39 | Vorschlag | klein | Zugänglichkeit | Hinweiszeile, Circle Pit | Hinweis flattert „MIT DEM STROM!“ ↔ „Lauf mit dem Strom im Kreis!“ (8 Wechsel in 6 s), Zeile ist `aria-live` | klein | erledigt (275f407) |
+| PT-20261121-40 | Frage | klein | Technik | Teilen | Web Share auf echten Geräten ungetestet; geteilt wird erst nach drei `await` (Schriften, Motivbild, `toBlob`) | klein | offen (auf echtem Handy prüfen) |
 
 ### PT-20261121-27 · Multiplikatoren stapeln sich, Ziele bedeuten nichts mehr
 - **Schritte:** 1. Je Laden eine Runde mit dem Profi-Bot (jeder Schlag im Takt, alle Ereignisse). 2. Altenberg mit dem Mensch-Bot (σ 45 ms, 8 % Lücken). 3. Pitcher nur mit zwei Tasten (Pfeil hoch halten, Leertaste im Takt, σ 45 ms).
