@@ -82,7 +82,7 @@ Tests:
 
 ## Bandseite „Die Säule“
 
-Seite `bands.html` (+ `en/bands.html`): Bands, die wir live gesehen haben, als abreißbare Logo-Plakate auf Litfaßsäulen, sortiert nach ihrem nächsten Konzert (Bald 0–30 Tage, Demnächst 31–90, Später, Gerade still). Entwurf: `docs/superpowers/specs/2026-11-21-bandseite-design.md`.
+Seite `bands.html` (+ `en/bands.html`): Bands, die wir live gesehen haben, als abreißbare Plakate auf einer 3D-Litfaßsäule (three.js aus `assets/vendor/`, Code in `js/bands/`). Vorn oben hängt, wer am frühesten spielt; wer in den nächsten 30 Tagen spielt, bekommt den Aufkleber „BALD“. Plakat antippen: es reißt ab, darunter stehen die Termine. Ohne WebGL (oder mit `?flach` in der Adresse, zum Prüfen) bleiben die HTML-Plakate flach in einem Raster. Design: `docs/superpowers/specs/2026-11-21-saeule-3d-design.md` (Daten und Bandliste: `docs/superpowers/specs/2026-11-21-bandseite-design.md`).
 
 Neue Band:
 
