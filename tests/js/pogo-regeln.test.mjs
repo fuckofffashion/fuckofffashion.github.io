@@ -68,7 +68,7 @@ test("Konstanten", () => {
   assert.equal(STAGEDIVE_AB, 4);
   assert.equal(GEDRAENGE, 1.5);
   assert.deepEqual(SPRUNG, { bonus: 15, daneben: 3 });
-  assert.deepEqual(BONUS, { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600 });
+  assert.deepEqual(BONUS, { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 40, stagedive: 600, abgeguckt: 200, schnoesel: 300, fascho: 200 });
 });
 
 test("Pogo-Texte: DE und EN gleich aufgebaut, alle Titel da", async () => {

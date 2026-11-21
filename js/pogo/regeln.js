@@ -88,3 +88,17 @@ export const STAGEDIVE = { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust:
 export const landeZ = (laden) => (laden.gitterZ + laden.z[1]) / 2;
 /** Höchster möglicher Bierverlust eines Stagedives in Prozent (alle Griffe verpasst). */
 export const stagediveVerlustMax = () => Math.floor(STAGEDIVE.dauer / STAGEDIVE.griffAlle) * STAGEDIVE.verlust;
+
+/** Steht ich direkt hinter p (von der Bühne aus gesehen), höchstens 1 m dahinter und ±0,6 m seitlich? */
+export function istHinter(ich, p) {
+  const dz = ich.z - p.z;
+  return dz > 0 && dz <= 1 && Math.abs(ich.x - p.x) <= 0.6;
+}
+export const ABGUCKEN_S = 3;
+export const ZUGABE = { fenster: 5, treffer: 6, dauer: 15, faktor: 1.5 };
+/** Wann die Schurken kommen: Schnösel nach dem ersten Refrain, Fascho bei 40 % des Songs. */
+export function schurkenZeiten(song) {
+  const refrain = song.teile.findIndex((t) => t.kraft >= 1);
+  return { schnoesel: song.teile[refrain].bis, fascho: Math.round(song.ende * 0.4 * 10) / 10 };
+}
+Object.assign(BONUS, { abgeguckt: 200, schnoesel: 300, fascho: 200 });
