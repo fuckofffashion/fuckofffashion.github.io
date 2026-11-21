@@ -16,6 +16,18 @@
     { "id": "trijahnity", "name": "Trijahnity", "logo": "trijahnity.webp",
       "logo_quelle": "https://www.trijahnity.de/images/Trijahnity_logo_wei%C3%9F.png",
       "web": "https://www.trijahnity.de",
-      "beschreibung": { "de": "Reggae'n Roll", "en": "Reggae'n Roll" } }
+      "beschreibung": { "de": "Reggae'n Roll", "en": "Reggae'n Roll" } },
+    { "id": "jaya-the-cat", "name": "Jaya the Cat", "logo": "jaya-the-cat.webp",
+      "logo_quelle": "https://jayathecat.nl/wp-content/uploads/2017/09/logo_bl.png",
+      "web": "https://jayathecat.nl", "plakat": "papier",
+      "beschreibung": { "de": "Reggae und Punk aus Amsterdam", "en": "Reggae and punk from Amsterdam" } },
+    { "id": "maenni", "name": "Männi", "logo": "maenni.webp",
+      "logo_quelle": "https://mnni.de/manus-storage/mnni-logo_8719f6d6.png",
+      "web": "https://mnni.de", "plakat": "blut", "schreibweisen": ["Maenni"],
+      "beschreibung": { "de": "Punkrock und Melancholie aus Aachen", "en": "Punk rock and melancholy from Aachen" } },
+    { "id": "normahl", "name": "NoRMAhl", "logo": "normahl.webp",
+      "logo_quelle": "https://www.normahl.de/images/hero/normahl-schrift.svg",
+      "web": "https://www.normahl.de", "plakat": "papier",
+      "beschreibung": { "de": "Punkrock seit 1978", "en": "Punk rock since 1978" } }
   ]
 }

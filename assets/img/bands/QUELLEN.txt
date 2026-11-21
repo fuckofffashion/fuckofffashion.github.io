@@ -5,3 +5,6 @@ dan-ganove.webp      https://static.wixstatic.com/media/1093e8_c35bda69ecc54d05b
 alarmsignal.webp     https://www.alarmsignal-punkrock.de/wp-content/uploads/2024/09/Alarmsignal_logo.webp
 los-fastidios.webp   https://globaluserfiles.com/media/287625_f24588bbb1474289b12a4f18a6189574ee94fde2.png  (https://losfastidios.net)
 trijahnity.webp      https://www.trijahnity.de/images/Trijahnity_logo_weiß.png
+jaya-the-cat.webp    https://jayathecat.nl/wp-content/uploads/2017/09/logo_bl.png  (geladen 21.11.2026)
+maenni.webp          https://mnni.de/manus-storage/mnni-logo_8719f6d6.png  (geladen 21.11.2026)
+normahl.webp         https://www.normahl.de/images/hero/normahl-schrift.svg  (geladen 21.11.2026, mit Edge gerastert)
