@@ -223,7 +223,7 @@ function schritt(dt) {
   // Stillstand: Eingabe allein reicht nicht (Pfeil gegen das Gitter), die Figur muss sich auch bewegen
   const weg = Math.hypot(ich.x - vorX, ich.z - vorZ) / Math.max(dt, 1e-6);
   stillZeit = getragen || oben || (zieht && weg > 0.35) || ich.inLuft ? 0 : stillZeit + dt;
-  if (oben) { ich.x = schultern.kumpel.x; ich.z = schultern.kumpel.z; ich.vx = ich.vz = 0; }
+  if (schultern.phase === "oben") { ich.x = schultern.kumpel.x; ich.z = schultern.kumpel.z; ich.vx = ich.vz = 0; } // live prüfen: schulterSchritt kann gerade beendet haben
   for (const tr of stoesse(menge)) {
     if (schnoesel && tr.anderer === schnoesel.p) { schubseSchnoesel(tr); continue; }
     const letzte = beruehrt.get(tr.anderer) || -9;
