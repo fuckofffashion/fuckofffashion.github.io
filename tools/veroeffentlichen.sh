@@ -23,8 +23,8 @@ case "$wurzel/" in "$ziel"/*) fehler "Ziel enthält das eigene Repo, Abbruch" ;;
 case "$ziel/" in "$wurzel"/*) fehler "Ziel liegt im eigenen Repo, Abbruch" ;; esac
 
 # Erst prüfen, dass alle Quellen da sind, dann erst das Ziel leeren.
-for datei in index.html konzerte.html bands.html 404.html impressum.html datenschutz.html \
-             en/index.html en/konzerte.html en/bands.html \
+for datei in index.html konzerte.html bands.html pogo.html 404.html impressum.html datenschutz.html \
+             en/index.html en/konzerte.html en/bands.html en/pogo.html \
              data/konzerte.json data/karte.json data/orte-tabelle.json data/bands.json; do
   [ -f "$datei" ] || fehler "Quelle fehlt: $datei, Abbruch"
 done
@@ -35,11 +35,11 @@ done
 grep -q -F '<base href="/">' 404.html || fehler "404.html enthält kein <base href=\"/\">, Abbruch"
 
 # Go-live-Schutz: Platzhalter in den Rechtstexten dürfen nicht veröffentlicht werden.
-offen=$(grep -l -F '[bitte ausfüllen]' index.html konzerte.html bands.html 404.html impressum.html datenschutz.html en/*.html || true)
+offen=$(grep -l -F '[bitte ausfüllen]' index.html konzerte.html bands.html pogo.html 404.html impressum.html datenschutz.html en/*.html || true)
 [ -z "$offen" ] || fehler "Platzhalter [bitte ausfüllen] noch in: $(echo $offen), erst ausfüllen, Abbruch"
 
 # Zweiter Go-live-Schutz: Platzhalter-Domain bzw. -Mail-Adresse in ausgelieferten Seiten.
-offen=$(grep -l -F 'fuckofffashion.example' index.html konzerte.html bands.html 404.html impressum.html datenschutz.html en/*.html || true)
+offen=$(grep -l -F 'fuckofffashion.example' index.html konzerte.html bands.html pogo.html 404.html impressum.html datenschutz.html en/*.html || true)
 [ -z "$offen" ] || fehler "Kontaktadresse fehlt noch: Platzhalter fuckofffashion.example steht noch in: $(echo $offen), erst ersetzen, Abbruch"
 
 # Basis der 404.html. GitHub liefert 404.html auch für verschachtelte Adressen aus (/a/b), darum nutzt
@@ -76,7 +76,7 @@ fi
 
 find "$ziel" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
 
-for datei in index.html konzerte.html bands.html 404.html impressum.html datenschutz.html; do
+for datei in index.html konzerte.html bands.html pogo.html 404.html impressum.html datenschutz.html; do
   cp "$datei" "$ziel/$datei"
 done
 for ordner in css js assets; do
@@ -84,7 +84,7 @@ for ordner in css js assets; do
 done
 # Englische Fassung (Impressum und Datenschutz gibt es nur auf Deutsch)
 mkdir -p "$ziel/en"
-for datei in index.html konzerte.html bands.html; do
+for datei in index.html konzerte.html bands.html pogo.html; do
   cp "en/$datei" "$ziel/en/$datei"
 done
 mkdir -p "$ziel/data"

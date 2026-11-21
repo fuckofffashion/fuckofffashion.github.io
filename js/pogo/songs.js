@@ -1,6 +1,6 @@
 // Songs für Pogo. Jeder Song braucht einen Freigabe-Eintrag (Test in tests/js/pogo-regeln.test.mjs).
 // Zeiten in Sekunden ab Dateibeginn; start = erster Schlag (für „im Takt“).
-import { TEILE, BPM, DAUER } from "./regeln.js?v=31";
+import { TEILE, BPM, DAUER } from "./regeln.js?v=32";
 
 /** Eigener Beat aus dem Browser (Ersatz, wenn kein Song gewählt ist oder die Datei nicht lädt). */
 export const BEAT = {
@@ -26,3 +26,9 @@ export const SONGS = [
     freigabe: { durch: "Dan Ganove", ueber: "Mark", datum: "2026-11-21", art: "mündlich, Datei von Mark geliefert" },
   },
 ];
+
+/** Song-Id aus der Adresse (?song=…), nur wenn es den Song gibt; sonst null. */
+export function songAusAdresse(suche) {
+  const id = new URLSearchParams(suche).get("song");
+  return id && (id === BEAT.id || SONGS.some((s) => s.id === id)) ? id : null;
+}

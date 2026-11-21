@@ -105,3 +105,18 @@ test("Zugabe-Ruf: höchstens ein Treffer pro Schlag, daneben bleibt daneben", as
   assert.equal(rufTipp(v * 4, 120, gezaehlt), "treffer");
   assert.equal(gezaehlt.size, 2);
 });
+
+test("Pogo-Knöpfe der Säule zeigen auf echte Songs der Band", () => {
+  const wurzel = fileURLToPath(new URL("../../", import.meta.url));
+  const bands = JSON.parse(readFileSync(wurzel + "tools/bands.json", "utf-8")).bands.filter((b) => b.pogo);
+  assert.ok(bands.length >= 1);
+  for (const b of bands) assert.equal(SONGS.find((s) => s.id === b.pogo)?.band, b.id, b.id);
+});
+
+test("Song aus der Adresse: nur bekannte Songs", async () => {
+  const { songAusAdresse } = await import("../../js/pogo/songs.js");
+  assert.equal(songAusAdresse("?song=dan-ganove-lauter"), "dan-ganove-lauter");
+  assert.equal(songAusAdresse("?song=beat"), "beat");
+  assert.equal(songAusAdresse("?song=<x>"), null);
+  assert.equal(songAusAdresse(""), null);
+});

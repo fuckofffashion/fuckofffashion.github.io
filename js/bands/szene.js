@@ -1,8 +1,8 @@
 // 3D-Litfaßsäule der Bandseite (three.js wird von app.js geladen und hereingereicht).
 // Vorlage für Aussehen und Verhalten: docs/superpowers/specs/2026-11-21-saeule-3d-entwurf.html.
-import { malCollage, malFOF, malPlakat, malZettel, malSprayA, malSticker, malRost, malFleck } from "./malen.js?v=31";
-import { R, BERUEHRUNG, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=31";
-import { TEXTE, tagDatum } from "./texte.js?v=31";
+import { malCollage, malFOF, malPlakat, malZettel, malSprayA, malSticker, malRost, malFleck } from "./malen.js?v=32";
+import { R, BERUEHRUNG, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=32";
+import { TEXTE, tagDatum } from "./texte.js?v=32";
 
 const KOERPER = { unten: 0.3, oben: 4.0 };
 const ZIEL = { y: 2.42 };
@@ -15,6 +15,8 @@ const ZIEL = { y: 2.42 };
  * @param opt.ruhig      reduzierte Bewegung
  * @param opt.beiAntippen(id)
  */
+const POGO = "__pogo"; // Kennung des POGO!-Aufklebers für den Klick-Strahl
+
 export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
   const T = TEXTE[sp];
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -108,6 +110,9 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
   flaeche(malSticker(T.sticker.kauf, 520, 400, -0.12, 31), { th: -0.8, y: 3.52, w: 0.52, h: 0.4, r: R + 0.011 }, 4);
   flaeche(malSticker(T.sticker.punk, 440, 420, 0.1, 32), { th: 1.5, y: 3.45, w: 0.42, h: 0.4, r: R + 0.011 }, 4);
   flaeche(malSticker(T.sticker.diy, 360, 260, 0.2, 33, "#bf161b", "#f1ede4"), { th: -1.62, y: 3.42, w: 0.34, h: 0.25, r: R + 0.011 }, 4);
+  // POGO!-Aufkleber: antippen öffnet das Browserspiel
+  const pogoSticker = flaeche(malSticker(T.sticker.pogo, 440, 360, -0.1, 34, "#f2b632", "#141212"), { th: 3.0, y: 3.4, w: 0.8, h: 0.62, r: R + 0.011 }, 4);
+  pogoSticker.userData.id = POGO;
 
   /* Bandplakate mit Zettel darunter */
   const plakate = bands.slice(0, PLATZ.length).map((band, i) => {
@@ -166,7 +171,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
     const r = leinwand.getBoundingClientRect();
     maus.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     strahl.setFromCamera(maus, camera);
-    const ziele = plakate.filter((p) => p.gruppe.visible && p.zustand === "haengt").map((p) => p.vorn);
+    const ziele = [...plakate.filter((p) => p.gruppe.visible && p.zustand === "haengt").map((p) => p.vorn), pogoSticker];
     return strahl.intersectObjects(ziele)[0]?.object.userData.id ?? null;
   };
   const runter = (e) => { zeiger = { id: e.pointerId, x0: e.clientX, y0: e.clientY, x: e.clientX, art: null }; };
@@ -193,7 +198,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
     if (!zeiger || e.pointerId !== zeiger.id) return;
     const kurz = !zeiger.art;
     zeiger = null;
-    if (kurz) { const id = triff(e); if (id) beiAntippen(id); } // auch in der Plakatansicht: Nachbar antippen wechselt
+    if (kurz) { const id = triff(e); if (id === POGO) location.assign("pogo.html"); else if (id) beiAntippen(id); } // auch in der Plakatansicht: Nachbar antippen wechselt
   };
   const abbruch = () => { zeiger = null; };
   const raus = () => { if (schwebt) { schwebt = null; zeichne = true; } };

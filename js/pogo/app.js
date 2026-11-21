@@ -2,18 +2,18 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp,
-} from "./regeln.js?v=31";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=31";
-import { sprache, TEXTE } from "./texte.js?v=31";
-import { LAEDEN } from "./laeden.js?v=31";
-import { erzeugeMusik } from "./musik.js?v=31";
-import { SONGS, BEAT } from "./songs.js?v=31";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=31";
-import { TOUR, leseTour, schreibeTour, mitErgebnis, frei, fehlt, rang, kraftFaktor } from "./tour.js?v=31";
-import { MOTIVE } from "./motive.js?v=31";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=31";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=31";
-import { tagDatum } from "../bands/texte.js?v=31";
+} from "./regeln.js?v=32";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=32";
+import { sprache, TEXTE } from "./texte.js?v=32";
+import { LAEDEN } from "./laeden.js?v=32";
+import { erzeugeMusik } from "./musik.js?v=32";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=32";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=32";
+import { TOUR, leseTour, schreibeTour, mitErgebnis, frei, fehlt, rang, kraftFaktor } from "./tour.js?v=32";
+import { MOTIVE } from "./motive.js?v=32";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=32";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=32";
+import { tagDatum } from "../bands/texte.js?v=32";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,7 +25,7 @@ let THREE, S, F; // three.js, Szene, Figuren-Modul
 const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
-let songId = SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
+let songId = songAusAdresse(location.search) || SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
 let speicher = null; try { speicher = globalThis.localStorage; } catch { speicher = null; }
 let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher);
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
@@ -550,8 +550,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=31").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=31"),
+      import("./szene.js?v=32").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=32"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
