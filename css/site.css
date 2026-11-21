@@ -343,6 +343,7 @@ html:not(.js) .tr__controls { display: none; }
 .join__way { display: grid; gap: var(--sp-3); align-content: start; }
 .join__way p { margin: 0; max-width: 46ch; }
 .join__way h3 { margin: 0; }
+.join__tag { color: var(--blood-hot); text-transform: none; overflow-wrap: anywhere; } /* der Hashtag, an dem sich alle finden */
 .join__way--mail { grid-column: 1 / span 5; padding: var(--sp-5) var(--sp-4); background: var(--ink); color: var(--paper);
   clip-path: polygon(0 1%, 5% 0, 40% 1.2%, 100% 0, 99.4% 50%, 100% 99%, 60% 100%, 3% 98.8%, .6% 55%); }
 .sec--paper .join__way--mail .label { color: var(--ash); }
