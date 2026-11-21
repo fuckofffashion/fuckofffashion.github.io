@@ -81,3 +81,10 @@ export function sprungWertung(z, imTaktGesprungen) {
 
 /** Songzeit aus der Audiouhr: Sekunden seit Songbeginn minus Ausgabelatenz, nie negativ. */
 export const songZeit = (audioZeit, start, latenz = 0) => Math.max(0, audioZeit - start - latenz);
+
+/** Stagedive: getragen werden bringt Punkte; wenige Hände greifen nach dem Becher, jede verpasste kostet wenig. */
+export const STAGEDIVE = { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 6, punkteProSekunde: 60, bonus: 600 };
+/** Landung mitten im Pit, nicht am Rand (dort würde sofort zurückgeschubst). */
+export const landeZ = (laden) => (laden.gitterZ + laden.z[1]) / 2;
+/** Höchster möglicher Bierverlust eines Stagedives in Prozent (alle Griffe verpasst). */
+export const stagediveVerlustMax = () => Math.floor(STAGEDIVE.dauer / STAGEDIVE.griffAlle) * STAGEDIVE.verlust;

@@ -135,3 +135,13 @@ test("teilBei und imTakt arbeiten mit Songdaten", async () => {
   assert.equal(imTakt(dan.start + viertel * 10 + 0.2, dan.bpm, dan.start), false);
   assert.equal(imTakt(VIERTEL * 7 + 0.05), true); // Standard: eigener Beat
 });
+
+test("Stagedive lohnt sich: wenige Griffe, kleiner Verlust, Punkte beim Tragen, Landung in der Mitte", async () => {
+  const { STAGEDIVE, landeZ, stagediveVerlustMax } = await import("../../js/pogo/regeln.js");
+  assert.deepEqual(STAGEDIVE, { dauer: 5, griffAlle: 1.5, griffFenster: 1.0, verlust: 6, punkteProSekunde: 60, bonus: 600 });
+  const L2 = { x: 3.3, z: [-4.2, 4.2], gitterZ: -3.6 };
+  assert.equal(zone(0, landeZ(L2), L2), "mitte");
+  // schlimmster Fall: alle Griffe verpasst – höchstens 20 % Bier weg, Punkte beim Tragen > Verlust an Wert
+  assert.ok(stagediveVerlustMax() <= 20);
+  assert.ok(STAGEDIVE.punkteProSekunde * STAGEDIVE.dauer + STAGEDIVE.bonus >= 900);
+});

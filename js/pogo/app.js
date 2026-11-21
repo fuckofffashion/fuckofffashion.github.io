@@ -1,7 +1,7 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS,
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ,
 } from "./regeln.js?v=31";
 import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=31";
 import { sprache, TEXTE } from "./texte.js?v=31";
@@ -90,12 +90,12 @@ function springe(t = zeit) {
 }
 function wische(seite) {
   if (stagedive.phase !== "getragen" || !stagedive.griff) return;
-  const richtig = seite === -stagedive.griff.seite; stagedive.griff = null;
+  const richtig = seite === stagedive.griff.seite; stagedive.griff = null;
   if (richtig) pop(T.abgewehrt, "#58d26a"); else verschuette(12, T.schwapp);
 }
 function starteStagedive() {
   if (stagedive.phase !== "aus" || stagedive.fertig) return;
-  stagedive = { phase: "getragen", t: 0, z0: ich.z, z1: L.z[1] - 1.2, griff: null, naechsterGriff: 0.8, fertig: true };
+  stagedive = { phase: "getragen", t: 0, z0: ich.z, z1: landeZ(L), griff: null, naechsterGriff: 1.0, fertig: true };
   ich.vx = ich.vz = 0; $("pogo-stagedive").hidden = true;
   $("pogo-hinweis").textContent = T.getragen;
 }
@@ -122,7 +122,10 @@ function bewegeZeiger(e) {
 }
 function beendeZeiger(e) {
   if (!zeiger || (e && e.pointerId !== zeiger.id)) return;
-  if (geste(performance.now() - zeiger.t0, zeiger.weg) === "tippen") springe(zeiger.druckZeit);
+  if (geste(performance.now() - zeiger.t0, zeiger.weg) === "tippen") {
+    if (stagedive.phase === "getragen") wische(zeiger.rx < spielEl.clientWidth / 2 ? -1 : 1);
+    else springe(zeiger.druckZeit);
+  }
   zeiger = null; stick.hidden = true;
 }
 const tasten = new Set();
@@ -213,13 +216,14 @@ function schritt(dt) {
   // Stagedive: getragen nach hinten, Hände greifen nach dem Becher
   if (getragen) {
     const sd = stagedive; sd.t += dt;
-    ich.z = sd.z0 + (sd.z1 - sd.z0) * Math.min(1, sd.t / 5); ich.x += Math.sin(zeit * 2) * 0.3 * dt;
+    ich.z = sd.z0 + (sd.z1 - sd.z0) * Math.min(1, sd.t / STAGEDIVE.dauer); ich.x += Math.sin(zeit * 2) * 0.3 * dt;
+    punkte += STAGEDIVE.punkteProSekunde * dt;
     sd.naechsterGriff -= dt;
-    if (!sd.griff && sd.naechsterGriff <= 0) { sd.griff = { seite: Math.random() < 0.5 ? -1 : 1, bis: zeit + 0.6 }; sd.naechsterGriff = 0.7; pop((sd.griff.seite < 0 ? "← " : "") + T.hand + (sd.griff.seite > 0 ? " →" : ""), "var(--blood-hot)"); }
-    if (sd.griff && zeit > sd.griff.bis) { sd.griff = null; verschuette(12, T.schwapp); }
-    if (sd.t >= 5) {
+    if (!sd.griff && sd.naechsterGriff <= 0) { sd.griff = { seite: Math.random() < 0.5 ? -1 : 1, bis: zeit + STAGEDIVE.griffFenster }; sd.naechsterGriff = STAGEDIVE.griffAlle; pop((sd.griff.seite < 0 ? "← " : "") + T.hand + (sd.griff.seite > 0 ? " →" : ""), "var(--blood-hot)"); }
+    if (sd.griff && zeit > sd.griff.bis) { sd.griff = null; verschuette(STAGEDIVE.verlust, T.schwapp); }
+    if (sd.t >= STAGEDIVE.dauer) {
       stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; $("pogo-hinweis").textContent = "";
-      if (bier > 0) { punkte += BONUS.stagedive; pop(T.gelandet, "#58d26a"); } else pop(T.bierdusche);
+      if (bier > 0) { punkte += STAGEDIVE.bonus; pop(T.gelandet, "#58d26a"); } else pop(T.bierdusche);
     }
   }
 
