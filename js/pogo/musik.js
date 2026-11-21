@@ -1,13 +1,13 @@
 // Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
-import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=35";
+import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=36";
 
 const ACHTEL = VIERTEL / 2;
 const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
 
 export function erzeugeMusik() {
   let audio = null, master = null, tonAn = true, naechste = 0, start = 0, achtel = 0, takt = null, rauschen = null, verzerrer = null;
-  let quelle = null, modus = "beat", klatschBpm = 120; const puffer = new Map();
+  let quelle = null, einmal = null, modus = "beat", klatschBpm = 120; const puffer = new Map();
   const kontext = () => {
     if (audio) return audio;
     const AC = globalThis.AudioContext || globalThis.webkitAudioContext; if (!AC) return null;
@@ -80,6 +80,16 @@ export function erzeugeMusik() {
       } catch { audio = null; }
     },
     stopp() { clearInterval(takt); takt = null; try { quelle?.stop(); } catch {} quelle = null; },
+    /** Geladenes Stück einmal abspielen (z. B. Outro); gibt die Dauer in s zurück oder null. */
+    spieleEinmal(url) {
+      try {
+        const ctx = kontext(); if (!ctx || !puffer.has(url)) return null;
+        ctx.resume()?.catch?.(() => {}); this.stoppeEinmal();
+        einmal = ctx.createBufferSource(); einmal.buffer = puffer.get(url); einmal.connect(master); einmal.start(ctx.currentTime + 0.05);
+        return einmal.buffer.duration;
+      } catch { return null; }
+    },
+    stoppeEinmal() { try { einmal?.stop(); } catch {} einmal = null; },
     /** Klatsch-Takt für den Zugabe-Ruf; die Uhr beginnt beim ersten Klatscher. */
     klatschen(bpm) {
       try {

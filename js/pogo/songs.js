@@ -1,6 +1,6 @@
 // Songs für Pogo. Jeder Song braucht einen Freigabe-Eintrag (Test in tests/js/pogo-regeln.test.mjs).
 // Zeiten in Sekunden ab Dateibeginn; start = erster Schlag (für „im Takt“).
-import { TEILE, BPM, DAUER } from "./regeln.js?v=35";
+import { TEILE, BPM, DAUER } from "./regeln.js?v=36";
 
 /** Eigener Beat aus dem Browser (Ersatz, wenn kein Song gewählt ist oder die Datei nicht lädt). */
 export const BEAT = {
@@ -29,6 +29,8 @@ export const SONGS = [
     // GEMA (Repertoiresuche 2026-11-21): Dan Ganove ist Mitglied, Werk 28404850-001 und 28349843-001, ISWC T-305.133.841-7.
     // Offen: ob Dans mündliches OK für die Website reicht; Mark klärt das mit Dan (Stand 2026-11-21).
     gema: { werknummern: ["28404850-001", "28349843-001"], iswc: "T-305.133.841-7", klaerung: "offen" },
+    // Outro nach der Runde: Dan spricht live (5,5 s), von Mark geliefert
+    outro: { datei: "assets/audio/dan-ganove-outro.mp3" },
   },
 ];
 

@@ -193,3 +193,16 @@ test("Wilder Teil hängt am Song, nicht an der Kraft der Menge", async () => {
   assert.equal(wilderTeil({ kraft: 1.4 }), true);
   assert.equal(wilderTeil({ kraft: 0.8 }), false);
 });
+
+test("Outro: Song mit Outro hat die Datei, kurz genug zum Abwarten", async () => {
+  const { SONGS } = await import("../../js/pogo/songs.js");
+  const { existsSync, statSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const wurzel = fileURLToPath(new URL("../../", import.meta.url));
+  const dan = SONGS.find((s) => s.id === "dan-ganove-lauter");
+  assert.ok(dan.outro?.datei, "Dan hat ein Outro");
+  for (const s of SONGS.filter((x) => x.outro)) {
+    assert.ok(existsSync(wurzel + s.outro.datei), s.outro.datei);
+    assert.ok(statSync(wurzel + s.outro.datei).size < 300_000, "Outro klein halten");
+  }
+});

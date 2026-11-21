@@ -1,6 +1,6 @@
 // Szene von Pogo: Renderer, Licht, Laden mit Bühne, Band, Gitter und Ordner, Kamera hinter dir.
 // three.js wird hereingereicht (app.js lädt es aus assets/vendor/). Vorlage: docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html.
-import { baueFigur } from "./figuren.js?v=35";
+import { baueFigur } from "./figuren.js?v=36";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 
@@ -264,6 +264,17 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     if (!ruhig && s.wackelStaerke > 0.002) { const w = s.wackelStaerke; camera.position.x += zufall(-w, w); camera.position.y += zufall(-w, w); }
     s.wackelStaerke *= Math.exp(-6 * dt);
   };
+  /** Outro: Kamera schwenkt zu `ziel` (Position der Figur) und zoomt heran. anteil 0…1: 0 = Schwenk beginnt, 1 = ganz nah. */
+  s.kameraAuf = (ziel, dt, anteil) => {
+    const k = Math.min(1, Math.max(0, anteil)), nah = k * k * (3 - 2 * k); // weich ein- und auslaufen
+    kamZiel.set(ziel.x + 0.25 * (1 - nah), ziel.y + 1.9 - 0.25 * nah, ziel.z + 4.2 - 2.4 * nah);
+    blick.set(ziel.x, ziel.y + 1.45, ziel.z);
+    camera.position.lerp(kamZiel, Math.min(1, dt * 3)); camera.lookAt(blick);
+    const fov = (camera.aspect < 1 ? 62 : 50) - (camera.aspect < 1 ? 22 : 18) * nah; // heranzoomen
+    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  };
+  /** Nach dem Outro: Blickwinkel wieder normal. */
+  s.kameraNormal = () => { camera.fov = camera.aspect < 1 ? 62 : 50; camera.updateProjectionMatrix(); };
   s.wackeln = (staerke) => { if (!ruhig) s.wackelStaerke = Math.min(0.25, s.wackelStaerke + staerke); };
   s.render = () => renderer.render(scene, camera);
   s.zeichenaufrufe = () => renderer.info.render.calls;

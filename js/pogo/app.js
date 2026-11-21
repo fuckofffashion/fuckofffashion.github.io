@@ -2,20 +2,20 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=35";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=35";
-import { sprache, TEXTE } from "./texte.js?v=35";
-import { LAEDEN } from "./laeden.js?v=35";
-import { erzeugeMusik } from "./musik.js?v=35";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=35";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=35";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=35";
-import { MOTIVE } from "./motive.js?v=35";
+} from "./regeln.js?v=36";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=36";
+import { sprache, TEXTE } from "./texte.js?v=36";
+import { LAEDEN } from "./laeden.js?v=36";
+import { erzeugeMusik } from "./musik.js?v=36";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=36";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=36";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=36";
+import { MOTIVE } from "./motive.js?v=36";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=35";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=35";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=35";
-import { tagDatum } from "../bands/texte.js?v=35";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=36";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=36";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=36";
+import { tagDatum } from "../bands/texte.js?v=36";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -34,6 +34,7 @@ let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher)
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
+let outro = null;
 let combo, stimmung = 20, kochtBis = -1, groel, gefallen = null, gefallenAnzahl = 0, naechsterFall = 0, kreis = null, kreisPfeile = [], schultern = { phase: "fertig" }, stimmungEnde = 0, glanz = null, letztesErgebnis = null;
 let stillZeit = 0, zieht = false, mikroGezaehlt = new Set(), sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
@@ -179,6 +180,7 @@ function beendeZeiger(e) {
 }
 const tasten = new Set();
 addEventListener("keydown", (e) => {
+  if (outro && (e.key === " " || e.key === "Enter" || e.key === "Escape")) { e.preventDefault(); endeOutro(); return; }
   if (!laeuft) return;
   if (e.key === " ") { e.preventDefault(); if (!e.repeat) springe(); return; }
   if (stagedive.phase === "getragen" && (e.key === "ArrowLeft" || e.key === "a")) { wische(-1); return; }
@@ -647,6 +649,36 @@ async function teileBild(e) {
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
+/* ---------- Outro: Sänger tritt vor, Kamera schwenkt heran, Band spricht ---------- */
+function starteOutro() {
+  const url = song.outro && WURZEL + song.outro.datei, sanger = S.band[1];
+  if (!url || !sanger || !musik.bereit(url)) return false;
+  const dauer = musik.spieleEinmal(url); if (!dauer) return false;
+  if (saenger) { saenger.f.g.visible = false; saenger.ring.visible = false; } // getragener Sänger aus der Zugabe ist wieder auf der Bühne
+  sanger.g.visible = true;
+  outro = { t: 0, dauer: dauer + 0.6, figur: sanger, basisZ: sanger.g.position.z };
+  $("pogo-hinweis").textContent = T.outro({ band: song.bandName });
+  return true;
+}
+function outroSchritt(dt) {
+  const o = outro; o.t += dt;
+  bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.4 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.4, false);
+  S.setzeLicht(0.6, performance.now() / 1000, 3);
+  // Sänger tritt an die Bühnenkante und hebt das Mikro
+  const vor = Math.min(1, o.t / 1.1), f = o.figur;
+  f.g.position.z = o.basisZ + 0.8 * vor; f.koerper.rotation.x = 0.15 * vor; f.arme[1].rotation.z = 1.25 + Math.sin(o.t * 5) * 0.08;
+  // erst schwenken (0,8 s), dann heranzoomen
+  S.kameraAuf(f.g.position, dt, Math.max(0, (o.t - 0.8) / 1.4));
+  if (o.t >= o.dauer) endeOutro();
+}
+function endeOutro() {
+  if (!outro) return;
+  musik.stoppeEinmal();
+  const f = outro.figur; f.g.position.z = outro.basisZ; f.koerper.rotation.x = 0;
+  outro = null; S.kameraNormal(); S.kamera(ich, 0, true);
+  zeigeEndbild();
+}
+
 /* ---------- Aufräumen ---------- */
 function gibFrei(obj) { obj.traverse((o) => { if (o.isMesh) { if (!o.geometry.userData.geteilt) o.geometry.dispose(); if (!o.material.vertexColors && !o.material.map) o.material.dispose(); } }); }
 function entferneFreibier() { if (!freibier) return; S.raum.remove(freibier.g); gibFrei(freibier.g); freibier = null; }
@@ -723,8 +755,9 @@ function bild(jetzt) {
       let rest = uhr === null ? echt : Math.min(0.25, Math.max(0, uhr - zeit));
       while (rest > 1e-6 && laeuft && phase !== "ruf") { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
     }
+    else if (outro) outroSchritt(dt);
     else if (L) { bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.3 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.3, false); S.setzeLicht(0.3, performance.now() / 1000, 3); }
-    if (L) S.kamera(ich, dt, false, stagedive?.phase === "getragen" || schultern?.phase === "oben");
+    if (L && !outro) S.kamera(ich, dt, false, stagedive?.phase === "getragen" || schultern?.phase === "oben");
     S.render();
     if (laeuft) zeigeStand();
     if (zeigeFps) { fpsBilder++; fpsZeit += echt; if (fpsZeit > 0.5) { fpsEl.textContent = `${Math.round(fpsBilder / fpsZeit)} fps · ${S.zeichenaufrufe()} Aufrufe`; fpsZeit = 0; fpsBilder = 0; } }
@@ -797,12 +830,18 @@ function ende(leer) {
   $("pogo-ende-werte").textContent = `${T.punkte} ${p} × ${T.bier} ${b} %` + (b < BIER_MIN ? ` (${T.zaehltAls({ n: BIER_MIN })})` : "");
   zeigeBand();
   $("pogo-ende-andenken").textContent = andenken.length ? `${T.andenken}: ${andenken.map((a) => T[a].replace("!", "")).join(", ")}` : T.keineAndenken;
-  $("pogo-ende").hidden = false; $("pogo-hud").hidden = true; $("pogo-tonbox").hidden = true;
+  $("pogo-hud").hidden = true; $("pogo-tonbox").hidden = true;
   aufgaben = ziehe(L); zeigeAufgabenUndKutte(); // neue Aufgaben für die nächste Runde
+  if (!starteOutro()) zeigeEndbild();
+}
+function zeigeEndbild() {
+  $("pogo-hinweis").textContent = "";
+  $("pogo-ende").hidden = false;
   $("pogo-nochmal").focus({ preventScroll: true });
 }
 
 document.addEventListener("visibilitychange", () => {
+  if (document.hidden && outro) endeOutro();
   if (document.hidden) { pausiert = true; tasten.clear(); zeiger = null; stick.hidden = true; if (laeuft) musik.pause(); }
   else { pausiert = false; letzte = performance.now(); if (laeuft) musik.weiter(); }
 });
@@ -828,8 +867,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=35").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=35"),
+      import("./szene.js?v=36").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=36"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -837,7 +876,7 @@ async function los() {
     $("pogo-ohne3d").hidden = false; $("pogo-start").hidden = true; return;
   }
   const el = S.renderer.domElement;
-  el.addEventListener("pointerdown", beginneZeiger);
+  el.addEventListener("pointerdown", (e) => { if (outro) { endeOutro(); return; } beginneZeiger(e); });
   el.addEventListener("pointermove", bewegeZeiger);
   el.addEventListener("pointerup", beendeZeiger);
   el.addEventListener("pointercancel", () => { zeiger = null; stick.hidden = true; });
@@ -866,6 +905,7 @@ async function los() {
   los.disabled = true; los.textContent = T.laedt;
   const anteile = SONGS.map(() => 0);
   const zeigeLaden = () => { los.textContent = `${T.laedt} ${Math.round((100 * anteile.reduce((a, b) => a + b, 0)) / Math.max(1, anteile.length))} %`; };
+  for (const s of SONGS) if (s.outro) musik.lade(WURZEL + s.outro.datei);
   Promise.all(SONGS.map((s, i) => musik.lade(WURZEL + s.datei, (a) => { anteile[i] = a; if (los.disabled) zeigeLaden(); })))
     .finally(() => { los.disabled = false; los.textContent = losText; });
   fetch(WURZEL + "data/bands.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((d) => { bandDaten = d; }).catch(() => {});
