@@ -40,6 +40,22 @@ const HAARE = [["iro", "#e3262b"], ["iro", "#4fd15f"], ["iro", "#f2b632"], ["iro
 const wahl = (a) => a[(Math.random() * a.length) | 0];
 
 let geteilt = null; // Geometrien, Material und Aufnäher-Texturen, einmal pro Seite
+let motivMats = []; // [{ nr, mat }] aus den Motiven der Seite (setzeMotive)
+
+/** Macht aus geladenen Motivbildern Aufnäher-Materialien (256 px, weißes Motiv auf dunklem Stoff). */
+export function setzeMotive(THREE, motive) {
+  motivMats = motive.map(({ nr, bild }) => {
+    const c = document.createElement("canvas"); c.width = 256; c.height = 192; const x = c.getContext("2d");
+    x.fillStyle = "#1b1919"; x.fillRect(0, 0, 256, 192);
+    const k = Math.min(232 / bild.width, 168 / bild.height);
+    x.drawImage(bild, 128 - bild.width * k / 2, 96 - bild.height * k / 2, bild.width * k, bild.height * k);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    return { nr, mat: new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }) };
+  });
+  return motivMats.length;
+}
+export const motivMaterial = (nr) => motivMats.find((m) => m.nr === nr)?.mat || null;
+export const zufallsMotiv = () => (motivMats.length ? motivMats[(Math.random() * motivMats.length) | 0] : null);
 function teile(THREE) {
   if (geteilt) return geteilt;
   const leinwand = (malen) => {
@@ -79,7 +95,7 @@ export function baueFigur(THREE, opt = {}) {
   const [art, haarFarbe] = opt.haar || wahl(HAARE);
   const stuecke = [
     { geo: T.bein, farbe: hose, matrix: M(-0.1, 0.32, 0) }, { geo: T.bein, farbe: hose, matrix: M(0.1, 0.32, 0) },
-    { geo: T.stiefel, farbe: "#0d0d0d", matrix: M(-0.1, 0.05, -0.04) }, { geo: T.stiefel, farbe: "#0d0d0d", matrix: M(0.1, 0.05, -0.04) },
+    { geo: T.stiefel, farbe: opt.stiefel || "#0d0d0d", matrix: M(-0.1, 0.05, -0.04) }, { geo: T.stiefel, farbe: opt.stiefel || "#0d0d0d", matrix: M(0.1, 0.05, -0.04) },
     { geo: T.rumpf, farbe: opt.shirt || jacke, matrix: M(0, 0.96, 0) },
     { geo: T.kopf, farbe: haut, matrix: M(0, 1.56, 0) },
   ];
@@ -94,8 +110,18 @@ export function baueFigur(THREE, opt = {}) {
   const g = new THREE.Group(), koerper = new THREE.Group(); g.add(koerper);
   const rumpf = new THREE.Mesh(fuegeZusammen(THREE, stuecke), T.farbe);
   rumpf.castShadow = true; koerper.add(rumpf);
-  if (opt.aufnaeher !== false && (opt.aufnaeher === true || Math.random() < 0.7)) {
-    const a = new THREE.Mesh(T.flicken, wahl(T.aufnaeher)); a.position.set(0, 1.02, 0.212); koerper.add(a);
+  let aufnaeher = null; const extraGeos = [];
+  if (opt.aufnaeherMat || (opt.aufnaeher !== false && (opt.aufnaeher === true || Math.random() < 0.7))) {
+    const mat = opt.aufnaeherMat || (motivMats.length && Math.random() < 0.6 ? wahl(motivMats).mat : wahl(T.aufnaeher));
+    aufnaeher = new THREE.Mesh(T.flicken, mat); aufnaeher.position.set(0, 1.02, 0.212); koerper.add(aufnaeher);
+  }
+  if (opt.gold) { // seltenes Motiv: goldener Rahmen und Ring am Boden
+    const goldMat = new THREE.MeshBasicMaterial({ color: 0xffc83a });
+    const rahmen = new THREE.PlaneGeometry(0.27, 0.21); extraGeos.push(rahmen);
+    const r = new THREE.Mesh(rahmen, goldMat); r.position.set(0, 1.02, 0.2105); koerper.add(r);
+    const ringGeo = new THREE.RingGeometry(0.42, 0.52, 28); extraGeos.push(ringGeo);
+    const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffc83a, transparent: true, opacity: 0.75, side: THREE.DoubleSide }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; g.add(ring);
   }
   const armGeo = fuegeZusammen(THREE, [{ geo: T.arm, farbe: opt.aermel || jacke, matrix: M(0, -0.24, 0) }, { geo: T.hand, farbe: haut, matrix: M(0, -0.5, 0) }]);
   const arme = [-1, 1].map((seite) => {
@@ -103,7 +129,12 @@ export function baueFigur(THREE, opt = {}) {
     const arm = new THREE.Mesh(armGeo, T.farbe); arm.castShadow = true; schulter.add(arm);
     return schulter;
   });
-  return { g, koerper, arme, geos: [rumpf.geometry, armGeo] };
+  if (opt.selfie) { // Selfie-Stick mit Handy in der rechten Hand
+    const stab = new THREE.CylinderGeometry(0.012, 0.012, 0.7, 6), handy = new THREE.BoxGeometry(0.08, 0.15, 0.015); extraGeos.push(stab, handy);
+    const st = new THREE.Mesh(stab, new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.8 })); st.position.y = -0.85; arme[1].add(st);
+    const h = new THREE.Mesh(handy, new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x6688ff, emissiveIntensity: 0.6 })); h.position.y = -1.2; arme[1].add(h);
+  }
+  return { g, koerper, arme, aufnaeher, geos: [rumpf.geometry, armGeo, ...extraGeos] };
 }
 
 /** Plastikbecher mit Bier und Schaum; becherStand setzt die Füllhöhe (0–1). */

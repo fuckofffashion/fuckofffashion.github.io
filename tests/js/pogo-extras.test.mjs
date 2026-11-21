@@ -61,3 +61,16 @@ test("Aufgaben: zwei verschiedene, ohne Crowdsurfer nie die Surfer-Aufgabe", () 
   for (let i = 0; i < 500; i++) ziehe({ surfer: true }).forEach((a) => ids.add(a.id));
   assert.equal(ids.size, AUFGABEN.length);
 });
+
+test("Kutte: abgeguckte Motive werden gemerkt, doppelt nur einmal, Text zählt sie", async () => {
+  const { mitMotiv } = await import("../../js/pogo/andenken.js");
+  const s = speicher();
+  let k = mitMotiv(mitMotiv(mitMotiv({}, "007"), "007"), "013");
+  assert.deepEqual(k.motive, ["007", "013"]);
+  schreibeKutte(s, k);
+  assert.deepEqual(leseKutte(s).motive, ["007", "013"]);
+  s.setItem("fof-pogo-kutte-v1", JSON.stringify({ motive: ["007", 5, "<x>", "999"] }));
+  assert.deepEqual(leseKutte(s).motive, ["007", "999"]);
+  assert.equal(kutteText({ motive: ["007"] }, "de"), "1 Motiv");
+  assert.equal(kutteText({ plektrum: 1, motive: ["007", "013"] }, "en"), "1 pick, 2 designs");
+});

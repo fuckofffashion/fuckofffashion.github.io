@@ -1,14 +1,16 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ,
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten,
 } from "./regeln.js?v=31";
 import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=31";
 import { sprache, TEXTE } from "./texte.js?v=31";
 import { LAEDEN } from "./laeden.js?v=31";
 import { erzeugeMusik } from "./musik.js?v=31";
 import { SONGS, BEAT } from "./songs.js?v=31";
-import { leseKutte, schreibeKutte, mitFang, kutteText } from "./andenken.js?v=31";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=31";
+import { TOUR, leseTour, schreibeTour, mitErgebnis, frei, fehlt, rang, kraftFaktor } from "./tour.js?v=31";
+import { MOTIVE } from "./motive.js?v=31";
 import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=31";
 import { isoLokal, naechster } from "../bands/saeulen.js?v=31";
 import { tagDatum } from "../bands/texte.js?v=31";
@@ -25,7 +27,8 @@ const musik = erzeugeMusik();
 /* ---------- Spielzustand ---------- */
 let songId = SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
 let speicher = null; try { speicher = globalThis.localStorage; } catch { speicher = null; }
-let kutte = leseKutte(speicher), stats, aufgaben = [];
+let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher);
+let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
@@ -40,8 +43,14 @@ function neueRunde(neueAufgaben = true) {
   for (let i = 0; i < L.leute; i++) leute.push(person({ x: zufall(-L.x + 1, L.x - 1), z: zufall(zMin + 1, zMax - 1.5), rucksack: i === 2 }));
   ich = person({ x: 0, z: zMax - 1.2, ich: true });
   leute.push(ich);
+  const offen = MOTIVE.filter((m) => !(kutte.motive || []).includes(m.nr) && F.motivMaterial(m.nr));
+  const seltenM = offen.length ? offen[(Math.random() * offen.length) | 0] : null;
+  const seltenP = seltenM ? leute.find((p) => !p.rand && !p.ich && !p.rucksack) : null;
+  selten = seltenP ? { p: seltenP, nr: seltenM.nr, titel: sp === "en" ? seltenM.titel_en : seltenM.titel } : null;
+  const meinMotiv = (kutte.motive || []).length ? F.motivMaterial(kutte.motive.at(-1)) : null;
   for (const p of leute) {
-    const f = p.ich ? F.baueFigur(THREE, { shirt: "#eeeae0", aermel: "#eeeae0", haar: ["iro", "#d4161b"], aufnaeher: true }) : F.baueFigur(THREE, { rucksack: p.rucksack });
+    const f = p.ich ? F.baueFigur(THREE, { shirt: "#eeeae0", aermel: "#eeeae0", haar: ["iro", "#d4161b"], aufnaeher: true, aufnaeherMat: meinMotiv })
+      : p === seltenP ? F.baueFigur(THREE, { gold: true, aufnaeherMat: F.motivMaterial(seltenM.nr) }) : F.baueFigur(THREE, { rucksack: p.rucksack });
     f.phase = zufall(0, 6.28); f.sprung = zufall(0.22, 0.42); f.armGrund = Math.random() < 0.5 ? zufall(2.3, 2.9) : zufall(0.2, 0.8); f.blick = 0;
     f.g.position.set(p.x, 0, p.z); S.raum.add(f.g); figuren.set(p, f);
   }
@@ -51,6 +60,8 @@ function neueRunde(neueAufgaben = true) {
   geplanteWuerfe = [{ art: "plektrum", t: song.wuerfe.plektrum }, { art: "drumstick", t: song.wuerfe.drumstick }];
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
   stagedive = { phase: "aus", fertig: false }; mikroAn = false;
+  abguck = { zeit: 0, fertig: false }; schnoesel = null; fascho = null; rufZeit = 0; rufTreffer = 0; saenger = null; geblendetBis = 0; abgeguckt = null; faktor = 1; phase = "aus";
+  if (S.band[1]) S.band[1].g.visible = true;
   stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
   if (neueAufgaben || !aufgaben.length) aufgaben = ziehe(L);
   zeigeAufgabenUndKutte();
@@ -84,6 +95,10 @@ function verschuette(menge, grund) {
 
 /* ---------- Aktionen ---------- */
 function springe(t = zeit) {
+  if (laeuft && phase === "ruf") {
+    if (imTakt(musik.uhr() ?? rufZeit, song.bpm, 0)) { rufTreffer++; pop(T.zugaGa, "var(--paper)"); } else pop(T.daneben, "var(--paper-2)");
+    return;
+  }
   if (!laeuft || pausiert || stagedive.phase === "getragen" || ich.inLuft) return;
   ich.inLuft = true; sprungBis = zeit + 0.45;
   const z = zone(ich.x, ich.z, L);
@@ -149,7 +164,7 @@ addEventListener("keyup", (e) => tasten.delete(e.key));
 const q = { a: null, b: null };
 function schritt(dt) {
   zeit += dt;
-  const teil = teilBei(zeit, song.teile), kraft = teil.kraft, zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
+  const teil0 = teilBei(zeit, song.teile), teil = { ...teil0, kraft: teil0.kraft * kraftFaktor(ladenId) }, kraft = teil.kraft, zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
   const getragen = stagedive.phase === "getragen";
 
   if (L.wall) {
@@ -172,8 +187,10 @@ function schritt(dt) {
 
   const menge = getragen ? leute.filter((p) => !p.ich) : leute;
   bewegeMenge(menge, L, teil, dt, Math.random, wall);
+  schurkenKraefte(dt);
   integriere(menge, L, dt, S.matsch);
   for (const tr of stoesse(menge)) {
+    if (schnoesel && tr.anderer === schnoesel.p) { schubseSchnoesel(tr); continue; }
     const letzte = beruehrt.get(tr.anderer) || -9;
     if (zeit - letzte < 0.3) continue;
     const m = verschuettet(tr.schlag, { rucksack: tr.anderer.rucksack, inLuft: ich.inLuft });
@@ -182,7 +199,7 @@ function schritt(dt) {
 
   // Zonen, Punkte, erste Reihe
   const z = getragen ? "pit" : zone(ich.x, ich.z, L), nass = zeit < nassBis;
-  if (!getragen) punkte += punkteProSekunde(z, teil, nass) * dt;
+  if (!getragen) punkte += punkteProSekunde(z, teil, nass) * dt * faktor * (zeit < geblendetBis ? 0.5 : 1);
   if (z === "mitte") stats.mitteSekunden += dt;
   if (z === "reihe" && teil.name === "LETZTER REFRAIN") stats.reiheImLetztenRefrain = true;
   reiheSeit = z === "reihe" && !getragen ? reiheSeit + dt : 0;
@@ -196,7 +213,7 @@ function schritt(dt) {
   mikroAn = zeit >= song.mikro[0] && zeit < song.mikro[1];
   const stagediveBereit = !stagedive.fertig && reiheSeit >= STAGEDIVE_AB;
   $("pogo-stagedive").hidden = !stagediveBereit;
-  if (!getragen) $("pogo-hinweis").textContent = mikroAn && z === "reihe" ? T.mikro : (T.zonen[z] || "");
+  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : mikroAn && z === "reihe" ? T.mikro : (T.zonen[z] || "");
 
   // Würfe von der Bühne
   for (const w of geplanteWuerfe) if (!w.los && zeit >= w.t) {
@@ -267,8 +284,104 @@ function schritt(dt) {
   tropfen = tropfen.filter((d) => d.t <= 0.8);
   S.setzeLicht(kraft, zeit, (song.bpm / 60) * Math.PI);
 
+  extras(dt);
   if (bier <= 0) ende(true);
-  else if (zeit >= song.ende) ende(false);
+  else if (phase === "song" && zeit >= song.ende) starteRuf();
+  else if (phase === "zugabe" && zeit >= zugabeEnde) ende(false);
+}
+
+/* ---------- Schurken, Abgucken, Zugabe, Tour ---------- */
+function neuePerson(opt, figurOpt) {
+  const p = person(opt); Object.assign(p, figurOpt.person || {});
+  const f = F.baueFigur(THREE, figurOpt); f.phase = zufall(0, 6.28); f.sprung = 0.25; f.armGrund = 0.6; f.blick = 0;
+  f.g.position.set(p.x, 0, p.z); S.raum.add(f.g); leute.push(p); figuren.set(p, f); return p;
+}
+function entfernePerson(p) {
+  const f = figuren.get(p); if (!f) return;
+  S.raum.remove(f.g); f.geos.forEach((g) => g.dispose()); figuren.delete(p); leute = leute.filter((x) => x !== p);
+}
+function schurkenKraefte(dt) {
+  if (schnoesel && !schnoesel.raus) { const p = schnoesel.p; p.vx += (ich.x * 0.5 - p.x) * 1.5 * dt; p.vz += (L.gitterZ + 0.6 - p.z) * 1.2 * dt; }
+  if (fascho && !fascho.weg) {
+    const fp = fascho.p;
+    for (const p of leute) { if (p.rand || p.ich || p === fp || p === schnoesel?.p) continue; const dx = fp.x - p.x, dz = fp.z - p.z, d = Math.hypot(dx, dz) || 1; p.vx += (dx / d) * 5 * dt; p.vz += (dz / d) * 5 * dt; }
+    fp.vx += Math.sign(fp.x || 1) * 6 * dt; fp.vz += 3 * dt;
+  }
+}
+function schubseSchnoesel(tr) {
+  if (tr.schlag <= 1.6 || zeit - (schnoesel.letzter ?? -9) < 0.4) return;
+  schnoesel.letzter = zeit; schnoesel.schubse++; pop(T.schubs, "var(--paper)");
+  if (schnoesel.schubse >= 3) { schnoesel.raus = true; punkte += BONUS.schnoesel; pop(T.schnoeselRaus, "var(--blood-hot)"); entfernePerson(schnoesel.p); }
+}
+function extras(dt) {
+  const getragen = stagedive.phase === "getragen";
+  if (selten && !abguck.fertig && !getragen && figuren.has(selten.p) && istHinter(ich, selten.p)) {
+    abguck.zeit += dt;
+    if (abguck.zeit >= ABGUCKEN_S) {
+      abguck.fertig = true; abgeguckt = selten.nr; punkte += BONUS.abgeguckt; pop(T.abgeguckt, "#ffc83a");
+      kutte = mitMotiv(kutte, selten.nr); schreibeKutte(speicher, kutte);
+      const a = figuren.get(ich).aufnaeher, mat = F.motivMaterial(selten.nr); if (a && mat) a.material = mat;
+    }
+  }
+  const zz = schurkenZeiten(song);
+  if (phase === "song" && !schnoesel && zeit >= zz.schnoesel) {
+    const p = neuePerson({ x: zufall(-L.x + 1, L.x - 1), z: L.z[1] - 1.2 }, { shirt: "#e8dcc4", aermel: "#e8dcc4", stiefel: "#f4f4f4", haar: ["kurz", "#c9a36a"], aufnaeher: false, selfie: true, person: { masse: 1.4 } });
+    schnoesel = { p, schubse: 0, naechsterBlitz: zeit + 2, raus: false };
+  }
+  if (phase === "song" && !fascho && zeit >= zz.fascho) {
+    const seite = Math.random() < 0.5 ? -1 : 1;
+    const p = neuePerson({ x: seite * (L.x - 1.2), z: (L.gitterZ + L.z[1]) / 2 }, { shirt: "#2f3a2a", aermel: "#2f3a2a", haar: ["glatze"], aufnaeher: false, stiefel: "#1a1a1a", person: { masse: 1.6 } });
+    fascho = { p, t: 0, weg: false, geholfen: false }; pop(T.fascho, "var(--blood-hot)");
+  }
+  if (schnoesel && !schnoesel.raus && Math.hypot(schnoesel.p.x - ich.x, schnoesel.p.z - ich.z) < 3 && zeit >= schnoesel.naechsterBlitz) {
+    schnoesel.naechsterBlitz = zeit + 4; geblendetBis = zeit + 1.5; pop(T.blitz, "#ffffff");
+    const el = $("pogo-blitz"); el.classList.remove("an"); void el.offsetWidth; el.classList.add("an");
+  }
+  if (fascho && !fascho.weg) {
+    fascho.t += dt;
+    if (!fascho.geholfen && Math.hypot(fascho.p.x - ich.x, fascho.p.z - ich.z) <= 1.5) { fascho.geholfen = true; punkte += BONUS.fascho; pop(T.faschoGeholfen, "#58d26a"); }
+    if (fascho.t > 6) { fascho.weg = true; entfernePerson(fascho.p); }
+  }
+  if (saenger) {
+    saenger.t += dt; const mz = (L.gitterZ + L.z[1]) / 2;
+    saenger.x = Math.sin(saenger.t * 0.6) * L.x * 0.5; saenger.z = mz + Math.cos(saenger.t * 0.45) * 2.2;
+    saenger.f.g.position.set(saenger.x, 2.15 + Math.sin(zeit * 9) * 0.05, saenger.z); saenger.ring.position.x = saenger.x; saenger.ring.position.z = saenger.z;
+    if (Math.hypot(saenger.x - ich.x, saenger.z - ich.z) <= 1) { punkte += 80 * dt; saenger.weg = 0; }
+    else { saenger.weg += dt; if (saenger.weg > 2 && !saenger.gefallen) { saenger.gefallen = true; pop(T.saengerFaellt, "var(--blood-hot)"); } }
+  }
+}
+function starteRuf() {
+  phase = "ruf"; rufZeit = 0; rufTreffer = 0;
+  if (stagedive.phase === "getragen") { stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; }
+  $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = T.zugabeRuf; pop(T.zugabe, "var(--paper)");
+  musik.stopp(); musik.klatschen(song.bpm);
+}
+function rufSchritt(echt) {
+  rufZeit += echt;
+  bewegeFiguren(Math.min(0.05, echt), 0.5, false); S.setzeLicht(0.5, rufZeit, (song.bpm / 60) * Math.PI);
+  if (rufZeit < ZUGABE.fenster) return;
+  if (rufTreffer >= ZUGABE.treffer) starteZugabe(); else { musik.stopp(); pop(T.keineZugabe, "var(--paper)"); ende(false); }
+}
+function starteZugabe() {
+  phase = "zugabe"; faktor = ZUGABE.faktor;
+  const start = song.teile.at(-2).bis; zeit = start; zugabeEnde = Math.min(song.ende, start + ZUGABE.dauer);
+  musik.start(song.datei ? WURZEL + song.datei : null, start);
+  const f = F.baueFigur(THREE, { aufnaeher: false }); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 40), new THREE.MeshBasicMaterial({ color: 0x58d26a, transparent: true, opacity: 0.55, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; S.raum.add(ring);
+  S.raum.add(f.g); saenger = { f, ring, t: 0, x: 0, z: L.gitterZ + 1, weg: 0, gefallen: false };
+  if (S.band[1]) S.band[1].g.visible = false;
+  pop(T.zugabe, "#58d26a"); $("pogo-hinweis").textContent = T.saenger;
+}
+function aktualisiereLaeden() {
+  const offen = frei(tour);
+  TOUR.forEach((id, i) => {
+    const b = $("pogo-laden-" + id); if (!b) return;
+    const n = fehlt(tour, id); b.disabled = n > 0;
+    b.querySelector("span").textContent = n > 0 ? T.gesperrt({ n, laden: T.laeden[TOUR[i - 1]].name }) : T.laeden[id].text;
+  });
+  if (!offen.has(ladenId)) { ladenId = "pitcher"; }
+  document.querySelectorAll(".pogo__laden[id^='pogo-laden-']").forEach((x) => x.setAttribute("aria-pressed", String(x.id === "pogo-laden-" + ladenId)));
 }
 
 /* ---------- Aufräumen ---------- */
@@ -278,6 +391,7 @@ function entferneSurfer() { if (!surfer) return; S.raum.remove(surfer.f.g); surf
 function raeumeAuf() {
   if (!S?.raum) return;
   entferneFreibier(); entferneSurfer();
+  if (saenger) { S.raum.remove(saenger.f.g, saenger.ring); saenger.f.geos.forEach((g) => g.dispose()); saenger.ring.geometry.dispose(); saenger.ring.material.dispose(); saenger = null; }
   for (const w of wuerfe || []) { S.raum.remove(w.m); w.m.geometry.dispose(); w.m.material.dispose(); }
   for (const d of tropfen || []) S.raum.remove(d.m);
   for (const f of figuren.values()) f.geos.forEach((g) => g.dispose());
@@ -333,7 +447,8 @@ function bild(jetzt) {
   const echt = Math.min(0.25, (jetzt - letzte) / 1000 || 0); letzte = jetzt;
   const dt = Math.min(0.05, echt);
   if (!pausiert) {
-    if (laeuft) {
+    if (laeuft && phase === "ruf") rufSchritt(echt);
+    else if (laeuft) {
       const uhr = musik.uhr();
       let rest = uhr === null ? echt : Math.min(0.25, Math.max(0, uhr - zeit));
       while (rest > 1e-6 && laeuft) { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
@@ -358,7 +473,7 @@ function zeigeAufgabenUndKutte() {
   const text = aufgaben.map((a) => "□ " + T.aufgaben[a.id]).join("  ·  ");
   $("pogo-aufgaben").textContent = text;
   $("pogo-aufgaben-start").textContent = `${T.aufgabenTitel}: ${text}`;
-  $("pogo-kutte").textContent = `${T.kutte}: ${kutteText(kutte, sp)}`;
+  $("pogo-kutte").textContent = `${T.rang}: ${T.raenge[rang(tour.summe)]} · ${T.kutte}: ${kutteText(kutte, sp)}`;
 }
 
 function starte() {
@@ -367,10 +482,12 @@ function starte() {
   neueRunde(false);
   $("pogo-start").hidden = true; $("pogo-ende").hidden = true; $("pogo-hud").hidden = false; $("pogo-tonbox").hidden = false;
   spielEl.scrollIntoView({ block: "nearest" });
-  laeuft = true; pausiert = false; letzte = performance.now();
+  laeuft = true; pausiert = false; letzte = performance.now(); phase = "song";
   musik.start(song.datei ? WURZEL + song.datei : null);
 }
 function ende(leer) {
+  if (!laeuft) return;
+  phase = "aus";
   laeuft = false; musik.stopp(); beendeZeiger(); tasten.clear();
   stagedive = { phase: "aus", fertig: true }; $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = "";
   const erledigt = aufgaben.filter((a) => a.erfuellt(stats));
@@ -382,7 +499,18 @@ function ende(leer) {
   const b = leer ? 0 : Math.round(bier), p = Math.round(punkte);
   $("pogo-ende-laden").textContent = T.laeden[ladenId].name;
   $("pogo-ende-titel").textContent = T.titel[titelSchluessel(p, b)];
-  $("pogo-ende-zahl").textContent = ergebnis(p, b);
+  const erg = ergebnis(p, b);
+  $("pogo-ende-zahl").textContent = erg;
+  const vorher = frei(tour); tour = mitErgebnis(tour, ladenId, erg); schreibeTour(speicher, tour);
+  const neu = [...frei(tour)].filter((id) => !vorher.has(id));
+  const tourEl = $("pogo-ende-tour"); tourEl.replaceChildren(`${T.rang}: ${T.raenge[rang(tour.summe)]}`);
+  for (const id of neu) tourEl.append(document.createElement("br"), T.neuFrei({ laden: T.laeden[id].name }));
+  if (abgeguckt) {
+    const m = MOTIVE.find((x) => x.nr === abgeguckt); const a = document.createElement("a");
+    a.href = "index.html#wand"; a.textContent = T.zurVorlage;
+    tourEl.append(document.createElement("br"), T.motivAbgeguckt({ nr: m.nr, titel: sp === "en" ? m.titel_en : m.titel }), " · ", a);
+  }
+  aktualisiereLaeden();
   $("pogo-ende-werte").textContent = `${T.punkte} ${p} × ${T.bier} ${b} %`;
   zeigeBand();
   $("pogo-ende-andenken").textContent = andenken.length ? `${T.andenken}: ${andenken.map((a) => T[a].replace("!", "")).join(", ")}` : T.keineAndenken;
@@ -432,13 +560,14 @@ async function los() {
   el.addEventListener("pointercancel", () => { zeiger = null; stick.hidden = true; });
 
   const laedenEl = $("pogo-laeden");
-  for (const id of Object.keys(LAEDEN)) {
+  for (const id of TOUR) {
     const b = document.createElement("button"); b.type = "button"; b.className = "pogo__laden"; b.id = "pogo-laden-" + id;
     b.setAttribute("aria-pressed", String(id === ladenId));
     b.innerHTML = "<b></b><span></span>"; b.querySelector("b").textContent = T.laeden[id].name; b.querySelector("span").textContent = T.laeden[id].text;
     b.addEventListener("click", () => { ladenId = id; laedenEl.querySelectorAll(".pogo__laden").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); neueRunde(); });
     laedenEl.append(b);
   }
+  aktualisiereLaeden();
   const songsEl = $("pogo-songs");
   for (const s of [...SONGS, BEAT]) {
     const b = document.createElement("button"); b.type = "button"; b.className = "pogo__laden"; b.id = "pogo-song-" + s.id;
@@ -460,5 +589,16 @@ async function los() {
   $("pogo-start").hidden = false;
   neueRunde();
   requestAnimationFrame(bild);
+  ladeMotive().then((n) => { if (n && !laeuft) neueRunde(false); });
+}
+/** Motivbilder der Seite für die Rückenaufnäher laden; was nicht kommt, fehlt einfach (alte Aufnäher bleiben). */
+async function ladeMotive() {
+  const lade = (m) => new Promise((ok, nein) => {
+    const img = new Image(); const uhr = setTimeout(() => nein(new Error("Zeit")), 6000);
+    img.onload = () => { clearTimeout(uhr); ok({ nr: m.nr, bild: img }); }; img.onerror = () => { clearTimeout(uhr); nein(new Error(m.bild)); };
+    img.src = WURZEL + m.bild;
+  });
+  const da = (await Promise.allSettled(MOTIVE.map(lade))).filter((r) => r.status === "fulfilled").map((r) => r.value);
+  try { return F.setzeMotive(THREE, da); } catch { return 0; }
 }
 los();

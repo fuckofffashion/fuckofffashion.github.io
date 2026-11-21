@@ -57,18 +57,27 @@ export function erzeugeMusik() {
     },
     bereit(url) { return puffer.has(url); },
     /** Startet den Song (url) oder ohne url den eigenen Beat; muss im Klick laufen. */
-    start(url = null) {
+    start(url = null, versatz = 0) {
       try {
         const ctx = kontext(); if (!ctx) return;
         ctx.resume()?.catch?.(() => {});
         this.stopp();
-        naechste = start = ctx.currentTime + 0.05; achtel = 0;
+        const t0 = ctx.currentTime + 0.05; naechste = t0; start = t0 - versatz; achtel = 0;
         if (url && puffer.has(url)) {
-          quelle = ctx.createBufferSource(); quelle.buffer = puffer.get(url); quelle.connect(master); quelle.start(start);
+          quelle = ctx.createBufferSource(); quelle.buffer = puffer.get(url); quelle.connect(master); quelle.start(t0, versatz);
         } else { takt = setInterval(plane, 25); }
       } catch { audio = null; }
     },
     stopp() { clearInterval(takt); takt = null; try { quelle?.stop(); } catch {} quelle = null; },
+    /** Klatsch-Takt für den Zugabe-Ruf; die Uhr beginnt beim ersten Klatscher. */
+    klatschen(bpm) {
+      try {
+        const ctx = kontext(); if (!ctx) return;
+        this.stopp(); ctx.resume()?.catch?.(() => {});
+        naechste = start = ctx.currentTime + 0.05;
+        takt = setInterval(() => { while (naechste < ctx.currentTime + 0.12) { zisch(naechste, 0.08, 0.5, false); knall(naechste, 180, 0.08, 0.35); naechste += 60 / bpm; } }, 25);
+      } catch { audio = null; }
+    },
     pause() { if (!quelle) { clearInterval(takt); takt = null; } audio?.suspend(); },
     // die Audiouhr steht während der Pause still, das Raster läuft danach nahtlos weiter
     weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(plane, 25); } },
