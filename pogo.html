@@ -45,11 +45,13 @@
   </div>
   <div class="pogo__spiel" id="pogo-spiel">
     <div class="pogo__hud" id="pogo-hud" hidden>
-      <div class="pogo__becher"><div class="pogo__glas" aria-hidden="true"><div class="pogo__bierstand" id="pogo-bierstand"></div></div><span class="pogo__wert"><small>Bier</small><b id="pogo-bier">100&nbsp;%</b></span><span class="pogo__wert"><small>Punkte</small><b id="pogo-punkte">0</b></span><span class="pogo__wert pogo__wert--ergebnis"><small>Ergebnis</small><b id="pogo-ergebnis">0</b></span></div>
+      <div class="pogo__becher"><div class="pogo__glas" aria-hidden="true"><div class="pogo__bierstand" id="pogo-bierstand"></div></div><span class="pogo__wert"><small>Bier</small><b id="pogo-bier">100&nbsp;%</b></span><span class="pogo__wert"><small>Punkte</small><b id="pogo-punkte">0</b></span><span class="pogo__wert pogo__wert--ergebnis"><small>Ergebnis</small><b id="pogo-ergebnis">0</b></span><span class="pogo__combo" id="pogo-combo" hidden>×2</span></div>
       <div class="pogo__teil"><b id="pogo-teil">INTRO</b><span id="pogo-zeit">1:00</span></div>
     </div>
     <p class="pogo__aufgaben" id="pogo-aufgaben"></p>
     <p class="pogo__hinweis" id="pogo-hinweis" aria-live="polite"></p>
+    <div class="pogo__stimmung" id="pogo-stimmung-box" aria-hidden="true" hidden><i id="pogo-stimmung"></i></div>
+    <p class="pogo__groelen" id="pogo-groelen" aria-hidden="true" hidden></p>
     <div class="pogo__blitz" id="pogo-blitz" aria-hidden="true"></div>
     <div class="pogo__pops" id="pogo-pops" aria-hidden="true"></div>
     <div class="pogo__stick" id="pogo-stick" hidden><i id="pogo-knauf"></i></div>
@@ -77,6 +79,7 @@
       <p class="pogo__tour" id="pogo-ende-tour"></p>
       <div class="pogo__knoepfe">
         <button class="btn" id="pogo-nochmal" type="button">Nochmal</button>
+        <button class="btn btn--ghost" id="pogo-teilen" type="button">Ergebnis teilen</button>
         <button class="btn btn--ghost" id="pogo-anderer" type="button">Anderer Laden</button>
         <a class="btn btn--ghost" href="bands.html">Zu den Bands auf der Säule</a>
       </div>

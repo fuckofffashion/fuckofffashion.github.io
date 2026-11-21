@@ -13,7 +13,7 @@ export function person({ x = 0, z = 0, ich = false, rand = false, rucksack = fal
 const mitteZ = (laden) => (laden.gitterZ + laden.z[1]) / 2;
 
 /** Pogo-Stöße, Circle Pit, Wall of Death, Zusammenhalt; Rand-Leute zurück an ihren Platz. */
-export function bewegeMenge(leute, laden, teil, dt, zufall = Math.random, wall = null) {
+export function bewegeMenge(leute, laden, teil, dt, zufall = Math.random, wall = null, kreis = null) {
   const kraft = teil.kraft, mz = mitteZ(laden) + 0.6;
   for (const p of leute) {
     if (p.ich) continue;
@@ -32,9 +32,9 @@ export function bewegeMenge(leute, laden, teil, dt, zufall = Math.random, wall =
         p.vx += Math.cos(a) * s; p.vz += Math.sin(a) * s;
         p.stoss = (0.25 + zufall() * 0.65) / (0.4 + kraft);
       }
-      if (teil.kreis && laden.wall) {
+      if (kreis && !p.liegt) { // Circle Pit: alle rennen im Kreis um die Mitte, Richtung kreis.richtung
         const dx = p.x, dz = p.z - mz, d = Math.hypot(dx, dz) || 1;
-        p.vx += (-dz / d) * 6 * dt * kraft; p.vz += (dx / d) * 6 * dt * kraft;
+        p.vx += (-dz / d) * 9 * dt * kreis.richtung; p.vz += (dx / d) * 9 * dt * kreis.richtung;
         p.vx += (-dx / d) * (d - 2.6) * 1.2 * dt; p.vz += (-dz / d) * (d - 2.6) * 1.2 * dt;
       }
       p.vx += -p.x * 0.2 * dt; p.vz += (mz - p.z) * 0.2 * dt;

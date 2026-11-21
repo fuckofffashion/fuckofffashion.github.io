@@ -11,6 +11,8 @@ import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=33";
 import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=33";
 import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=33";
 import { MOTIVE } from "./motive.js?v=33";
+import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=33";
 import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=33";
 import { isoLokal, naechster } from "../bands/saeulen.js?v=33";
 import { tagDatum } from "../bands/texte.js?v=33";
@@ -31,6 +33,7 @@ let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher)
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
 let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
+let combo, stimmung = 20, kochtBis = -1, groel, gefallen = null, gefallenAnzahl = 0, naechsterFall = 0, kreis = null, kreisPfeile = [], schultern = { phase: "fertig" }, stimmungEnde = 0, glanz = null, letztesErgebnis = null;
 let stillZeit = 0, zieht = false, mikroGezaehlt = new Set(), sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
 function neueRunde(neueAufgaben = true) {
@@ -62,6 +65,11 @@ function neueRunde(neueAufgaben = true) {
   stagedive = { phase: "aus", fertig: false }; mikroAn = false; mikroGezaehlt = new Set();
   abguck = { zeit: 0, fertig: false, erklaertBis: -1 }; schnoesel = null; fascho = null; rufZeit = 0; rufTreffer = 0; saenger = null; geblendetBis = 0; abgeguckt = null; faktor = 1; phase = "aus";
   if (S.band[1]) S.band[1].g.visible = true;
+  combo = { serie: 0, letzterSchlag: null }; stimmung = 20; kochtBis = -1; groel = { folge: 0, letzterSchlag: null, getroffen: new Set() };
+  gefallen = null; gefallenAnzahl = 0; naechsterFall = AUFHEBEN.erstesNach; kreis = null; stimmungEnde = 0;
+  schultern = ladenId === "pitcher" ? { phase: "fertig" } : { phase: "aus", ab: zufall(10, 18) };
+  glanz = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.5, 28), new THREE.MeshBasicMaterial({ color: 0x58d26a, transparent: true, opacity: 0.7, depthWrite: false }));
+  glanz.rotation.x = -Math.PI / 2; glanz.position.y = 0.04; glanz.visible = false; figuren.get(ich).g.add(glanz); figuren.get(ich).geos.push(glanz.geometry);
   stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
   if (neueAufgaben || !aufgaben.length) aufgaben = ziehe(L);
   zeigeAufgabenUndKutte();
@@ -102,16 +110,18 @@ function springe(t = zeit, uhr = null) {
     return;
   }
   stillZeit = 0; // jedes Tippen zählt als Mitmachen (auch OI! am Mikro)
+  if (laeuft && !pausiert && tippAktion()) return;
   if (!laeuft || pausiert || stagedive.phase === "getragen" || ich.inLuft) return;
   ich.inLuft = true; sprungBis = zeit + sprungDauer(song.bpm);
   const z = zone(ich.x, ich.z, L);
   if (mikroAn && z === "reihe") {
     const w = rufTipp(t - song.start, song.bpm, mikroGezaehlt);
-    if (w === "treffer") { punkte += BONUS.oi; pop(T.oi, "var(--paper)"); } else if (w === "daneben") pop(T.daneben, "var(--paper-2)");
+    if (w === "treffer") { punkte += BONUS.oi * kochFaktor(); pop(T.oi, "var(--paper)"); taktTreffer(t); } else if (w === "daneben") pop(T.daneben, "var(--paper-2)");
     return;
   }
-  const w = sprungWertung(z, imTakt(t, song.bpm, song.start));
-  if (w.punkte) { punkte += w.punkte; stats.taktSpruenge++; pop(T.takt, "#58d26a"); }
+  const imSchlag = imTakt(t, song.bpm, song.start), w = sprungWertung(z, imSchlag);
+  if (w.punkte) { punkte += w.punkte * comboStufe(combo.serie) * kochFaktor(); stats.taktSpruenge++; pop(T.takt, "#58d26a"); taktTreffer(t); }
+  else if (!imSchlag && z !== "rand") brichCombo();
   if (w.bier && phase !== "zugabe") { bier = Math.max(0, bier - w.bier); spritzer(2); }
 }
 function wische(seite) {
@@ -170,16 +180,29 @@ function schritt(dt) {
   const vorX = ich.x, vorZ = ich.z;
   zeit += dt;
   const teil0 = teilBei(zeit, song.teile), teil = { ...teil0, kraft: teil0.kraft * kraftFaktor(ladenId) }, kraft = teil.kraft, zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
-  const getragen = stagedive.phase === "getragen";
+  const getragen = stagedive.phase === "getragen", oben = schultern.phase === "oben";
 
   if (L.wall) {
-    if (zeit > song.wall[0] && zeit < song.wall[1] && !wall) { wall = { phase: "teilen" }; pop(T.wall, "var(--blood-hot)"); }
-    if (wall?.phase === "teilen" && zeit >= song.wall[1]) { wall = { phase: "rennen", t: 0 }; pop(T.los, "var(--blood-hot)"); }
-    if (wall?.phase === "rennen") { wall.t += dt; if (wall.t > 2.4) wall = { phase: "vorbei" }; }
+    if (zeit > song.wall[0] && zeit < song.wall[1] && !wall) { wall = { phase: "teilen", seite: Math.sign(ich.x) || 1, zuFrueh: false }; pop(T.wall, "var(--blood-hot)"); }
+    if (wall?.phase === "teilen" && !wall.zuFrueh && Math.sign(ich.x) === -wall.seite && Math.abs(ich.x) > 0.4) { wall.zuFrueh = true; pop(T.wallFrueh, "var(--paper)"); }
+    if (wall?.phase === "teilen" && zeit >= song.wall[1]) { wall = { phase: "rennen", t: 0, seite: wall.seite, zuFrueh: wall.zuFrueh, losZeit: zeit, startZeit: null, gewertet: false }; pop(T.los, "var(--blood-hot)"); }
+    if (wall?.phase === "rennen") {
+      wall.t += dt;
+      if (wall.startZeit == null && -wall.seite * ich.vx > 1.2) wall.startZeit = zeit;
+      if (!wall.gewertet && (wall.startZeit != null || wall.t > (60 / song.bpm) * 1.5)) {
+        wall.gewertet = true;
+        if (wallWertung({ losZeit: wall.losZeit, startZeit: wall.startZeit, zuFrueh: wall.zuFrueh, bpm: song.bpm }) === "perfekt") { punkte += WALL.bonus * kochFaktor(); stimmungPlus(STIMMUNG.plus.wall); pop(T.wallPerfekt, "#58d26a"); }
+      }
+      if (wall.t > 2.4) wall = { phase: "vorbei" };
+    }
   }
+  kreisSchritt(dt);
+  stimmungSchritt(dt);
+  if (comboLuecke(combo, schlagJetzt())) brichCombo();
 
-  // Du: Stick oder Tasten (oben = zur Bühne)
-  if (!getragen) {
+  // Du: Stick oder Tasten (oben = zur Bühne); auf den Schultern nur links/rechts für die Balance
+  if (oben) schulterSchritt(dt, eingabeX());
+  else if (!getragen) {
     let sx = 0, sz = 0;
     if (zeiger?.ziehen) { sx = zeiger.dx; sz = zeiger.dy; }
     if (tasten.has("ArrowLeft") || tasten.has("a")) sx -= 1; if (tasten.has("ArrowRight") || tasten.has("d")) sx += 1;
@@ -191,24 +214,29 @@ function schritt(dt) {
   }
   if (ich.inLuft && zeit >= sprungBis) ich.inLuft = false;
 
-  const menge = getragen ? leute.filter((p) => !p.ich) : leute;
-  bewegeMenge(menge, L, teil, dt, Math.random, wall);
+  const menge = getragen || oben ? leute.filter((p) => !p.ich) : leute;
+  bewegeMenge(menge, L, teil, dt, Math.random, wall, kreis && !kreis.vorbei ? kreis : null);
   schurkenKraefte(dt);
+  if (gefallen) { gefallen.p.vx = gefallen.p.vz = 0; }
+  if (schultern.kumpel) { schultern.kumpel.vx *= 0.4; schultern.kumpel.vz *= 0.4; }
   integriere(menge, L, dt, S.matsch);
   // Stillstand: Eingabe allein reicht nicht (Pfeil gegen das Gitter), die Figur muss sich auch bewegen
   const weg = Math.hypot(ich.x - vorX, ich.z - vorZ) / Math.max(dt, 1e-6);
-  stillZeit = getragen || (zieht && weg > 0.35) || ich.inLuft ? 0 : stillZeit + dt;
+  stillZeit = getragen || oben || (zieht && weg > 0.35) || ich.inLuft ? 0 : stillZeit + dt;
+  if (oben) { ich.x = schultern.kumpel.x; ich.z = schultern.kumpel.z; ich.vx = ich.vz = 0; }
   for (const tr of stoesse(menge)) {
     if (schnoesel && tr.anderer === schnoesel.p) { schubseSchnoesel(tr); continue; }
     const letzte = beruehrt.get(tr.anderer) || -9;
     if (zeit - letzte < 0.3) continue;
     const m = verschuettet(tr.schlag, { rucksack: tr.anderer.rucksack, inLuft: ich.inLuft });
-    if (m > 0) { beruehrt.set(tr.anderer, zeit); verschuette(m, tr.anderer.rucksack ? T.rucksack : m > 7 ? T.platsch : m > 3 ? T.schwapp : null); }
+    if (m > 0) { beruehrt.set(tr.anderer, zeit); brichCombo(); verschuette(m, tr.anderer.rucksack ? T.rucksack : m > 7 ? T.platsch : m > 3 ? T.schwapp : null); }
   }
 
   // Zonen, Punkte, erste Reihe
-  const z = getragen ? "pit" : zone(ich.x, ich.z, L), nass = zeit < nassBis;
-  if (!getragen) punkte += punkteProSekunde(z, teil0, nass) * dt * faktor * (zeit < geblendetBis ? 0.5 : 1) * stillFaktor(stillZeit);
+  const z = getragen || oben ? "pit" : zone(ich.x, ich.z, L), nass = zeit < nassBis;
+  if (!getragen) punkte += punkteProSekunde(z, teil0, nass) * dt * faktor * (zeit < geblendetBis ? 0.5 : 1) * stillFaktor(stillZeit)
+    * comboStufe(combo.serie) * kochFaktor() * (kreis?.strom === "mit" ? 1.5 : 1) * (oben ? SCHULTERN.faktor : 1);
+  pitEreignisse(dt, getragen || oben);
   if (z === "mitte") stats.mitteSekunden += dt;
   if (z === "reihe" && teil.name === "LETZTER REFRAIN") stats.reiheImLetztenRefrain = true;
   reiheSeit = z === "reihe" && !getragen ? reiheSeit + dt : 0;
@@ -222,7 +250,10 @@ function schritt(dt) {
   mikroAn = zeit >= song.mikro[0] && zeit < song.mikro[1];
   const stagediveBereit = !stagedive.fertig && reiheSeit >= STAGEDIVE_AB;
   $("pogo-stagedive").hidden = !stagediveBereit;
-  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : zeit < abguck.erklaertBis ? T.goldHinweis : mikroAn && z === "reihe" ? T.mikro : stillFaktor(stillZeit) < 1 && z !== "rand" ? T.bewegDich : (T.zonen[z] || "");
+  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : zeit < abguck.erklaertBis ? T.goldHinweis : mikroAn && z === "reihe" ? T.mikro
+    : oben ? T.schulterOben : gefallen ? T.gefallen : schultern.phase === "angebot" ? T.schulterAngebot : wall?.phase === "teilen" ? T.wallSeite
+    : kreis && !kreis.vorbei ? (kreis.strom === "mit" ? T.kreisMit : T.kreisHinweis)
+    : stillFaktor(stillZeit) < 1 && z !== "rand" ? T.bewegDich : (T.zonen[z] || "");
 
   // Würfe von der Bühne
   for (const w of geplanteWuerfe) if (!w.los && zeit >= w.t) {
@@ -259,7 +290,7 @@ function schritt(dt) {
     if (sd.t >= STAGEDIVE.dauer) {
       stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; $("pogo-hinweis").textContent = "";
       stats.stagediveBier = bier;
-      const bonus = stagediveBonus(bier, stagedive.abgewehrt, stagedive.griffe);
+      const bonus = stagediveBonus(bier, sd.abgewehrt, sd.griffe); // sd: der Stagedive, der gerade endet
       if (bonus) { punkte += bonus; pop(T.gelandet, "#58d26a"); } else if (bier > 0) pop(T.gelandetOhne, "var(--paper)"); else pop(T.bierdusche);
     }
   }
@@ -271,7 +302,7 @@ function schritt(dt) {
   }
   if (surfer) {
     surfer.z += 1.5 * dt; surfer.x += Math.sin(zeit * 2) * 0.3 * dt; surfer.f.g.position.set(surfer.x, 2.15 + Math.sin(zeit * 9) * 0.06, surfer.z);
-    if (!getragen && !surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; stats.surferTreffer++; verschuette(14, T.stiefel); }
+    if (!getragen && !oben && !surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; stats.surferTreffer++; brichCombo(); verschuette(14, T.stiefel); }
     if (surfer.z > zMax + 1.5) { entferneSurfer(); }
   }
 
@@ -292,7 +323,7 @@ function schritt(dt) {
   for (const d of tropfen) { d.t += dt; d.v.y -= 9.8 * dt; d.m.position.addScaledVector(d.v, dt); }
   for (const d of tropfen) if (d.t > 0.8) S.raum.remove(d.m);
   tropfen = tropfen.filter((d) => d.t <= 0.8);
-  S.setzeLicht(kraft, zeit, (song.bpm / 60) * Math.PI);
+  S.setzeLicht(zeit < kochtBis ? Math.max(kraft, 1.6) : kraft, zeit, (song.bpm / 60) * Math.PI);
 
   extras(dt);
   if (bier <= 0) ende(true);
@@ -321,7 +352,7 @@ function schurkenKraefte(dt) {
 function schubseSchnoesel(tr) {
   if (tr.schlag <= 1.6 || zeit - (schnoesel.letzter ?? -9) < 0.4) return;
   schnoesel.letzter = zeit; schnoesel.schubse++; pop(T.schubs, "var(--paper)");
-  if (schnoesel.schubse >= 3) { schnoesel.raus = true; punkte += BONUS.schnoesel; pop(T.schnoeselRaus, "var(--blood-hot)"); entfernePerson(schnoesel.p); }
+  if (schnoesel.schubse >= 3) { schnoesel.raus = true; punkte += BONUS.schnoesel; pop(T.schnoeselRaus, "var(--blood-hot)"); stimmungPlus(STIMMUNG.plus.schnoesel); entfernePerson(schnoesel.p); }
 }
 function extras(dt) {
   const getragen = stagedive.phase === "getragen";
@@ -353,7 +384,7 @@ function extras(dt) {
   }
   if (fascho && !fascho.weg) {
     fascho.t += dt;
-    if (!fascho.geholfen && Math.hypot(fascho.p.x - ich.x, fascho.p.z - ich.z) <= 1.5) { fascho.geholfen = true; punkte += BONUS.fascho; pop(T.faschoGeholfen, "#58d26a"); }
+    if (!fascho.geholfen && Math.hypot(fascho.p.x - ich.x, fascho.p.z - ich.z) <= 1.5) { fascho.geholfen = true; punkte += BONUS.fascho; stimmungPlus(STIMMUNG.plus.fascho); pop(T.faschoGeholfen, "#58d26a"); }
     if (fascho.t > 6) { fascho.weg = true; entfernePerson(fascho.p); }
   }
   if (saenger) {
@@ -367,14 +398,16 @@ function extras(dt) {
 function starteRuf() {
   phase = "ruf"; rufZeit = 0; rufTreffer = 0; rufGezaehlt = new Set();
   if (stagedive.phase === "getragen") { stagedive = { phase: "aus", fertig: true }; ich.vx = ich.vz = 0; }
-  $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = T.zugabeRuf; pop(T.zugabe, "var(--paper)");
+  if (schultern.phase === "oben") schulterEnde(false);
+  stimmungEnde = stimmung;
+  $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = T.zugabeRufN({ n: zugabeTreffer(stimmungEnde) }); pop(T.zugabe, "var(--paper)");
   musik.stopp(); musik.klatschen(song.bpm);
 }
 function rufSchritt(echt) {
   rufZeit += echt;
   bewegeFiguren(Math.min(0.05, echt), 0.5, false); S.setzeLicht(0.5, rufZeit, (song.bpm / 60) * Math.PI);
   if (rufZeit < ZUGABE.fenster) return;
-  if (rufTreffer >= ZUGABE.treffer) starteZugabe(); else { musik.stopp(); pop(T.keineZugabe, "var(--paper)"); ende(false); }
+  if (rufTreffer >= zugabeTreffer(stimmungEnde)) starteZugabe(); else { musik.stopp(); pop(T.keineZugabe, "var(--paper)"); ende(false); }
 }
 function starteZugabe() {
   phase = "zugabe"; faktor = ZUGABE.faktor;
@@ -400,6 +433,183 @@ function aktualisiereLaeden() {
   document.querySelectorAll(".pogo__laden[id^='pogo-laden-']").forEach((x) => x.setAttribute("aria-pressed", String(x.id === "pogo-laden-" + ladenId)));
 }
 
+/* ---------- Etappe 5: Combo, Stimmung, Mitgrölen, Circle Pit, Aufheben, Schultern, Teilen ---------- */
+const schlagJetzt = (t = zeit) => Math.round((t - song.start) / (60 / song.bpm));
+const kochFaktor = () => (zeit < kochtBis ? 2 : 1);
+function stimmungPlus(n) {
+  if (zeit < kochtBis) return; // kocht schon
+  const r = mitStimmung(stimmung, n); stimmung = r.wert;
+  if (r.kocht) { kochtBis = zeit + STIMMUNG.kochtDauer; pop(T.kocht, "#ff5fd2"); S.wackeln(0.08); }
+}
+function stimmungSchritt(dt) {
+  if (kochtBis > 0 && zeit >= kochtBis) { kochtBis = -1; stimmung = STIMMUNG.nachKochen; }
+  else if (zeit >= kochtBis) stimmung = stimmungAbfall(stimmung, dt);
+}
+function brichCombo() {
+  if (combo.serie >= COMBO.proStufe) pop(T.comboWeg, "var(--paper-2)");
+  combo = { serie: 0, letzterSchlag: null };
+}
+/** Sprung (oder OI!) im Takt: Combo, Stimmung, Mitgrölen. */
+function taktTreffer(t) {
+  const schlag = schlagJetzt(t), r = comboTakt(combo, schlag);
+  combo = r.combo; stimmungPlus(STIMMUNG.plus.takt);
+  if (r.neueStufe) { pop(T.comboPop({ n: comboStufe(combo.serie) }), "#58d26a"); stimmungPlus(STIMMUNG.plus.combo); }
+  const g = groelWort(t, song);
+  if (!g) return;
+  groel.folge = groel.letzterSchlag != null && g.schlag - groel.letzterSchlag === 1 ? groel.folge + 1 : 1;
+  groel.letzterSchlag = g.schlag; groel.getroffen.add(g.schlag);
+  if (groel.folge >= song.groelen.worte.length) {
+    groel.folge = 0; punkte += 200 * kochFaktor(); stimmungPlus(STIMMUNG.plus.groelen);
+    pop(song.groelen.worte.join(" "), "var(--bier)"); S.wackeln(0.05);
+  }
+}
+let groelStand = "";
+function zeigeGroelen() {
+  const el = $("pogo-groelen"), g = phase === "song" || phase === "zugabe" ? groelWort(zeit, song) : null;
+  if (!g) { if (!el.hidden) { el.hidden = true; groelStand = ""; } return; }
+  const n = song.groelen.worte.length, erster = g.schlag - g.index;
+  const stand = g.schlag + ":" + [...Array(n).keys()].map((i) => (groel.getroffen.has(erster + i) ? 1 : 0)).join("");
+  if (stand === groelStand) return;
+  groelStand = stand; el.hidden = false; el.replaceChildren();
+  song.groelen.worte.forEach((w, i) => {
+    const s = document.createElement("span"); s.textContent = w;
+    if (groel.getroffen.has(erster + i)) s.className = "getroffen"; else if (i === g.index) s.className = "jetzt";
+    el.append(s);
+  });
+}
+
+/* Tippen: erst Aufheben und Schultern, dann erst springen */
+function tippAktion() {
+  if (schultern.phase === "oben") return true;
+  if (gefallen && Math.hypot(gefallen.p.x - ich.x, gefallen.p.z - ich.z) <= AUFHEBEN.reichweite) { aufstehen(true); return true; }
+  if (schultern.phase === "angebot" && Math.hypot(schultern.kumpel.x - ich.x, schultern.kumpel.z - ich.z) <= SCHULTERN.reichweite) {
+    schultern = { ...schultern, phase: "oben", t: 0, wackel: Math.random() < 0.5 ? -0.15 : 0.15 };
+    entferneSchulterRing(); pop(T.schulterPop, "#58d26a"); return true;
+  }
+  return false;
+}
+const eingabeX = () => {
+  let x = zeiger?.ziehen ? zeiger.dx : 0;
+  if (tasten.has("ArrowLeft") || tasten.has("a")) x -= 1; if (tasten.has("ArrowRight") || tasten.has("d")) x += 1;
+  return Math.max(-1, Math.min(1, x));
+};
+
+/* Gefallene, Schulter-Angebot */
+const mitteZ = () => (L.gitterZ + L.z[1]) / 2;
+function kandidat() {
+  const frei = leute.filter((p) => !p.rand && !p.ich && !p.liegt && p !== selten?.p && p !== schultern.kumpel && p !== schnoesel?.p && p !== fascho?.p && zone(p.x, p.z, L) !== "rand");
+  return frei.length ? frei[(Math.random() * frei.length) | 0] : null;
+}
+function bodenRing(farbe, innen, aussen) {
+  const r = new THREE.Mesh(new THREE.RingGeometry(innen, aussen, 32), new THREE.MeshBasicMaterial({ color: farbe, transparent: true, opacity: 0.8, depthWrite: false }));
+  r.rotation.x = -Math.PI / 2; r.position.y = 0.04; S.raum.add(r); return r;
+}
+function weg(mesh) { if (!mesh) return; S.raum.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+function pitEreignisse(dt, beschaeftigt) {
+  if (phase !== "song") return;
+  // jemand fällt hin
+  if (!gefallen && gefallenAnzahl < AUFHEBEN.max && zeit >= naechsterFall && !beschaeftigt) {
+    const p = kandidat();
+    if (p) { p.liegt = true; gefallen = { p, bis: zeit + AUFHEBEN.wartet, ring: bodenRing(0xd4161b, 0.5, 0.64) }; gefallenAnzahl++; pop(T.gefallenPop, "var(--blood-hot)"); }
+    naechsterFall = zeit + AUFHEBEN.alle;
+  }
+  if (gefallen) { gefallen.ring.position.set(gefallen.p.x, 0.04, gefallen.p.z); if (zeit > gefallen.bis) aufstehen(false); }
+  // Kumpel bietet Schultern an
+  if (schultern.phase === "aus" && zeit >= schultern.ab && !beschaeftigt) {
+    const p = kandidat();
+    if (p) { schultern = { phase: "angebot", kumpel: p, bis: zeit + 12, ring: bodenRing(0x58d26a, 0.55, 0.7) }; }
+    else schultern.ab = zeit + 3;
+  }
+  if (schultern.phase === "angebot") {
+    schultern.ring.position.set(schultern.kumpel.x, 0.04, schultern.kumpel.z);
+    if (zeit > schultern.bis) { entferneSchulterRing(); schultern = { phase: "fertig" }; }
+  }
+}
+function aufstehen(geholfen) {
+  if (!gefallen) return;
+  gefallen.p.liegt = false; weg(gefallen.ring);
+  if (geholfen) { punkte += AUFHEBEN.bonus * kochFaktor(); bier = Math.min(100, bier + AUFHEBEN.bier); stimmungPlus(STIMMUNG.plus.aufheben); pop(T.aufheben, "#58d26a"); }
+  gefallen = null;
+}
+function entferneSchulterRing() { if (schultern?.ring) { weg(schultern.ring); schultern.ring = null; } }
+function schulterSchritt(dt, eingabe) {
+  schultern.t += dt;
+  schultern.wackel = wackle(schultern.wackel, eingabe, dt, Math.random());
+  if (runtergefallen(schultern.wackel)) schulterEnde(false);
+  else if (schultern.t >= SCHULTERN.dauer) schulterEnde(true);
+}
+function schulterEnde(sauber) {
+  const k = schultern.kumpel;
+  schultern = { phase: "fertig" };
+  if (k) { ich.x = k.x + 0.5; ich.z = Math.min(L.z[1] - 0.6, k.z + 0.5); }
+  if (sauber) pop(T.schulterSauber, "#58d26a");
+  else if (phase !== "ruf") { verschuette(SCHULTERN.fallBier, T.schulterRunter); brichCombo(); }
+}
+
+/* Circle Pit (nur große Läden) */
+function kreisSchritt(dt) {
+  if (L.x < 5 || phase !== "song") { if (kreis && !kreis.vorbei) { kreis.vorbei = true; entferneKreis(); } return; }
+  const kz = kreisZeit(song);
+  if (!kreis && zeit >= kz.von && zeit < kz.bis) {
+    kreis = { richtung: 1, gedreht: false, bis: kz.bis, mitte: kz.von + (kz.bis - kz.von) / 2, winkel: 0, strom: "neutral", letzterRempler: -9 };
+    pop(T.kreis, "var(--blood-hot)"); baueKreisPfeile();
+  }
+  if (!kreis || kreis.vorbei) return;
+  if (zeit >= kreis.bis) { kreis.vorbei = true; kreis.strom = "neutral"; entferneKreis(); return; }
+  if (!kreis.gedreht && zeit >= kreis.mitte) { kreis.gedreht = true; kreis.richtung = -1; pop(T.kreisUm, "var(--blood-hot)"); }
+  const mz = mitteZ() + 0.6, tg = kreisTangente(ich.x, ich.z, 0, mz, kreis.richtung);
+  kreis.strom = stagedive.phase === "getragen" || schultern.phase === "oben" ? "neutral" : stromWertung(ich.vx, ich.vz, tg.x, tg.z);
+  if (kreis.strom === "gegen" && zeit - kreis.letzterRempler > 0.8) { kreis.letzterRempler = zeit; brichCombo(); verschuette(4, T.umgerannt); }
+  // Pfeile drehen sich mit
+  kreis.winkel += kreis.richtung * dt * 1.1;
+  kreisPfeile.forEach((m, i) => {
+    const a = kreis.winkel + (i / kreisPfeile.length) * Math.PI * 2, r = 2.6;
+    m.position.set(Math.cos(a) * r, 0.08, mz + Math.sin(a) * r);
+    const t = kreisTangente(m.position.x, m.position.z, 0, mz, kreis.richtung);
+    m.lookAt(m.position.x + t.x, 0.08, m.position.z + t.z);
+  });
+}
+let pfeilGeo = null, pfeilMat = null;
+function baueKreisPfeile() {
+  pfeilGeo ??= new THREE.ConeGeometry(0.14, 0.4, 3).rotateX(Math.PI / 2);
+  pfeilMat ??= new THREE.MeshBasicMaterial({ color: 0xe3262b });
+  pfeilGeo.userData.geteilt = true;
+  kreisPfeile = Array.from({ length: 12 }, () => { const m = new THREE.Mesh(pfeilGeo, pfeilMat); S.raum.add(m); return m; });
+}
+function entferneKreis() { for (const m of kreisPfeile) S.raum.remove(m); kreisPfeile = []; }
+
+/* Ergebnis als Bild teilen (Teilen-Menü des Geräts, sonst Download) */
+async function teileErgebnis() {
+  const e = letztesErgebnis; if (!e) return;
+  const c = document.createElement("canvas"); c.width = 1080; c.height = 1350;
+  const x = c.getContext("2d");
+  await document.fonts?.ready;
+  x.fillStyle = "#0b0a0a"; x.fillRect(0, 0, 1080, 1350);
+  x.fillStyle = "#d4161b"; x.fillRect(0, 0, 1080, 18); x.fillRect(0, 1332, 1080, 18);
+  x.textAlign = "center"; x.fillStyle = "#f1ede4";
+  x.font = "64px Anton, Impact, sans-serif"; x.fillText("FUCK OFF FASHION", 540, 120);
+  x.font = "220px Anton, Impact, sans-serif"; x.fillText("POGO.", 540, 360);
+  x.font = "bold 46px 'Courier Prime', monospace"; x.fillStyle = "#e3262b"; x.fillText(e.laden.toUpperCase(), 540, 450);
+  x.fillStyle = "#f2b632"; x.font = "260px Anton, Impact, sans-serif"; x.fillText(String(e.erg), 540, 740);
+  x.fillStyle = "#f1ede4"; x.font = "52px 'Permanent Marker', cursive"; x.fillText(e.titel, 540, 830, 980);
+  x.font = "bold 40px 'Courier Prime', monospace"; x.fillStyle = "#cfc8bb"; x.fillText(`${T.rang}: ${e.rang}`, 540, 900);
+  const m = e.motiv && MOTIVE.find((v) => v.nr === e.motiv);
+  if (m) {
+    const img = await new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = WURZEL + m.bild; });
+    if (img) { const k = Math.min(300 / img.width, 260 / img.height); x.drawImage(img, 540 - (img.width * k) / 2, 950, img.width * k, img.height * k); }
+  }
+  x.fillStyle = "#f1ede4"; x.font = "bold 38px 'Courier Prime', monospace"; x.fillText("fuckofffashion.github.io/pogo.html", 540, 1275);
+  const blob = await new Promise((ok) => c.toBlob(ok, "image/png"));
+  if (!blob) return;
+  const datei = new File([blob], "pogo-ergebnis.png", { type: "image/png" });
+  const url = new URL("pogo.html", location.href).href, text = T.teilenText({ erg: e.erg, laden: e.laden });
+  try {
+    if (navigator.canShare?.({ files: [datei] })) { await navigator.share({ files: [datei], title: "Pogo · FUCK OFF FASHION", text, url }); return; }
+  } catch (f) { if (f?.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "pogo-ergebnis.png"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
 /* ---------- Aufräumen ---------- */
 function gibFrei(obj) { obj.traverse((o) => { if (o.isMesh) { if (!o.geometry.userData.geteilt) o.geometry.dispose(); if (!o.material.vertexColors && !o.material.map) o.material.dispose(); } }); }
 function entferneFreibier() { if (!freibier) return; S.raum.remove(freibier.g); gibFrei(freibier.g); freibier = null; }
@@ -407,6 +617,7 @@ function entferneSurfer() { if (!surfer) return; S.raum.remove(surfer.f.g); surf
 function raeumeAuf() {
   if (!S?.raum) return;
   entferneFreibier(); entferneSurfer();
+  entferneKreis(); if (gefallen) aufstehen(false); entferneSchulterRing();
   if (saenger) { S.raum.remove(saenger.f.g, saenger.ring); saenger.f.geos.forEach((g) => g.dispose()); saenger.ring.geometry.dispose(); saenger.ring.material.dispose(); saenger = null; }
   for (const w of wuerfe || []) { S.raum.remove(w.m); w.m.geometry.dispose(); w.m.material.dispose(); }
   for (const d of tropfen || []) S.raum.remove(d.m);
@@ -422,15 +633,17 @@ function bewegeFiguren(dt, kraft, getragen) {
     const f = figuren.get(p);
     f.phase += dt * takt * (0.85 + kraft * 0.3);
     if (p.ich) {
-      const hop = p.inLuft ? Math.sin(Math.max(0, 1 - (sprungBis - zeit) / 0.45) * Math.PI) * 0.5 : 0;
-      f.g.position.set(p.x, getragen ? 2.1 : hop, p.z);
-      f.g.rotation.set(getragen ? -Math.PI / 2 : 0, 0, 0);
+      const hop = p.inLuft ? Math.sin(Math.max(0, 1 - (sprungBis - zeit) / 0.45) * Math.PI) * 0.5 : 0, oben = schultern.phase === "oben";
+      f.g.position.set(p.x, getragen ? 2.1 : oben ? 1.05 : hop, p.z);
+      f.g.rotation.set(getragen ? -Math.PI / 2 : 0, 0, oben ? -schultern.wackel * 0.45 : 0);
+      if (glanz) { glanz.visible = comboStufe(combo?.serie || 0) >= 3 && !getragen && !oben; glanz.material.opacity = 0.45 + Math.abs(Math.sin(zeit * 6)) * 0.4; }
       f.arme[1].rotation.z = 2.75 + Math.sin(zeit * 7) * 0.05;
       f.arme[0].rotation.z = -0.5 - Math.abs(Math.sin(f.phase)) * 0.4;
       continue;
     }
+    if (p.liegt) { f.g.position.set(p.x, 0.16, p.z); f.g.rotation.set(-Math.PI / 2, 0, 0.4); continue; }
     const hop = p.rand ? 0.05 + kraft * 0.08 : f.sprung * (0.3 + kraft * 0.8);
-    f.g.position.set(p.x, Math.abs(Math.sin(f.phase)) * hop, p.z);
+    f.g.position.set(p.x, Math.abs(Math.sin(f.phase)) * hop, p.z); f.g.rotation.x = 0; f.g.rotation.z = 0;
     const ziel = Math.atan2(p.vx, 6) * 0.6; f.blick += (ziel - f.blick) * Math.min(1, dt * 4);
     f.g.rotation.y = -f.blick + Math.sin(f.phase * 0.5) * 0.15;
     f.arme[0].rotation.z = -(f.armGrund + Math.sin(f.phase * 2) * 0.5 * kraft);
@@ -470,7 +683,7 @@ function bild(jetzt) {
       while (rest > 1e-6 && laeuft && phase !== "ruf") { const d = Math.min(0.05, rest); schritt(d); rest -= d; }
     }
     else if (L) { bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.3 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.3, false); S.setzeLicht(0.3, performance.now() / 1000, 3); }
-    if (L) S.kamera(ich, dt, false, stagedive?.phase === "getragen");
+    if (L) S.kamera(ich, dt, false, stagedive?.phase === "getragen" || schultern?.phase === "oben");
     S.render();
     if (laeuft) zeigeStand();
     if (zeigeFps) { fpsBilder++; fpsZeit += echt; if (fpsZeit > 0.5) { fpsEl.textContent = `${Math.round(fpsBilder / fpsZeit)} fps · ${S.zeichenaufrufe()} Aufrufe`; fpsZeit = 0; fpsBilder = 0; } }
@@ -482,6 +695,9 @@ function zeigeStand() {
   $("pogo-bierstand").style.height = b + "%"; $("pogo-bier").textContent = b + " %";
   $("pogo-punkte").textContent = Math.round(punkte);
   $("pogo-ergebnis").textContent = ergebnis(Math.round(punkte), Math.round(bier));
+  const st = comboStufe(combo.serie), ce = $("pogo-combo"); ce.hidden = st < 2; ce.textContent = "×" + st;
+  const sb = $("pogo-stimmung-box"); sb.hidden = false; $("pogo-stimmung").style.width = Math.round(stimmung) + "%"; sb.classList.toggle("kocht", zeit < kochtBis);
+  zeigeGroelen();
   $("pogo-teil").textContent = T.teile[teilBei(zeit, song.teile).name];
   const rest = Math.max(0, Math.ceil((phase === "zugabe" ? zugabeEnde : song.ende) - zeit)); $("pogo-zeit").textContent = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`;
 }
@@ -523,6 +739,7 @@ function ende(leer) {
   $("pogo-ende-titel").textContent = T.titel[titelSchluessel(p, b)];
   const erg = ergebnis(p, b);
   $("pogo-ende-zahl").textContent = erg;
+  $("pogo-groelen").hidden = true; $("pogo-stimmung-box").hidden = true;
   const schonGeschafft = geschafft(tour, ladenId); tour = mitErgebnis(tour, ladenId, erg); schreibeTour(speicher, tour);
   const tourEl = $("pogo-ende-tour"); tourEl.replaceChildren(`${T.rang}: ${T.raenge[rang(tour.summe)]} · ${tourText()}`);
   if (!schonGeschafft && geschafft(tour, ladenId)) tourEl.append(document.createElement("br"), T.ladenGeschafft({ laden: T.laeden[ladenId].name }));
@@ -533,6 +750,7 @@ function ende(leer) {
     tourEl.append(document.createElement("br"), T.motivAbgeguckt({ nr: m.nr, titel: sp === "en" ? m.titel_en : m.titel }), " · ", a);
   }
   aktualisiereLaeden();
+  letztesErgebnis = { erg, p, b, laden: T.laeden[ladenId].name, titel: T.titel[titelSchluessel(p, b)], rang: T.raenge[rang(tour.summe)], motiv: abgeguckt || (kutte.motive || []).at(-1) || null };
   $("pogo-ende-werte").textContent = `${T.punkte} ${p} × ${T.bier} ${b} %` + (b < BIER_MIN ? ` (${T.zaehltAls({ n: BIER_MIN })})` : "");
   zeigeBand();
   $("pogo-ende-andenken").textContent = andenken.length ? `${T.andenken}: ${andenken.map((a) => T[a].replace("!", "")).join(", ")}` : T.keineAndenken;
@@ -612,6 +830,7 @@ async function los() {
   $("pogo-nochmal").addEventListener("click", starte);
   $("pogo-anderer").addEventListener("click", () => { $("pogo-ende").hidden = true; $("pogo-start").hidden = false; });
   $("pogo-stagedive").addEventListener("click", starteStagedive);
+  $("pogo-teilen").addEventListener("click", teileErgebnis);
   let tonAn = true;
   $("pogo-ton").addEventListener("click", (e) => { tonAn = !tonAn; musik.setzeTon(tonAn); e.currentTarget.textContent = tonAn ? T.tonAn : T.tonAus; e.currentTarget.setAttribute("aria-pressed", String(tonAn)); });
   $("pogo-start").hidden = false;
