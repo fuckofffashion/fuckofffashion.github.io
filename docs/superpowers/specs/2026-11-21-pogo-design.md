@@ -135,3 +135,48 @@ Marks Auswahl: Motive auf dem Rücken, Modeschnösel, Zugabe und Sänger in der 
   - Der Stagedive-Bonus ist 600 × Anteil abgewehrter Griffe und gibt es nur mit mindestens 50 % Bier.
   - Ein Sprung dauert höchstens 0,85 Schläge.
   - Der wilde Teil kommt vom Song, nicht von der Kraft der Menge.
+
+## Etappe 5: mehr Spielfreude im Pit (Marks Auswahl, 2026-11-21)
+
+Ziel: Das Spiel soll sich mehr nach Konzert anfühlen und öfter „nochmal“ auslösen. Sieben Mechaniken aus echtem Konzertgeschehen, dazu das Teilen des Ergebnisses. Alles bleibt ohne Konto, Tracking und Server. Die Werte sind Startwerte; der Spieletester misst sie danach nach.
+
+1. **Pogo-Combo.** Jeder Sprung im Takt verlängert die Serie.
+   - Stufe = 1 + ⌊Serie / 4⌋, höchstens ×4. Die Stufe multipliziert den Takt-Bonus und die Pit-Punkte pro Sekunde.
+   - Die Serie bricht durch einen Fehlsprung, einen Rempler mit Bierverlust oder mehr als 2 Schläge ohne Sprung.
+   - Das HUD zeigt „×3“. Neue Stufe: Pop „COMBO ×3!“. Ab ×3 leuchtet die eigene Figur.
+2. **Circle Pit** (nur in den großen Läden: Druckluft draußen, Altenberg).
+   - Im ersten Refrain rennt die Menge 10 s im Kreis um die Mitte des Pits. Ein Pfeilring am Boden zeigt die Richtung.
+   - Wer mit dem Strom läuft, bekommt ×1,5 Punkte („MIT DEM STROM!“). Wer dagegen läuft, wird öfter umgerannt.
+   - Nach 5 s dreht der Kreis: Pop „UMDREHEN!“.
+3. **Wer fällt, wird aufgehoben.**
+   - Höchstens 3 Mal pro Runde fällt ein Punk im Pit hin: Er liegt am Boden, um ihn ist ein roter Ring.
+   - Hinlaufen (≤ 0,8 m) und tippen: Er steht auf. Das gibt +150 Punkte, +10 % Bier („Danke, Alter!“) und Stimmung.
+   - Hilft niemand, steht er nach 6 s allein auf.
+4. **Wall of Death zum Mitmachen** (Läden mit Wall).
+   - Beim Teilen: Hinweis „Bleib auf deiner Seite!“.
+   - Bei „LOS!“: Wer innerhalb eines Schlags losläuft, bekommt +400 („PERFEKTER START!“).
+   - Wer vorher über die Mitte läuft: „ZU FRÜH!“, kein Bonus.
+5. **Mitgrölen.**
+   - In den Refrains stehen die Worte des Songtitels groß im Bild, je Schlag eines („ES · GEHT · NOCH · LAUTER!“). Nur der Titel, kein weiterer Liedtext.
+   - Ein Sprung im Takt lässt das aktuelle Wort aufleuchten. Vier in Folge ergeben eine Zeile: +200 und Stimmung.
+   - Je Song festgelegt (`groelen` in `songs.js`). Songs ohne diesen Eintrag haben kein Mitgrölen.
+6. **Stimmungsbalken** (0–100, sinkt um 1 pro Sekunde).
+   - Es heizt an:
+     - Takt-Sprung +2
+     - neue Combo-Stufe +5
+     - Mitgröl-Zeile +10
+     - Aufheben +15
+     - Wall perfekt +15
+     - Schnösel raus +15
+     - Fascho raus +20
+   - Bei 100: „STIMMUNG KOCHT!“, 10 s doppelte Punkte, das Licht flackert wild. Danach sinkt die Stimmung auf 40.
+   - Ab 60 Stimmung bei Songende reichen beim Zugabe-Ruf 4 statt 6 Treffer.
+7. **Auf die Schultern** (nicht im PITCHER, die Decke ist zu tief).
+   - Einmal pro Runde bietet ein Kumpel mit grünem Ring seine Schultern an. Hinlaufen und tippen: 8 s oben, Kamera höher, ×2 Punkte.
+   - Ein Wackelwert driftet zufällig; mit links/rechts (Tasten oder Ziehen) hältst du dagegen.
+   - Wackelt es zu stark: „RUNTERGEFALLEN!“, −15 % Bier.
+8. **Ergebnis teilen.**
+   - Im Endbild erzeugt ein Knopf ein Bild im FOF-Plakatstil: Laden, Titel, Ergebnis, Rang, eigenes Rückenmotiv, Adresse der Seite.
+   - Geteilt wird per Teilen-Menü des Geräts (Web Share); ohne Teilen-Menü wird das Bild heruntergeladen.
+
+Reihenfolge der Umsetzung: Combo und Stimmung (Grundlage), Mitgrölen, Aufheben, Wall, Circle Pit, Schultern, Teilen. Jede Mechanik: Regeln mit Tests in `regeln.js`, dann Spielablauf, Texte DE/EN, Testbrowser.
