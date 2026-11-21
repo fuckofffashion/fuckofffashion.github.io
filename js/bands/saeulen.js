@@ -23,8 +23,10 @@ export function tageBis(datumIso, heuteIso) {
   return Math.round((utc(datumIso) - utc(heuteIso)) / 864e5);
 }
 
+/** Nur Termine ab heute; Daten in falscher Form (kein Array, Einträge ohne Datum) zählen als keine. */
 export function kuenftige(termine, heuteIso) {
-  return (termine || []).filter((t) => t.datum >= heuteIso);
+  if (!Array.isArray(termine)) return [];
+  return termine.filter((t) => typeof t?.datum === "string" && t.datum >= heuteIso);
 }
 
 export function saeuleFuer(termine, heuteIso) {

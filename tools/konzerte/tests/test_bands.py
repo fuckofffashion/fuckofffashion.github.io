@@ -100,8 +100,18 @@ class LadeBands(unittest.TestCase):
             b.lade_bands(self.schreibe({"bands": [dict(band("A"), id="A B")]}))
 
     def test_echte_liste_laedt(self):
+        # Keine feste Liste: eine neu eingetragene Band darf diesen Test (und damit den täglichen Lauf) nicht brechen
         liste = b.lade_bands(WURZEL / "tools" / "bands.json")
-        self.assertEqual([x["id"] for x in liste], ["dan-ganove", "alarmsignal", "los-fastidios", "trijahnity"])
+        self.assertTrue(liste)
+        self.assertEqual(len({x["id"] for x in liste}), len(liste))
+
+    def test_falsche_typen_werden_abgelehnt(self):
+        for kaputt, feld in ((dict(band("A"), schreibweisen="Los Fastidios"), "schreibweisen"),
+                             (dict(band("A"), nicht="tribute"), "nicht"),
+                             (dict(band("A"), schreibweisen=[5]), "schreibweisen"),
+                             (dict(band("A"), name=5), "name")):
+            with self.subTest(feld), self.assertRaisesRegex(ValueError, feld):
+                b.lade_bands(self.schreibe({"bands": [kaputt]}))
 
 
 if __name__ == "__main__":

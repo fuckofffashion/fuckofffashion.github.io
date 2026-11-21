@@ -124,20 +124,26 @@ function baue(daten) {
   const nachId = new Map(plakate.map((p) => [p.dataset.band, p]));
   const heute = isoLokal(new Date());
 
+  // erst alles rechnen, dann das DOM ändern: wirft etwas, bleibt die Seite unberührt (Aufrufer baut ohne Daten)
+  const gruppen = daten ? gruppiere([...nachId.keys()], daten, heute) : [{ saeule: "alle", ids: [...nachId.keys()] }];
+  const termineVon = new Map(plakate.map((p) => [p, daten ? kuenftige(daten.bands?.[p.dataset.band]?.termine, heute) : null]));
+
   plakate.forEach((p) => {
     const knopf = p.querySelector(".plakat__reiss");
     knopf.style.clipPath = oben(false);
     knopf.setAttribute("aria-label", t("abreissen", { name: p.querySelector(".plakat__logo")?.alt || "" }));
-    knopf.addEventListener("click", () => reissen(p));
+    if (!knopf.dataset.bereit) { // nur einmal, auch wenn baue() nach einem Fehler erneut läuft
+      knopf.dataset.bereit = "1";
+      knopf.addEventListener("click", () => reissen(p));
+    }
     p.querySelector(".plakat__zettel").inert = true;
-    if (daten) {
-      const termine = kuenftige(daten.bands?.[p.dataset.band]?.termine, heute);
+    const termine = termineVon.get(p);
+    if (termine) {
       fuelleNaechstes(p, termine);
       fuelleZettel(p, termine);
     }
   });
 
-  const gruppen = daten ? gruppiere([...nachId.keys()], daten, heute) : [{ saeule: "alle", ids: [...nachId.keys()] }];
   const neu = document.createDocumentFragment();
   for (const g of gruppen) {
     const zeit = g.saeule === "still" ? TEXTE[sp].stillZeit : monatsSpanne(heute, g.saeule, sp);

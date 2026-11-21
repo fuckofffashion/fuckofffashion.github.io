@@ -81,3 +81,10 @@ test("sichtbare: ohne alle die ersten 4", () => {
   assert.equal(sichtbare(sechs, false).length, 4);
   assert.equal(sichtbare(sechs, true).length, 6);
 });
+
+test("gruppiere: Daten in falscher Form werfen nicht, die Band ist still", () => {
+  const daten = { bands: { a: { termine: {} }, b: { termine: "x" }, c: null } };
+  assert.deepEqual(gruppiere(["a", "b", "c"], daten, HEUTE), [{ saeule: "still", ids: ["a", "b", "c"] }]);
+  assert.deepEqual(kuenftige({}, HEUTE), []);
+  assert.deepEqual(kuenftige([t("2026-12-01"), null, { datum: 5 }], HEUTE).map((x) => x.datum), ["2026-12-01"]);
+});

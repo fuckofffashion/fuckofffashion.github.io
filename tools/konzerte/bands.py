@@ -35,6 +35,12 @@ def lade_bands(pfad) -> list[dict]:
         for feld in PFLICHT:
             if not str(e.get(feld) or "").strip():
                 raise ValueError(f"{wer}: {feld} fehlt")
+        if not isinstance(e["name"], str):
+            raise ValueError(f"{wer}: name muss Text sein")
+        for feld in ("schreibweisen", "nicht"):
+            wert = e.get(feld, [])
+            if not isinstance(wert, list) or not all(isinstance(x, str) and x.strip() for x in wert):
+                raise ValueError(f"{wer}: {feld} muss eine Liste aus Texten sein, z. B. [\"…\"]")
         if not ID_MUSTER.match(e["id"]):
             raise ValueError(f"{wer}: id {e['id']!r} ist kein Kurzname (a-z, 0-9, Bindestrich)")
         if e["id"] in gesehen:

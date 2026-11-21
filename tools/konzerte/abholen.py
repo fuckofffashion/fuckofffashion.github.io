@@ -276,7 +276,7 @@ def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
         schreibe_json(os.path.join(args.daten, "bands.json"), {"stand": stand, **zuordnung}, kompakt=True)
         anzahlen = ", ".join(f"{k} {v['anzahl']}" for k, v in zuordnung["bands"].items())
         log(f"Bands: {anzahlen}")
-    except (OSError, ValueError) as e:
+    except (OSError, ValueError, TypeError, AttributeError, KeyError) as e:
         log(f"FEHLER bands: {e} (data/bands.json bleibt, wie sie war)")
 
     for qid, fehler_seit in ausfaelle:
