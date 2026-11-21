@@ -28,6 +28,10 @@
     { "id": "normahl", "name": "NoRMAhl", "logo": "normahl.webp",
       "logo_quelle": "https://www.normahl.de/images/hero/normahl-schrift.svg",
       "web": "https://www.normahl.de", "plakat": "papier",
-      "beschreibung": { "de": "Punkrock seit 1978", "en": "Punk rock since 1978" } }
+      "beschreibung": { "de": "Punkrock seit 1978", "en": "Punk rock since 1978" } },
+    { "id": "trustgod-simon", "name": "Trustgod Simon", "logo": "trustgod-simon.webp",
+      "logo_quelle": "von Mark geschickt (21.11.2026)",
+      "web": "https://trustgodsimon.bandcamp.com",
+      "beschreibung": { "de": "Punk aus Dinslaken", "en": "Punk from Dinslaken" } }
   ]
 }

@@ -8,3 +8,4 @@ trijahnity.webp      https://www.trijahnity.de/images/Trijahnity_logo_weiß.png
 jaya-the-cat.webp    https://jayathecat.nl/wp-content/uploads/2017/09/logo_bl.png  (geladen 21.11.2026)
 maenni.webp          https://mnni.de/manus-storage/mnni-logo_8719f6d6.png  (geladen 21.11.2026)
 normahl.webp         https://www.normahl.de/images/hero/normahl-schrift.svg  (geladen 21.11.2026, mit Edge gerastert)
+trustgod-simon.webp  von Mark am 21.11.2026 geschickt (rundes Logo), Ecken freigestellt
