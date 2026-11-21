@@ -30,7 +30,7 @@ let ladenId = "pitcher", L, leute = [], figuren = new Map(), ich, becher;
 let bier, punkte, zeit, laeuft = false, pausiert = false, wall, beruehrt, freibier, surfer, tropfen, randPop;
 let sprungBis, reiheSeit, nassBis, letzterSpritzer, duDaTeile, wuerfe, andenken, geplanteWuerfe, stagedive, mikroAn;
 
-function neueRunde() {
+function neueRunde(neueAufgaben = true) {
   raeumeAuf();
   L = LAEDEN[ladenId];
   S.baueRaum(L);
@@ -52,9 +52,8 @@ function neueRunde() {
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
   stagedive = { phase: "aus", fertig: false }; mikroAn = false;
   stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
-  aufgaben = ziehe(L);
-  $("pogo-aufgaben").textContent = aufgaben.map((a) => "□ " + T.aufgaben[a.id]).join("  ·  ");
-  $("pogo-kutte").textContent = `${T.kutte}: ${kutteText(kutte, sp)}`;
+  if (neueAufgaben || !aufgaben.length) aufgaben = ziehe(L);
+  zeigeAufgabenUndKutte();
   $("pogo-stagedive").hidden = true; $("pogo-hinweis").textContent = "";
   S.kamera(ich, 0, true);
 }
@@ -97,9 +96,9 @@ function springe(t = zeit) {
   if (w.bier) { bier = Math.max(0, bier - w.bier); spritzer(2); }
 }
 function wische(seite) {
-  if (stagedive.phase !== "getragen" || !stagedive.griff) return;
+  if (!laeuft || stagedive.phase !== "getragen" || !stagedive.griff) return;
   const richtig = seite === stagedive.griff.seite; stagedive.griff = null;
-  if (richtig) pop(T.abgewehrt, "#58d26a"); else verschuette(12, T.schwapp);
+  if (richtig) pop(T.abgewehrt, "#58d26a"); else verschuette(STAGEDIVE.verlust, T.schwapp);
 }
 function starteStagedive() {
   if (stagedive.phase !== "aus" || stagedive.fertig) return;
@@ -355,10 +354,17 @@ function zeigeStand() {
   const rest = Math.max(0, Math.ceil(song.ende - zeit)); $("pogo-zeit").textContent = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`;
 }
 
+function zeigeAufgabenUndKutte() {
+  const text = aufgaben.map((a) => "□ " + T.aufgaben[a.id]).join("  ·  ");
+  $("pogo-aufgaben").textContent = text;
+  $("pogo-aufgaben-start").textContent = `${T.aufgabenTitel}: ${text}`;
+  $("pogo-kutte").textContent = `${T.kutte}: ${kutteText(kutte, sp)}`;
+}
+
 function starte() {
   song = SONGS.find((s) => s.id === songId) || BEAT;
   if (song.datei && !musik.bereit(WURZEL + song.datei)) { pop(T.songFehlt, "var(--paper)"); song = BEAT; }
-  neueRunde();
+  neueRunde(false);
   $("pogo-start").hidden = true; $("pogo-ende").hidden = true; $("pogo-hud").hidden = false; $("pogo-tonbox").hidden = false;
   spielEl.scrollIntoView({ block: "nearest" });
   laeuft = true; pausiert = false; letzte = performance.now();
@@ -370,8 +376,9 @@ function ende(leer) {
   const erledigt = aufgaben.filter((a) => a.erfuellt(stats));
   punkte += erledigt.length * AUFGABE_PUNKTE;
   if (andenken.length) { kutte = mitFang(kutte, andenken); schreibeKutte(speicher, kutte); }
+  const gewertet = aufgaben;
   const liste = $("pogo-ende-aufgaben"); liste.replaceChildren();
-  for (const a of aufgaben) { const li = document.createElement("li"); const ok = erledigt.includes(a); li.textContent = `${ok ? "✓" : "✗"} ${T.aufgaben[a.id]}${ok ? ` (+${AUFGABE_PUNKTE})` : ""}`; li.className = ok ? "ist-erledigt" : ""; liste.append(li); }
+  for (const a of gewertet) { const li = document.createElement("li"); const ok = erledigt.includes(a); li.textContent = `${ok ? "✓" : "✗"} ${T.aufgaben[a.id]}${ok ? ` (+${AUFGABE_PUNKTE})` : ""}`; li.className = ok ? "ist-erledigt" : ""; liste.append(li); }
   const b = leer ? 0 : Math.round(bier), p = Math.round(punkte);
   $("pogo-ende-laden").textContent = T.laeden[ladenId].name;
   $("pogo-ende-titel").textContent = T.titel[titelSchluessel(p, b)];
@@ -380,6 +387,7 @@ function ende(leer) {
   zeigeBand();
   $("pogo-ende-andenken").textContent = andenken.length ? `${T.andenken}: ${andenken.map((a) => T[a].replace("!", "")).join(", ")}` : T.keineAndenken;
   $("pogo-ende").hidden = false; $("pogo-hud").hidden = true; $("pogo-tonbox").hidden = true;
+  aufgaben = ziehe(L); zeigeAufgabenUndKutte(); // neue Aufgaben für die nächste Runde
   $("pogo-nochmal").focus({ preventScroll: true });
 }
 

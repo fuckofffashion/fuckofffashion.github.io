@@ -61,7 +61,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     boden.rotation.x = -Math.PI / 2; boden.receiveShadow = true; raum.add(boden);
 
     s.matsch = [];
-    if (draussen) for (let i = 0; i < 6; i++) {
+    if (L.matsch) for (let i = 0; i < 6; i++) {
       const m = { x: zufall(-L.x + 1, L.x - 1), z: zufall(L.gitterZ + 2, L.z[1] - 1), rx: zufall(0.9, 1.6), rz: zufall(0.6, 1.1) };
       const fl = new THREE.Mesh(new THREE.CircleGeometry(1, 28), eigen(mat(0x2b1f12, { roughness: 0.35, metalness: 0.1 })));
       fl.rotation.x = -Math.PI / 2; fl.scale.set(m.rx, m.rz, 1); fl.position.set(m.x, 0.01, m.z); fl.receiveShadow = true; raum.add(fl); s.matsch.push(m);
@@ -194,7 +194,7 @@ export function baueSzene(THREE, { container, ruhig = false }) {
       sp.target.position.z = mz + Math.cos(zeit * 0.5 + i) * 2.5;
       sp.intensity = sp.userData.grund * (0.7 + 0.5 * kraft) * (1 + 0.25 * Math.max(0, Math.sin(zeit * takt * 2)));
     });
-    for (const v of s.ventilatoren || []) v.rotation.y += 0.12;
+    for (const v of s.ventilatoren || []) v.rotation.y = ruhig ? 0 : zeit * 6;
     if (s.regen) { s.regen.position.y -= 0.15; if (s.regen.position.y < -4) s.regen.position.y += 4; }
   };
 
