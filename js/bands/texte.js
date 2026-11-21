@@ -16,8 +16,6 @@ export function tagDatum(iso, sp = sprache()) {
 
 export const TEXTE = {
   de: {
-    saeule: { bald: "Bald", demnaechst: "Demnächst", spaeter: "Später", still: "Gerade still", alle: "Bands" },
-    stillZeit: "keine Termine",
     naechstes: "Nächstes Mal",
     still: "Gerade still",
     keine: "Gerade keine Termine. Kommt wieder.",
@@ -38,8 +36,6 @@ export const TEXTE = {
     buehne: "Litfaßsäule mit den Plakaten aller Bands",
   },
   en: {
-    saeule: { bald: "Soon", demnaechst: "Coming up", spaeter: "Later", still: "Quiet for now", alle: "Bands" },
-    stillZeit: "no gigs",
     naechstes: "Next up",
     still: "Quiet for now",
     keine: "No gigs right now. They'll be back.",
