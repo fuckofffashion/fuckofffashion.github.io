@@ -1,10 +1,23 @@
 // Szene von Pogo: Renderer, Licht, Laden mit Bühne, Band, Gitter und Ordner, Kamera hinter dir.
 // three.js wird hereingereicht (app.js lädt es aus assets/vendor/). Vorlage: docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html.
-import { baueFigur } from "./figuren.js?v=34";
+import { baueFigur } from "./figuren.js?v=35";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 
 let kegelMat = null, kegelGeo = null;
+/** Banner malen. seiten = Breite/Höhe der Fläche in Metern, damit ein rundes Logo rund bleibt. */
+function malBanner(x, w, h, logo, seiten) {
+  x.fillStyle = "#0d0b0b"; x.fillRect(0, 0, w, h);
+  if (logo?.width) {
+    // Logo mehrfach über die ganze Breite, gleichmäßig verteilt
+    const hPx = h * 0.86, wPx = (hPx * (w / h)) / seiten * (logo.width / logo.height);
+    const n = Math.max(1, Math.floor(w / (wPx * 1.18))), luecke = (w - n * wPx) / n;
+    for (let i = 0; i < n; i++) x.drawImage(logo, luecke / 2 + i * (wPx + luecke), (h - hPx) / 2, wPx, hPx);
+    return;
+  }
+  x.fillStyle = "#f1ede4"; x.font = "150px Anton, Impact"; x.textAlign = "center"; x.fillText("POGO", w / 2 - 120, 190);
+  x.fillStyle = "#d4161b"; x.font = "44px 'Courier Prime', monospace"; x.fillText("FUCK OFF", w / 2 + 230, 120); x.fillText("FASHION", w / 2 + 230, 175);
+}
 export function baueSzene(THREE, { container, ruhig = false }) {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const handy = Math.min(innerWidth, innerHeight) < 600;
@@ -76,11 +89,12 @@ export function baueSzene(THREE, { container, ruhig = false }) {
       const box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.7), eigen(mat("#1a1817"))); box.position.set(sx * (L.x - 0.2), 1.35 + k * 0.9, bz - 0.6); box.castShadow = true; raum.add(box);
     }
     const kessel = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.4, 20), eigen(mat("#7a1b1b", { metalness: 0.4, roughness: 0.4 }))); kessel.rotation.x = Math.PI / 2; kessel.position.set(0, 1.25, bz - 2.1); raum.add(kessel);
-    const banner = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 1.5, 1.6), eigen(new THREE.MeshStandardMaterial({ roughness: 0.9, map: textur(leinwand(1024, 280, (x, w, h) => {
-      x.fillStyle = "#0d0b0b"; x.fillRect(0, 0, w, h); x.fillStyle = "#f1ede4"; x.font = "150px Anton, Impact"; x.textAlign = "center"; x.fillText("POGO", w / 2 - 120, 190);
-      x.fillStyle = "#d4161b"; x.font = "44px 'Courier Prime', monospace"; x.fillText("FUCK OFF", w / 2 + 230, 120); x.fillText("FASHION", w / 2 + 230, 175);
-    })) })));
-    banner.position.set(0, 3.3, bz - 3); raum.add(banner);
+    // Banner hinter der Band: Logo der Band zum gewählten Song (s.setzeBanner), ohne Logo der Spielname
+    const bannerTex = textur(leinwand(1024, 280, (x, w, h) => malBanner(x, w, h, null, (L.x * 1.5) / 1.6)));
+    // leicht von hinten beleuchtet, damit das Logo im Nebel lesbar bleibt; unter niedriger Decke tiefer und vor der Bilderwand
+    const banner = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 1.5, 1.6), eigen(new THREE.MeshStandardMaterial({ roughness: 0.9, map: bannerTex, emissive: 0xffffff, emissiveMap: bannerTex, emissiveIntensity: 0.45 })));
+    banner.position.set(0, L.decke ? Math.min(3.3, L.decke - 0.85) : 3.3, L.decke ? bz - 2.85 : bz - 3); raum.add(banner);
+    s.banner = { tex: bannerTex, seiten: (L.x * 1.5) / 1.6 };
 
     // Band: links Gitarre, Mitte Gesang mit Mikroständer, rechts Bass
     s.band = [];
@@ -213,6 +227,12 @@ export function baueSzene(THREE, { container, ruhig = false }) {
     }
     s.laden = L;
     return s;
+  };
+
+  /** Bandlogo (HTMLImageElement) aufs Banner malen; null = Spielname. */
+  s.setzeBanner = (logo) => {
+    const b = s.banner; if (!b) return;
+    const c = b.tex.image; malBanner(c.getContext("2d"), c.width, c.height, logo, b.seiten); b.tex.needsUpdate = true;
   };
 
   /** Licht im Takt, Spots wandern über den Pit. schlag: Schläge seit Songbeginn (Bruchteil = Phase im Schlag). */

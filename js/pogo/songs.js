@@ -1,6 +1,6 @@
 // Songs für Pogo. Jeder Song braucht einen Freigabe-Eintrag (Test in tests/js/pogo-regeln.test.mjs).
 // Zeiten in Sekunden ab Dateibeginn; start = erster Schlag (für „im Takt“).
-import { TEILE, BPM, DAUER } from "./regeln.js?v=34";
+import { TEILE, BPM, DAUER } from "./regeln.js?v=35";
 
 /** Eigener Beat aus dem Browser (Ersatz, wenn kein Song gewählt ist oder die Datei nicht lädt). */
 export const BEAT = {

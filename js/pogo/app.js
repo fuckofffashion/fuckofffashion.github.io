@@ -2,20 +2,20 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=34";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=34";
-import { sprache, TEXTE } from "./texte.js?v=34";
-import { LAEDEN } from "./laeden.js?v=34";
-import { erzeugeMusik } from "./musik.js?v=34";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=34";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=34";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=34";
-import { MOTIVE } from "./motive.js?v=34";
+} from "./regeln.js?v=35";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=35";
+import { sprache, TEXTE } from "./texte.js?v=35";
+import { LAEDEN } from "./laeden.js?v=35";
+import { erzeugeMusik } from "./musik.js?v=35";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=35";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=35";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=35";
+import { MOTIVE } from "./motive.js?v=35";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=34";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=34";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=34";
-import { tagDatum } from "../bands/texte.js?v=34";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=35";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=35";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=35";
+import { tagDatum } from "../bands/texte.js?v=35";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -24,6 +24,7 @@ const spielEl = $("pogo-spiel");
 const zufall = (a, b) => a + Math.random() * (b - a);
 
 let THREE, S, F; // three.js, Szene, Figuren-Modul
+const bandLogos = new Map(); // Band-Id → geladenes Logo (assets/img/bands/<id>.webp)
 const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
@@ -40,6 +41,7 @@ function neueRunde(neueAufgaben = true) {
   raeumeAuf();
   L = LAEDEN[ladenId];
   S.baueRaum(L);
+  S.setzeBanner(bandLogos.get(song.band) || null);
   leute = []; figuren = new Map();
   const zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
   for (let z = zMin + 0.6; z < zMax; z += 1.1) for (const sx of [-1, 1]) leute.push(person({ x: sx * (L.x - 0.3), z, rand: true }));
@@ -826,8 +828,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=34").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=34"),
+      import("./szene.js?v=35").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=35"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -878,6 +880,12 @@ async function los() {
   neueRunde();
   requestAnimationFrame(bild);
   ladeMotive().then((n) => { if (n && !laeuft) neueRunde(false); });
+  // echte Bandlogos fürs Banner hinter der Band
+  for (const b of new Set(SONGS.map((s) => s.band).filter(Boolean))) {
+    const img = new Image();
+    img.onload = () => { bandLogos.set(b, img); if (!laeuft && song.band === b) S.setzeBanner(img); };
+    img.src = `${WURZEL}assets/img/bands/${b}.webp`;
+  }
 }
 /** Motivbilder der Seite für die Rückenaufnäher laden; was nicht kommt, fehlt einfach (alte Aufnäher bleiben). */
 async function ladeMotive() {

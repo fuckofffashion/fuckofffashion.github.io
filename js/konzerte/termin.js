@@ -1,7 +1,7 @@
 // Ein Konzerttermin als Listeneintrag. Fremde Texte nur per textContent, Links nur http/https.
-import { anfahrt } from "./einheiten.js?v=34";
-import { routenLink } from "./route.js?v=34";
-import { t as text } from "./texte.js?v=34";
+import { anfahrt } from "./einheiten.js?v=35";
+import { routenLink } from "./route.js?v=35";
+import { t as text } from "./texte.js?v=35";
 
 const KNOX_EINTRAG = "https://knox.p-u-n-k.de/db/index.php?id=";
 
