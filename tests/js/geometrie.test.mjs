@@ -54,3 +54,8 @@ test("richtung: waagerecht dreht, senkrecht scrollt, kurz ist nichts", () => {
   assert.equal(richtung(-20, 5), "dreh");
   assert.equal(richtung(4, 30), "scroll");
 });
+
+test("BERUEHRUNG: senkrecht scrollen und Zwei-Finger-Zoom bleiben erlaubt", async () => {
+  const { BERUEHRUNG } = await import("../../js/bands/geometrie.js");
+  assert.equal(BERUEHRUNG, "pan-y pinch-zoom");
+});

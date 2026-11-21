@@ -25,6 +25,11 @@ export function zettelZeilen(termine, sp) {
   return { zeilen, mehr: Math.max(0, termine.length - ZETTEL_MAX) };
 }
 
+/** Text auf dem leeren Zettel: „gerade still“ nur, wenn die Daten da sind. */
+export function zettelLeer(hatDaten, sp) {
+  return hatDaten ? TEXTE[sp].zettelStill : TEXTE[sp].zettelOhneDaten;
+}
+
 export const FARBE = {
   papier: { bg: "#e8dfcc", faser: "#f8f3ea", label: "#b5171c", marker: "#141212" },
   schwarz: { bg: "#141212", faser: "#e6dccb", label: "#ff3b3b", marker: "#f1ede4" },
@@ -234,7 +239,7 @@ export function malPlakat(band, bild, { kopfzeile, naechstText, baldText = null 
   return { vorne, hinten };
 }
 
-export function malZettel(band, termine, sp) {
+export function malZettel(band, termine, sp, hatDaten = true) {
   const S = 900, x0 = 30, c = leinwand(S, S), x = c.getContext("2d"), r = mulberry32(hash(band.id) + 5);
   const T = TEXTE[sp];
   const seed = blatt(x, x0, x0, S - 2 * x0, S - 2 * x0, "#ece5d6", r, { rough: 7, step: 10, faser: "#faf6ee" });
@@ -248,7 +253,7 @@ export function malZettel(band, termine, sp) {
   const { zeilen, mehr } = zettelZeilen(termine, sp);
   if (!zeilen.length) {
     x.save(); x.translate(150, 420); x.rotate(-0.04); x.font = '64px "Permanent Marker"';
-    T.zettelStill.forEach((z, i) => x.fillText(z, 0, i * 100)); x.restore();
+    zettelLeer(hatDaten, sp).forEach((z, i) => x.fillText(z, 0, i * 100)); x.restore();
   } else {
     zeilen.forEach((z, i) => {
       const yy = 330 + i * 120;

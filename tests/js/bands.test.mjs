@@ -88,3 +88,10 @@ test("zettelZeilen: höchstens 4, Rest als mehr, Zeit angehängt", async () => {
   assert.equal(zettelZeilen(ts, "en").zeilen[0].datum, "THU 26 NOV");
   assert.deepEqual(zettelZeilen([], "de"), { zeilen: [], mehr: 0 });
 });
+
+test("zettelLeer: ohne Daten keine Falschaussage „still“", async () => {
+  const { zettelLeer } = await import("../../js/bands/malen.js");
+  assert.deepEqual(zettelLeer(true, "de"), ["Gerade still.", "Kommt wieder."]);
+  assert.deepEqual(zettelLeer(false, "de"), ["Termine gerade", "nicht da."]);
+  assert.deepEqual(zettelLeer(false, "en"), ["Gig dates", "unavailable."]);
+});

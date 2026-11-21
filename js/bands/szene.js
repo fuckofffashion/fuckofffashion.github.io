@@ -1,7 +1,7 @@
 // 3D-Litfaßsäule der Bandseite (three.js wird von app.js geladen und hereingereicht).
 // Vorlage für Aussehen und Verhalten: docs/superpowers/specs/2026-11-21-saeule-3d-entwurf.html.
 import { malCollage, malFOF, malPlakat, malZettel, malSprayA, malSticker, malRost, malFleck } from "./malen.js?v=31";
-import { R, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=31";
+import { R, BERUEHRUNG, gitter, forme, PLATZ, richtung } from "./geometrie.js?v=31";
 import { TEXTE, tagDatum } from "./texte.js?v=31";
 
 const KOERPER = { unten: 0.3, oben: 4.0 };
@@ -28,7 +28,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
   leinwand.className = "buehne__leinwand";
   leinwand.setAttribute("role", "img");
   leinwand.setAttribute("aria-label", T.buehne);
-  leinwand.style.touchAction = "pan-y";
+  leinwand.style.touchAction = BERUEHRUNG;
   buehne.prepend(leinwand);
 
   const scene = new THREE.Scene();
@@ -113,7 +113,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
   const plakate = bands.slice(0, PLATZ.length).map((band, i) => {
     const [th, y] = PLATZ[i];
     const s = { th, y, w: 0.8, h: 0.8, r: R + 0.008 };
-    flaeche(malZettel(band, band.termine, sp), { th, y: y + 0.01, w: 0.74, h: 0.74, r: R + 0.004 }, 1, 16, 16);
+    flaeche(malZettel(band, band.termine, sp, band.hatDaten), { th, y: y + 0.01, w: 0.74, h: 0.74, r: R + 0.004 }, 1, 16, 16);
     const { vorne, hinten } = malPlakat(band, band.bild, { kopfzeile: T.kopfzeile, naechstText: band.naechstText, baldText: band.baldText });
     const geo = flaecheGeo(s, 36, 36);
     const vorderMat = new THREE.MeshStandardMaterial({ map: tex(vorne), transparent: true, alphaTest: 0.5, roughness: 0.82, side: THREE.FrontSide });
@@ -193,7 +193,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
     if (!zeiger || e.pointerId !== zeiger.id) return;
     const kurz = !zeiger.art;
     zeiger = null;
-    if (kurz && modus === "gesamt") { const id = triff(e); if (id) beiAntippen(id); }
+    if (kurz) { const id = triff(e); if (id) beiAntippen(id); } // auch in der Plakatansicht: Nachbar antippen wechselt
   };
   const abbruch = () => { zeiger = null; };
   const raus = () => { if (schwebt) { schwebt = null; zeichne = true; } };
@@ -275,14 +275,14 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
       const pl = finde(id); if (!pl) { fertig(); return; }
       aktiv = id; modus = "plakat"; schwebt = null; benutzt = true; leinwand.style.cursor = "";
       fliegeZu(plakatAnsicht(pl));
-      if (ruhig) { pl.zustand = "weg"; pl.gruppe.visible = false; zeichne = true; fertig(); return; }
+      if (ruhig || !laeuft) { pl.zustand = "weg"; pl.gruppe.visible = false; zeichne = true; fertig(); return; }
       pl.zustand = "reisst"; pl.warte = 0.35; pl.fertig = fertig;
     },
     klebe(id, zurueck) {
       const pl = finde(id); if (!pl) return;
       pl.fertig = null;
       pl.gruppe.visible = true; pl.gruppe.position.set(0, 0, 0);
-      if (ruhig) { pl.zustand = "haengt"; pl.p = 0; pl.mats.forEach((m) => (m.opacity = 1)); neuForm(pl.geo, 0); }
+      if (ruhig || !laeuft) { pl.zustand = "haengt"; pl.p = 0; pl.mats.forEach((m) => (m.opacity = 1)); neuForm(pl.geo, 0); }
       else { pl.zustand = "klebt"; pl.p = 1; pl.t = 0; pl.mats.forEach((m) => (m.opacity = 0)); }
       if (zurueck) { aktiv = null; modus = "gesamt"; fliegeZu({ pos: gesamtPos(), ziel: new THREE.Vector3(0, ZIEL.y, 0) }); }
       zeichne = true;

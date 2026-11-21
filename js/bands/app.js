@@ -125,7 +125,12 @@ function baue(daten) {
     knopf.setAttribute("aria-label", t("abreissen", { name: nameVon(p) }));
     if (!knopf.dataset.bereit) { // nur einmal, auch wenn baue() nach einem Fehler erneut läuft
       knopf.dataset.bereit = "1";
-      knopf.addEventListener("click", () => (szene ? umschalten(p) : reissen(p)));
+      knopf.addEventListener("click", () => {
+        if (!szene) { reissen(p); return; }
+        // aus der Bandleiste: Säule ins Bild holen, damit Abreißen und Terminblatt sichtbar sind
+        buehne.scrollIntoView({ block: "nearest" });
+        umschalten(p);
+      });
     }
     p.querySelector(".plakat__zettel").inert = true;
     if (!knopf.querySelector(".plakat__name")) { // Name für die Bandleiste (das Logo ist dort ausgeblendet)
@@ -220,7 +225,13 @@ async function logo(img) {
   if (!img) return null;
   const bild = new Image();
   bild.src = img.currentSrc || img.src;
-  try { await bild.decode(); return bild; } catch { return null; }
+  // decode() wartet in versteckten Tabs, bis die Seite sichtbar wird; zum Malen reicht das geladene Bild
+  await Promise.race([
+    bild.decode().catch(() => {}),
+    new Promise((ok) => { bild.onload = bild.onerror = ok; if (bild.complete) ok(); }),
+    zeitAus(5000),
+  ]);
+  return bild.complete && bild.naturalWidth ? bild : null;
 }
 
 async function versuche3d({ reihe, termineVon, hatDaten }) {
@@ -240,6 +251,7 @@ async function versuche3d({ reihe, termineVon, hatDaten }) {
         plakat: p.classList.contains("plakat--papier") ? "papier" : p.classList.contains("plakat--blut") ? "blut" : "schwarz",
         bild: await logo(p.querySelector(".plakat__logo")),
         termine,
+        hatDaten,
         naechstText: naechstText(naechster(termine, heute), sp, hatDaten, p.querySelector(".plakat__text")?.textContent),
         baldText: hatDaten && istBald(termine, heute) ? t("bald") : null,
       };

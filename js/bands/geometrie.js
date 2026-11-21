@@ -3,6 +3,9 @@
 
 export const R = 1;
 
+/** touch-action der Leinwand: senkrecht scrollt die Seite, Zwei-Finger-Zoom bleibt möglich. */
+export const BERUEHRUNG = "pan-y pinch-zoom";
+
 /** Gitter aus (nu+1)·(nv+1) Punkten; Dreiecke so gewickelt, dass die Außenseite die Vorderseite ist. */
 export function gitter(nu, nv) {
   const pos = new Float32Array((nu + 1) * (nv + 1) * 3), uv = new Float32Array((nu + 1) * (nv + 1) * 2), index = [];
