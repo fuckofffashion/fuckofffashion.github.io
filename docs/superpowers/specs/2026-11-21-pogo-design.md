@@ -88,3 +88,20 @@ Mark wünscht als ersten Song „Es geht noch lauter“ von Dan Ganove; Dan hat 
 - Der eigene Beat bleibt als Auswahl „Eigener Beat“ und als Ersatz, wenn die Datei nicht lädt.
 - Am Start wählt man Laden und Song; am Ende stehen Band, Song und – wenn `data/bands.json` lädt – ihr nächstes Konzert.
 - Datei: `assets/audio/dan-ganove-es-geht-noch-lauter.mp3` (Original von Mark, 1,5 MB).
+
+## Etappe 2 (21.11.2026): echte Läden, Andenken, Aufgaben
+
+Marks Auswahl: Zentrum Altenberg (Oberhausen), Druckluft (Oberhausen, **Innen- und Außenbühne**), PITCHER (Düsseldorf). Mark: „nicht zu genau nehmen“ – ungefährer Nachbau im Stil des Spiels, Instagram-Fotos nur als grober Eindruck (keine fremden Fotos im Spiel).
+
+Die Beispiel-Läden (Kellerclub, AJZ-Halle, Festivalwiese) werden ersetzt durch:
+
+| Laden | Eindruck (Instagram/Web) | Eigenheit im Spiel (Claude) |
+|---|---|---|
+| PITCHER, Düsseldorf | dunkler, enger Raum, Bühne blau/lila mit hellen Spots, warmes Rot, Deckenventilatoren, Bilderwand hinter der Bühne | eng, niedrige Decke mit Ventilatoren (kein Crowdsurfen), Bilderwand, viele Rempler |
+| Druckluft innen, Oberhausen | Clubraum, Graffiti überall | kleiner Raum, Graffiti-Wände, Punkpublikum dicht |
+| Druckluft draußen, Oberhausen | flaches Gebäude mit großem „druckluft“-Schriftzug, Graffiti-Wände, Hof | Open Air am Abend, Gebäude mit Schriftzug hinter der Bühne, Bierbänke am Rand, Crowdsurfer |
+| Zentrum Altenberg, Oberhausen | große Halle (ehem. Zinkfabrik), Stahltraversen über der Bühne, blaues Licht | groß, hohe Halle mit Traversen, Circle Pit und Wall of Death |
+
+**Andenken-Sammlung (Claude):** Gefangene Plektren, Drumsticks und Setlisten bleiben auf dem Gerät gespeichert (localStorage, mit try/catch; ohne Speicher geht nur die Runde). Gezählt je Song bzw. Band. Im Startbild zeigt eine Zeile „Deine Kutte: 3 Plektren, 1 Drumstick, …“. Kein Server.
+
+**Aufgaben pro Runde (Claude):** Vor jeder Runde werden 2 Aufgaben aus einem Vorrat gezogen und im Startbild/HUD gezeigt; erfüllt = +250 Punkte, im Endbild abgehakt. Vorrat: im letzten Refrain in der ersten Reihe stehen; das Plektrum fangen; 10 s in der Mitte; Stagedive mit Bier > 50 % landen; 8-mal im Takt springen; einen Crowdsurfer überleben ohne Treffer (nur wo Crowdsurfer kommen).
