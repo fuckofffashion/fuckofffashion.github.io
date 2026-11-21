@@ -1,4 +1,4 @@
-// Eigener Punk-Beat per WebAudio (Platzhalter, bis freigegebene Songs da sind).
+// Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
 import { teilBei, VIERTEL, songZeit } from "./regeln.js?v=31";
 
@@ -7,6 +7,15 @@ const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
 
 export function erzeugeMusik() {
   let audio = null, master = null, tonAn = true, naechste = 0, start = 0, achtel = 0, takt = null, rauschen = null, verzerrer = null;
+  let quelle = null; const puffer = new Map();
+  const kontext = () => {
+    if (audio) return audio;
+    const AC = globalThis.AudioContext || globalThis.webkitAudioContext; if (!AC) return null;
+    audio = new AC(); master = audio.createGain(); master.gain.value = tonAn ? 0.45 : 0; master.connect(audio.destination);
+    rauschen = audio.createBuffer(1, audio.sampleRate * 0.5, audio.sampleRate);
+    const d = rauschen.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return audio;
+  };
 
   const knall = (t, frq, dauer, laut) => { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.setValueAtTime(frq, t); o.frequency.exponentialRampToValueAtTime(40, t + dauer); g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + dauer); o.connect(g).connect(master); o.start(t); o.stop(t + dauer); };
   const zisch = (t, dauer, laut, hoch) => { const s = audio.createBufferSource(), f = audio.createBiquadFilter(), g = audio.createGain(); s.buffer = rauschen; f.type = hoch ? "highpass" : "bandpass"; f.frequency.value = hoch ? 7000 : 1800; g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + dauer); s.connect(f).connect(g).connect(master); s.start(t); s.stop(t + dauer); };
@@ -37,22 +46,32 @@ export function erzeugeMusik() {
     }
   }
   return {
-    start() {
+    /** Lädt und dekodiert die Songdatei vorab (vor dem Antippen erlaubt); true, wenn sie bereit ist. */
+    async lade(url) {
+      if (puffer.has(url)) return true;
       try {
-        if (!audio) {
-          const AC = globalThis.AudioContext || globalThis.webkitAudioContext; if (!AC) return;
-          audio = new AC(); master = audio.createGain(); master.gain.value = tonAn ? 0.45 : 0; master.connect(audio.destination);
-          rauschen = audio.createBuffer(1, audio.sampleRate * 0.5, audio.sampleRate);
-          const d = rauschen.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-        }
-        audio.resume()?.catch?.(() => {}); naechste = start = audio.currentTime + 0.05; achtel = 0;
-        clearInterval(takt); takt = setInterval(plane, 25);
+        const ctx = kontext(); if (!ctx) return false;
+        const daten = await (await fetch(url)).arrayBuffer();
+        puffer.set(url, await ctx.decodeAudioData(daten)); return true;
+      } catch { return false; }
+    },
+    bereit(url) { return puffer.has(url); },
+    /** Startet den Song (url) oder ohne url den eigenen Beat; muss im Klick laufen. */
+    start(url = null) {
+      try {
+        const ctx = kontext(); if (!ctx) return;
+        ctx.resume()?.catch?.(() => {});
+        this.stopp();
+        naechste = start = ctx.currentTime + 0.05; achtel = 0;
+        if (url && puffer.has(url)) {
+          quelle = ctx.createBufferSource(); quelle.buffer = puffer.get(url); quelle.connect(master); quelle.start(start);
+        } else { takt = setInterval(plane, 25); }
       } catch { audio = null; }
     },
-    stopp() { clearInterval(takt); takt = null; },
-    pause() { clearInterval(takt); takt = null; audio?.suspend(); },
+    stopp() { clearInterval(takt); takt = null; try { quelle?.stop(); } catch {} quelle = null; },
+    pause() { if (!quelle) { clearInterval(takt); takt = null; } audio?.suspend(); },
     // die Audiouhr steht während der Pause still, das Raster läuft danach nahtlos weiter
-    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); clearInterval(takt); takt = setInterval(plane, 25); },
+    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(plane, 25); } },
     /** Songzeit nach der Audiouhr, oder null ohne Ton (dann zählt die normale Uhr). */
     uhr() { return audio && audio.state === "running" ? songZeit(audio.currentTime, start, audio.outputLatency || audio.baseLatency || 0) : null; },
     setzeTon(an) { tonAn = an; if (master) master.gain.value = an ? 0.45 : 0; },

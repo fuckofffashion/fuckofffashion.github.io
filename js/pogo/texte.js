@@ -6,7 +6,9 @@ export function sprache() {
 
 export const TEXTE = {
   de: {
-    teile: { "INTRO": "INTRO", "STROPHE": "STROPHE", "REFRAIN!": "REFRAIN!", "BREAK": "BREAK", "LETZTER REFRAIN": "LETZTER REFRAIN" },
+    teile: { "INTRO": "INTRO", "STROPHE": "STROPHE", "REFRAIN!": "REFRAIN!", "BREAK": "BREAK", "AUFBAU": "AUFBAU", "LETZTER REFRAIN": "LETZTER REFRAIN" },
+    eigenerBeat: "Eigener Beat", eigenerBeatText: "Punk-Beat aus dem Browser", laedt: "Song lädt …", songFehlt: "Song lädt nicht, eigener Beat läuft.",
+    naechstesKonzert: "Nächstes Konzert", keinKonzert: "Gerade keine Termine.",
     zonen: { rand: "Rand: keine Punkte", pit: "Pit", mitte: "Mitte: doppelt", reihe: "Erste Reihe: doppelt" },
     platsch: "PLATSCH!", schwapp: "schwapp", rucksack: "RUCKSACK!", stiefel: "STIEFEL IM BIER!",
     freibier: "FREIBIER!", crowdsurfer: "CROWDSURFER!", wall: "WALL OF DEATH!", los: "LOS!",
@@ -32,7 +34,9 @@ export const TEXTE = {
     },
   },
   en: {
-    teile: { "INTRO": "INTRO", "STROPHE": "VERSE", "REFRAIN!": "CHORUS!", "BREAK": "BREAK", "LETZTER REFRAIN": "LAST CHORUS" },
+    teile: { "INTRO": "INTRO", "STROPHE": "VERSE", "REFRAIN!": "CHORUS!", "BREAK": "BREAK", "AUFBAU": "BUILD-UP", "LETZTER REFRAIN": "LAST CHORUS" },
+    eigenerBeat: "Own beat", eigenerBeatText: "Punk beat made in your browser", laedt: "Loading song …", songFehlt: "Song didn't load, own beat is playing.",
+    naechstesKonzert: "Next gig", keinKonzert: "No gigs right now.",
     zonen: { rand: "Edge: no points", pit: "Pit", mitte: "Centre: double", reihe: "Front row: double" },
     platsch: "SPLASH!", schwapp: "slosh", rucksack: "BACKPACK!", stiefel: "BOOT IN YOUR BEER!",
     freibier: "FREE BEER!", crowdsurfer: "CROWDSURFER!", wall: "WALL OF DEATH!", los: "GO!",

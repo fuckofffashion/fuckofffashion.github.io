@@ -79,3 +79,12 @@ Ein kurzes, lustiges Spiel auf der FOF-Seite: Du stehst im Moshpit, hältst dein
 ## Dem Bauenden überlassen
 
 Genaue Punktwerte und Wahrscheinlichkeiten (Ziel: hinten < Pit < vorn, mit spürbarem Risiko vorn), Aussehen von Ordner, Gitter, Wurfgeschenken, Kamera beim Stagedive, Texte der Titel im Stil der Seite.
+
+## Nachtrag 21.11.2026: erster Song vorgezogen (aus Etappe 3)
+
+Mark wünscht als ersten Song „Es geht noch lauter“ von Dan Ganove; Dan hat Mark die Verwendung erlaubt (mündlich, Freund), Mark hat die MP3 geliefert. Auswertung (Claude, SoundCraft + eigene Messung): 135,94 BPM, erster Schlag 1,513 s, Song endet bei 58 s. Teile (Claudes Vorschlag, von Mark freigegeben, beim Anspielen korrigierbar): Intro 1,5–7, Strophe 7–22, Refrain 22–30, Strophe 30–37, Break 37–40, Aufbau 40–43, letzter Refrain 43–58 s.
+
+- Songs stehen in `js/pogo/songs.js` mit Datei, BPM, Startversatz, Ende, Teilen, Zeitpunkten (Mikro-Moment, Würfe, Wall of Death) und einem **Freigabe-Eintrag** (wer, über wen, wann, wie). Ohne Freigabe-Eintrag kein Song (Test).
+- Der eigene Beat bleibt als Auswahl „Eigener Beat“ und als Ersatz, wenn die Datei nicht lädt.
+- Am Start wählt man Laden und Song; am Ende stehen Band, Song und – wenn `data/bands.json` lädt – ihr nächstes Konzert.
+- Datei: `assets/audio/dan-ganove-es-geht-noch-lauter.mp3` (Original von Mark, 1,5 MB).

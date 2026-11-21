@@ -104,3 +104,34 @@ test("songZeit: Spielzeit folgt der Audiouhr samt Latenz, nie negativ", async ()
   assert.ok(Math.abs(songZeit(12.5, 2.0, 0.03) - 10.47) < 1e-9);
   assert.equal(songZeit(1.0, 2.0, 0.03), 0);
 });
+
+test("Songs: Teile aufsteigend, Ende passt, Datei da, Freigabe eingetragen", async () => {
+  const { SONGS, BEAT } = await import("../../js/pogo/songs.js");
+  const { existsSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const wurzel = fileURLToPath(new URL("../../", import.meta.url));
+  for (const s of [BEAT, ...SONGS]) {
+    for (let i = 1; i < s.teile.length; i++) assert.ok(s.teile[i].bis > s.teile[i - 1].bis, s.id);
+    assert.equal(s.teile.at(-1).bis, s.ende, s.id);
+    assert.ok(s.mikro[0] < s.mikro[1] && s.mikro[1] <= s.ende, s.id);
+    for (const t of Object.values(s.wuerfe)) assert.ok(t > 0 && t < s.ende, s.id);
+  }
+  for (const s of SONGS) {
+    assert.ok(existsSync(wurzel + s.datei), s.datei);
+    assert.ok(s.freigabe?.durch && s.freigabe?.datum, `Freigabe fehlt: ${s.id}`);
+  }
+  const dan = SONGS.find((s) => s.id === "dan-ganove-lauter");
+  assert.equal(dan.band, "dan-ganove"); assert.equal(dan.bpm, 135.94); assert.equal(dan.start, 1.513); assert.equal(dan.ende, 58);
+});
+
+test("teilBei und imTakt arbeiten mit Songdaten", async () => {
+  const { SONGS } = await import("../../js/pogo/songs.js");
+  const dan = SONGS[0];
+  assert.equal(teilBei(25, dan.teile).name, "REFRAIN!");
+  assert.equal(teilBei(38, dan.teile).name, "BREAK");
+  assert.equal(teilBei(41, dan.teile).name, "AUFBAU");
+  const viertel = 60 / dan.bpm;
+  assert.equal(imTakt(dan.start + viertel * 10 + 0.05, dan.bpm, dan.start), true);
+  assert.equal(imTakt(dan.start + viertel * 10 + 0.2, dan.bpm, dan.start), false);
+  assert.equal(imTakt(VIERTEL * 7 + 0.05), true); // Standard: eigener Beat
+});

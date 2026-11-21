@@ -51,6 +51,9 @@
 .pogo__laden[aria-pressed="true"] span { color: var(--ash-dark); }
 .pogo__laden:active { transform: scale(.98); }
 .pogo__laden:focus-visible { outline: 3px solid var(--blood-hot); outline-offset: 3px; }
+.pogo__unter { margin: 0; font: 700 .75rem/1.2 var(--font-zine); letter-spacing: .1em; text-transform: uppercase; color: var(--paper-2); }
+.pogo__band { background: var(--paper); color: var(--ink) !important; padding: .5rem .7rem; justify-self: start; rotate: -1deg; font: 400 .9rem/1.35 var(--font-zine); }
+.pogo__band b { font: 400 1.15rem/1.1 var(--font-shout); text-transform: uppercase; }
 .pogo__ergebnis { font: 400 clamp(2.8rem, 10vw, 4.2rem)/1 var(--font-shout); color: var(--bier) !important; font-variant-numeric: tabular-nums; }
 .pogo__knoepfe { display: flex; flex-wrap: wrap; gap: .6rem; }
 .pogo__ohne3d { position: absolute; inset: 0; display: grid; place-content: center; gap: .5rem; padding: 1.5rem; text-align: center; color: var(--paper-2); margin: 0; }

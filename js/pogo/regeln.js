@@ -13,7 +13,7 @@ export const TEILE = [
   { bis: 48, name: "STROPHE", kraft: 0.65 },
   { bis: 60, name: "LETZTER REFRAIN", kraft: 1.15, kreis: true },
 ];
-export const teilBei = (t) => TEILE.find((x) => t < x.bis) || TEILE[TEILE.length - 1];
+export const teilBei = (t, teile = TEILE) => teile.find((x) => t < x.bis) || teile[teile.length - 1];
 
 const RAND_BREITE = 0.9, REIHE_TIEFE = 0.9, MITTE_RADIUS = 1.6;
 
@@ -35,10 +35,10 @@ export function punkteProSekunde(z, teil, ordnerNass) {
   return p;
 }
 
-/** Liegt der Zeitpunkt (Sekunden seit Songbeginn) höchstens 80 ms neben einem Viertel? */
-export function imTakt(t) {
-  const rest = ((t % VIERTEL) + VIERTEL) % VIERTEL;
-  return Math.min(rest, VIERTEL - rest) <= 0.08;
+/** Liegt der Zeitpunkt (Sekunden seit Songbeginn) höchstens 80 ms neben einem Viertel? start = erster Schlag. */
+export function imTakt(t, bpm = BPM, start = 0) {
+  const v = 60 / bpm, rest = (((t - start) % v) + v) % v;
+  return Math.min(rest, v - rest) <= 0.08;
 }
 
 export const SPRUNG = { bonus: 15, daneben: 3 };
