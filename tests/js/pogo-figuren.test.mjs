@@ -28,29 +28,15 @@ test("Füllring: zeigt den Anteil als Bogen, begrenzt auf 0 bis voll", async () 
   setzeFortschritt(geo, -1); assert.equal(geo.drawRange.count, 0);
 });
 
-test("Skelett aus Marks Ansichten: Ansicht nach Kamerawinkel", async () => {
-  const { skelettAnsicht } = await import("../../js/pogo/figuren.js");
-  assert.deepEqual(skelettAnsicht(0), { bild: "vorne", spiegeln: false });
-  assert.deepEqual(skelettAnsicht(15), { bild: "vorne", spiegeln: false });
-  assert.equal(skelettAnsicht(40).bild, "dreiviertel");
-  assert.notEqual(skelettAnsicht(40).spiegeln, skelettAnsicht(-40).spiegeln);
-  assert.equal(skelettAnsicht(90).bild, "rechts");
-  assert.equal(skelettAnsicht(-90).bild, "links");
-  assert.equal(skelettAnsicht(170).bild, "hinten");
-  assert.equal(skelettAnsicht(-170).bild, "hinten");
-});
-
-test("Skelett: Bilder liegen bereit, Kiefer sprechen", async () => {
-  const { existsSync } = await import("node:fs");
-  const { fileURLToPath } = await import("node:url");
-  const { SKELETT_BILDER, baueSkelett } = await import("../../js/pogo/figuren.js");
-  const wurzel = fileURLToPath(new URL("../../", import.meta.url));
-  for (const p of Object.values(SKELETT_BILDER)) assert.ok(existsSync(wurzel + p), p);
-  const tex = Object.fromEntries(Object.keys(SKELETT_BILDER).map((k) => [k, new THREE.Texture()]));
-  const s = baueSkelett(THREE, tex);
-  assert.ok(s.g.isGroup && s.kiefer.isMesh);
-  s.sprich(1); assert.ok(s.kiefer.position.y < s.kieferRuhe - 0.02, "Kiefer klappt nach unten");
-  s.sprich(0); assert.equal(s.kiefer.position.y, s.kieferRuhe);
-  s.zeige(90); assert.equal(s.kiefer.visible, false, "Kiefer nur in der Vorderansicht");
-  s.zeige(0); assert.equal(s.kiefer.visible, true);
+test("Figur mit einzelnem Kopf: Kopf ist ein eigenes Teil und fehlt im Rumpf", async () => {
+  // baueFigur malt Aufnäher auf Canvas: in Node reicht ein stummer Ersatz
+  globalThis.document ??= { createElement: () => ({ width: 0, height: 0, getContext: () => new Proxy({}, { get: () => () => {} }) }) };
+  const { baueFigur } = await import("../../js/pogo/figuren.js");
+  const normal = baueFigur(THREE, { haar: ["glatze"], aufnaeher: false });
+  const einzeln = baueFigur(THREE, { haar: ["glatze"], aufnaeher: false, kopfEinzeln: true });
+  assert.equal(normal.kopf, null);
+  assert.ok(einzeln.kopf && einzeln.kopf.parent === einzeln.koerper);
+  assert.ok(Math.abs(einzeln.kopf.position.y - 1.56) < 1e-9);
+  assert.ok(einzeln.geos[0].attributes.position.count < normal.geos[0].attributes.position.count);
+  assert.ok(einzeln.geos.includes(einzeln.kopf.geometry));
 });

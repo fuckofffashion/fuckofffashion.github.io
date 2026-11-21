@@ -103,8 +103,8 @@ export function baueFigur(THREE, opt = {}) {
     { geo: T.bein, farbe: hose, matrix: M(-0.1, 0.32, 0) }, { geo: T.bein, farbe: hose, matrix: M(0.1, 0.32, 0) },
     { geo: T.stiefel, farbe: opt.stiefel || "#0d0d0d", matrix: M(-0.1, 0.05, -0.04) }, { geo: T.stiefel, farbe: opt.stiefel || "#0d0d0d", matrix: M(0.1, 0.05, -0.04) },
     { geo: T.rumpf, farbe: opt.shirt || jacke, matrix: M(0, 0.96, 0) },
-    { geo: T.kopf, farbe: haut, matrix: M(0, 1.56, 0) },
   ];
+  if (!opt.kopfEinzeln) stuecke.push({ geo: T.kopf, farbe: haut, matrix: M(0, 1.56, 0) });
   if (opt.rucksack) stuecke.push({ geo: T.rucksack, farbe: "#3d5a2a", matrix: M(0, 1.0, 0.27) });
   if (art === "iro") for (let k = -3; k <= 3; k++) {
     const w = k * 0.38;
@@ -117,6 +117,12 @@ export function baueFigur(THREE, opt = {}) {
   const rumpf = new THREE.Mesh(fuegeZusammen(THREE, stuecke), T.farbe);
   rumpf.castShadow = true; koerper.add(rumpf);
   let aufnaeher = null; const extraGeos = [];
+  // Kopf als eigenes Teil, damit ihn der Ganove-Kopf (kopf3d.js) ersetzen kann
+  let kopf = null;
+  if (opt.kopfEinzeln) {
+    const kopfGeo = fuegeZusammen(THREE, [{ geo: T.kopf, farbe: haut }]); extraGeos.push(kopfGeo);
+    kopf = new THREE.Mesh(kopfGeo, T.farbe); kopf.position.y = 1.56; kopf.castShadow = true; koerper.add(kopf);
+  }
   if (opt.aufnaeherMat || (opt.aufnaeher !== false && (opt.aufnaeher === true || Math.random() < 0.7))) {
     const mat = opt.aufnaeherMat || (motivMats.length && Math.random() < 0.6 ? wahl(motivMats).mat : wahl(T.aufnaeher));
     aufnaeher = new THREE.Mesh(T.flicken, mat); aufnaeher.position.set(0, 1.02, 0.212); koerper.add(aufnaeher);
@@ -144,7 +150,7 @@ export function baueFigur(THREE, opt = {}) {
     const st = new THREE.Mesh(stab, new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.8 })); st.position.y = -0.85; arme[1].add(st);
     const h = new THREE.Mesh(handy, new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x6688ff, emissiveIntensity: 0.6 })); h.position.y = -1.2; arme[1].add(h);
   }
-  return { g, koerper, arme, aufnaeher, fortschritt, geos: [rumpf.geometry, armGeo, ...extraGeos] };
+  return { g, koerper, kopf, arme, aufnaeher, fortschritt, geos: [rumpf.geometry, armGeo, ...extraGeos] };
 }
 
 /** Plastikbecher mit Bier und Schaum; becherStand setzt die Füllhöhe (0–1). */
@@ -165,43 +171,4 @@ export function becherStand(b, anteil, verwaessert = false) {
   b.userData.bier.scale.y = h; b.userData.bier.position.y = -0.065 + h / 2;
   b.userData.bier.material.color.set(verwaessert ? 0xf6dc8a : 0xf2b632);
   b.userData.schaum.position.y = -0.065 + h + 0.005; b.userData.schaum.visible = anteil > 0.03;
-}
-
-/* ---------- Skelett für das Outro (Ansichten von Mark, im Stil von Dan Ganoves Logo) ---------- */
-export const SKELETT_BILDER = {
-  vorne: "assets/img/pogo/dan-skelett-vorne-oben.webp", kiefer: "assets/img/pogo/dan-skelett-vorne-kiefer.webp",
-  dreiviertel: "assets/img/pogo/dan-skelett-dreiviertel.webp", links: "assets/img/pogo/dan-skelett-links.webp",
-  rechts: "assets/img/pogo/dan-skelett-rechts.webp", hinten: "assets/img/pogo/dan-skelett-hinten.webp",
-};
-/** Welche Ansicht passt zum Blickwinkel (Grad; 0 = Kamera genau vor der Figur, positiv = Kamera rechts von ihr). */
-export function skelettAnsicht(winkel) {
-  const a = ((winkel + 540) % 360) - 180, b = Math.abs(a);
-  if (b <= 20) return { bild: "vorne", spiegeln: false };
-  if (b <= 55) return { bild: "dreiviertel", spiegeln: a < 0 };
-  if (b <= 125) return { bild: a > 0 ? "rechts" : "links", spiegeln: false };
-  return { bild: "hinten", spiegeln: false };
-}
-/**
- * Skelett-Büste als Bildtafel (Kopf mit Mütze, Brustkorb, Schulterstummel), 0,95 m hoch.
- * texturen: { vorne, kiefer, dreiviertel, links, rechts, hinten } als THREE.Texture.
- * Mittelpunkt liegt auf Brusthöhe; Blickrichtung −z wie die Figuren (Tafel ist dafür gedreht).
- */
-export function baueSkelett(THREE, texturen) {
-  const H = 0.95, B = H * 0.75, KIEFER_OBEN = 259 / 512, KIEFER_UNTEN = 299 / 512;
-  const g = new THREE.Group();
-  const mats = {}, geos = [];
-  for (const [k, t] of Object.entries(texturen)) mats[k] = new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.35, side: THREE.DoubleSide });
-  const tafelGeo = new THREE.PlaneGeometry(B, H); geos.push(tafelGeo);
-  const tafel = new THREE.Mesh(tafelGeo, mats.vorne); tafel.rotation.y = Math.PI; g.add(tafel);
-  // Kiefer: gleiche Tafel, nur der Unterkiefer ist sichtbar; liegt minimal davor und klappt beim Sprechen nach unten
-  const kiefer = new THREE.Mesh(tafelGeo, mats.kiefer); kiefer.rotation.y = Math.PI; kiefer.position.z = -0.002; g.add(kiefer);
-  const kieferRuhe = 0;
-  const hub = H * (KIEFER_UNTEN - KIEFER_OBEN) * 0.45;
-  const sprich = (pegel) => { kiefer.position.y = kieferRuhe - Math.max(0, Math.min(1, pegel)) * hub; };
-  const zeige = (winkel) => {
-    const a = skelettAnsicht(winkel), vorn = a.bild === "vorne";
-    tafel.material = mats[a.bild]; tafel.scale.x = (a.spiegeln ? -1 : 1) * (vorn || a.bild === "dreiviertel" || a.bild === "hinten" ? 1 : 0.65);
-    kiefer.visible = vorn;
-  };
-  return { g, kiefer, kieferRuhe, sprich, zeige, geos, mats: Object.values(mats), hoehe: H };
 }

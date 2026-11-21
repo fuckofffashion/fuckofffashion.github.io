@@ -2,20 +2,21 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=38";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=38";
-import { sprache, TEXTE } from "./texte.js?v=38";
-import { LAEDEN } from "./laeden.js?v=38";
-import { erzeugeMusik } from "./musik.js?v=38";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=38";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=38";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=38";
-import { MOTIVE } from "./motive.js?v=38";
+} from "./regeln.js?v=39";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=39";
+import { sprache, TEXTE } from "./texte.js?v=39";
+import { LAEDEN } from "./laeden.js?v=39";
+import { erzeugeMusik } from "./musik.js?v=39";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=39";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=39";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=39";
+import { MOTIVE } from "./motive.js?v=39";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=38";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=38";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=38";
-import { tagDatum } from "../bands/texte.js?v=38";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=39";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=39";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=39";
+import { tagDatum } from "../bands/texte.js?v=39";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=39";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,7 +26,7 @@ const zufall = (a, b) => a + Math.random() * (b - a);
 
 let THREE, S, F; // three.js, Szene, Figuren-Modul
 const bandLogos = new Map(); // Band-Id → geladenes Logo (assets/img/bands/<id>.webp)
-let skelettTexturen = null; // Ansichten des Skeletts fürs Outro (Marks Bild), als THREE.Texture
+let kopfVorlage = null, koepfe = []; // Ganove-Kopf aus Marks Ansichten (kopf3d.js) und die gerade getragenen Köpfe
 const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
@@ -41,8 +42,10 @@ let stillZeit = 0, zieht = false, mikroGezaehlt = new Set(), sprungBis, reiheSei
 
 function neueRunde(neueAufgaben = true) {
   raeumeAuf();
+  koepfe.forEach((k) => k.dispose()); koepfe = [];
   L = LAEDEN[ladenId];
   S.baueRaum(L);
+  setzeGanoveKopf(S.band[1]);
   S.setzeBanner(bandLogos.get(song.band) || null);
   leute = []; figuren = new Map();
   const zMin = L.gitterZ + 0.4, zMax = L.z[1] - 0.4;
@@ -438,7 +441,7 @@ function starteZugabe() {
   if (schnoesel) { schnoesel.naechsterBlitz = start + 2; schnoesel.letzter = -99; }
   entferneFreibier(); entferneSurfer();
   musik.start(song.datei ? WURZEL + song.datei : null, start);
-  const f = F.baueFigur(THREE, { aufnaeher: false }); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
+  const f = F.baueFigur(THREE, { aufnaeher: false, haar: ["glatze"], kopfEinzeln: true }); setzeGanoveKopf(f); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 40), new THREE.MeshBasicMaterial({ color: 0x58d26a, transparent: true, opacity: 0.55, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; S.raum.add(ring);
   S.raum.add(f.g); saenger = { f, ring, t: 0, x: 0, z: L.gitterZ + 1, weg: 0, gefallen: false };
@@ -656,8 +659,8 @@ function starteOutro() {
   if (!url || !sanger || !musik.bereit(url)) return false;
   const dauer = musik.spieleEinmal(url); if (!dauer) return false;
   if (saenger) { saenger.f.g.visible = false; saenger.ring.visible = false; } // getragener Sänger aus der Zugabe ist wieder auf der Bühne
-  sanger.g.visible = true;
-  outro = { t: 0, dauer: dauer + 0.6, figur: sanger, basisZ: sanger.g.position.z, schaedel: null, morphT: 0 };
+  sanger.g.visible = true; if (sanger.staender) sanger.staender.visible = false; // Mikro vom Ständer genommen
+  outro = { t: 0, dauer: dauer + 0.6, figur: sanger, basisZ: sanger.g.position.z };
   $("pogo-hinweis").textContent = T.outro({ band: song.bandName });
   return true;
 }
@@ -670,29 +673,15 @@ function outroSchritt(dt) {
   f.g.position.z = o.basisZ + 0.8 * vor; f.koerper.rotation.x = 0.15 * vor; f.arme[1].rotation.z = 1.25 + Math.sin(o.t * 5) * 0.08;
   // erst schwenken (0,8 s), dann heranzoomen
   S.kameraAuf(f.g.position, dt, Math.max(0, (o.t - 0.8) / 1.4));
-  // beim Heranzoomen wird der Sänger zum Skelett aus Dans Logo (Marks Ansichten); der Kiefer spricht mit der Stimme
-  if (!o.schaedel && o.t >= 1.3 && skelettTexturen) {
-    o.schaedel = F.baueSkelett(THREE, skelettTexturen); o.schaedel.g.position.set(0, 1.43, -0.23); o.schaedel.g.scale.setScalar(0.01); f.koerper.add(o.schaedel.g);
-    f.arme.forEach((a) => (a.visible = false));
-    if (!ruhig) { const el = $("pogo-strobo"); el.classList.remove("an"); void el.offsetWidth; el.classList.add("an"); }
-  }
-  if (o.schaedel) {
-    o.morphT += dt; const k = Math.min(1, o.morphT / 0.35);
-    o.schaedel.g.scale.setScalar(ruhig ? 1 : 0.01 + k * (1.12 - 0.13 * k)); // ploppt kurz über die Größe und setzt sich
-    o.schaedel.g.rotation.z = ruhig ? 0 : Math.sin(o.morphT * 30) * 0.12 * (1 - k);
-    // Ansicht nach Kamerawinkel (Figur schaut zur Bühnenkante, also +z in der Welt)
-    const cam = S.camera.position, w = (Math.atan2(cam.x - f.g.position.x, cam.z - f.g.position.z) * 180) / Math.PI;
-    o.schaedel.zeige(w);
-    o.schaedel.sprich(musik.pegel());
-  }
+  // der Ganove-Kopf spricht: Unterkiefer folgt der Stimme
+  f.ganove?.sprich(musik.pegel());
   if (o.t >= o.dauer) endeOutro();
 }
 function endeOutro() {
   if (!outro) return;
   musik.stoppeEinmal();
   const f = outro.figur; f.g.position.z = outro.basisZ; f.koerper.rotation.x = 0;
-  if (outro.schaedel) { f.koerper.remove(outro.schaedel.g); outro.schaedel.geos.forEach((g) => g.dispose()); outro.schaedel.mats.forEach((m) => m.dispose()); }
-  f.arme.forEach((a) => (a.visible = true));
+  f.ganove?.sprich(0); if (f.staender) f.staender.visible = true;
   outro = null; S.kameraNormal(); S.kamera(ich, 0, true);
   zeigeEndbild();
 }
@@ -701,6 +690,13 @@ function endeOutro() {
 function gibFrei(obj) { obj.traverse((o) => { if (o.isMesh) { if (!o.geometry.userData.geteilt) o.geometry.dispose(); if (!o.material.vertexColors && !o.material.map) o.material.dispose(); } }); }
 function entferneFreibier() { if (!freibier) return; S.raum.remove(freibier.g); gibFrei(freibier.g); freibier = null; }
 function entferneSurfer() { if (!surfer) return; S.raum.remove(surfer.f.g); surfer.f.geos.forEach((g) => g.dispose()); surfer = null; }
+/** Setzt der Figur den Ganove-Kopf auf (statt ihres Kugelkopfs); ohne geladenen Atlas bleibt alles, wie es ist. */
+function setzeGanoveKopf(f) {
+  if (!kopfVorlage || !f?.kopf || f.ganove) return;
+  const k = kopfVorlage.neu();
+  k.g.scale.setScalar(0.47); k.g.position.set(0, 1.6, 0); k.g.rotation.y = Math.PI; // Figuren schauen nach −z
+  f.koerper.add(k.g); f.kopf.visible = false; f.ganove = k; koepfe.push(k);
+}
 function raeumeAuf() {
   if (!S?.raum) return;
   entferneFreibier(); entferneSurfer();
@@ -776,6 +772,7 @@ function bild(jetzt) {
     else if (outro) outroSchritt(dt);
     else if (L) { bewegeMenge(leute.filter((p) => !p.ich), L, { kraft: 0.3 }, dt); integriere(leute, L, dt, S.matsch); bewegeFiguren(dt, 0.3, false); S.setzeLicht(0.3, performance.now() / 1000, 3); }
     if (L && !outro) S.kamera(ich, dt, false, stagedive?.phase === "getragen" || schultern?.phase === "oben");
+    for (const k of koepfe) k.schritt(S.camera.position, echt);
     S.render();
     if (laeuft) zeigeStand();
     if (zeigeFps) { fpsBilder++; fpsZeit += echt; if (fpsZeit > 0.5) { fpsEl.textContent = `${Math.round(fpsBilder / fpsZeit)} fps · ${S.zeichenaufrufe()} Aufrufe`; fpsZeit = 0; fpsBilder = 0; } }
@@ -885,8 +882,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=38").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=38"),
+      import("./szene.js?v=39").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=39"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -938,12 +935,11 @@ async function los() {
   neueRunde();
   requestAnimationFrame(bild);
   ladeMotive().then((n) => { if (n && !laeuft) neueRunde(false); });
-  // Skelett-Ansichten fürs Outro laden; fehlt eins, bleibt der Sänger einfach Sänger
-  Promise.all(Object.entries(F.SKELETT_BILDER).map(([k, pfad]) => new Promise((ok, nein) => {
-    const img = new Image(); img.onload = () => ok([k, img]); img.onerror = nein; img.src = WURZEL + pfad;
-  }))).then((liste) => {
-    skelettTexturen = Object.fromEntries(liste.map(([k, img]) => { const t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; t.needsUpdate = true; return [k, t]; }));
-  }).catch(() => {});
+  // Ganove-Kopf laden (Atlas aus Marks Ansichten); klappt das nicht, behält der Sänger seinen normalen Kopf
+  Promise.all([
+    new Promise((ok, nein) => { const img = new Image(); img.onload = () => ok(img); img.onerror = nein; img.src = WURZEL + KOPF_ATLAS.bild; }),
+    fetch(WURZEL + KOPF_ATLAS.daten).then((r) => (r.ok ? r.json() : Promise.reject(new Error(KOPF_ATLAS.daten)))),
+  ]).then(([img, daten]) => { kopfVorlage = baueKopfVorlage(THREE, img, daten, { ruhig }); setzeGanoveKopf(S.band[1]); }).catch(() => {});
   // echte Bandlogos fürs Banner hinter der Band
   for (const b of new Set(SONGS.map((s) => s.band).filter(Boolean))) {
     const img = new Image();
