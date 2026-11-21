@@ -1,8 +1,8 @@
 // Bandseite: Plakate nach nächstem Termin ordnen, Termine aus data/bands.json füllen, dann die 3D-Säule bauen.
 // Die Plakate stehen fertig im HTML (tools/build-bands.py). Mit 3D werden sie zur Bandleiste unter der Säule;
 // ohne 3D (kein WebGL, Fehler, ?flach) bleiben sie flache, abreißbare Plakate in einem Raster.
-import { isoLokal, istBald, kuenftige, naechster, ordne, sichtbare } from "./saeulen.js?v=33";
-import { sprache, t, tagDatum } from "./texte.js?v=33";
+import { isoLokal, istBald, kuenftige, naechster, ordne, sichtbare } from "./saeulen.js?v=34";
+import { sprache, t, tagDatum } from "./texte.js?v=34";
 
 const WURZEL = document.documentElement.dataset.wurzel || "";
 const DATEN_URL = WURZEL + "data/bands.json";
@@ -240,7 +240,7 @@ async function versuche3d({ reihe, termineVon, hatDaten }) {
     const schriften = ["400 40px Anton", '700 40px "Courier Prime"', '40px "Permanent Marker"'];
     const [THREE, { baueSzene, naechstText }] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=33"),
+      import("./szene.js?v=34"),
       Promise.race([Promise.all(schriften.map((s) => document.fonts.load(s))), zeitAus(3500)]),
     ]);
     const bands = await Promise.all(reihe.map(async (p) => {

@@ -1,6 +1,6 @@
 // Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
-import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=33";
+import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=34";
 
 const ACHTEL = VIERTEL / 2;
 const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
