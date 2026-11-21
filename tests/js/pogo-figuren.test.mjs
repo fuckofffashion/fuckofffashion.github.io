@@ -18,3 +18,12 @@ test("fuegeZusammen: zwei Boxen ergeben eine Geometrie mit Farben und versetzten
   assert.ok(Math.abs(geo.attributes.position.getX(n) - (box.attributes.position.getX(0) + 2)) < 1e-6);
   assert.ok(geo.attributes.color.getY(n) > 0.9 && geo.attributes.color.getX(n) < 0.1);
 });
+
+test("Füllring: zeigt den Anteil als Bogen, begrenzt auf 0 bis voll", async () => {
+  const { setzeFortschritt, FORTSCHRITT_TEILE } = await import("../../js/pogo/figuren.js");
+  const geo = new THREE.RingGeometry(0.55, 0.66, FORTSCHRITT_TEILE);
+  setzeFortschritt(geo, 0); assert.equal(geo.drawRange.count, 0);
+  setzeFortschritt(geo, 0.5); assert.equal(geo.drawRange.count, 6 * FORTSCHRITT_TEILE / 2);
+  setzeFortschritt(geo, 1.7); assert.equal(geo.drawRange.count, geo.index.count);
+  setzeFortschritt(geo, -1); assert.equal(geo.drawRange.count, 0);
+});

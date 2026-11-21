@@ -199,7 +199,7 @@ export function baueSzene(THREE, { buehne, bands, sp, ruhig, beiAntippen }) {
     if (!zeiger || e.pointerId !== zeiger.id) return;
     const kurz = !zeiger.art;
     zeiger = null;
-    if (kurz) { const id = triff(e); if (id === POGO) location.assign("pogo.html"); else if (id) beiAntippen(id); } // auch in der Plakatansicht: Nachbar antippen wechselt
+    if (kurz) { const id = triff(e); if (id === POGO) location.assign("pogo.html#pogo-spiel"); else if (id) beiAntippen(id); } // auch in der Plakatansicht: Nachbar antippen wechselt
   };
   const abbruch = () => { zeiger = null; };
   const raus = () => { if (schwebt) { schwebt = null; zeichne = true; } };

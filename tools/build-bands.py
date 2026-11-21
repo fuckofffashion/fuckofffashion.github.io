@@ -61,7 +61,7 @@ def plakat(b: dict, sp: str) -> list[str]:
     breite, hoehe = masse(b["logo"])
     klasse = "plakat" + (f" plakat--{a(b['plakat'])}" if b.get("plakat") else "")
     beschreibung = (b.get("beschreibung") or {}).get(sp, "")
-    pogo = ([f'    <p class="plakat__pogo"><a class="btn" href="pogo.html?song={a(b["pogo"])}">'
+    pogo = ([f'    <p class="plakat__pogo"><a class="btn" href="pogo.html?song={a(b["pogo"])}#pogo-spiel">'
              f'{a(t["pogo"].format(name=b["name"]))}<span class="visually-hidden"> ({t["pogo_hinweis"]})</span></a></p>']
             if b.get("pogo") else [])
     return [

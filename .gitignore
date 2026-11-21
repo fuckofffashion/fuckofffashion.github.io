@@ -2,3 +2,6 @@ node_modules/
 data/abholen.log
 __pycache__/
 redesign/
+
+# Bildschirmfotos des Spieletesters bleiben lokal
+docs/spieletest/bilder/

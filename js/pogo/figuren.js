@@ -54,6 +54,12 @@ export function setzeMotive(THREE, motive) {
   });
   return motivMats.length;
 }
+/** Füllring fürs Abgucken: zeigt einen Bogen vom Anteil 0 bis 1 (RingGeometry mit FORTSCHRITT_TEILE Stücken). */
+export const FORTSCHRITT_TEILE = 48;
+export function setzeFortschritt(geo, anteil) {
+  const a = Math.min(1, Math.max(0, anteil || 0));
+  geo.setDrawRange(0, 6 * Math.round(FORTSCHRITT_TEILE * a));
+}
 export const motivMaterial = (nr) => motivMats.find((m) => m.nr === nr)?.mat || null;
 export const zufallsMotiv = () => (motivMats.length ? motivMats[(Math.random() * motivMats.length) | 0] : null);
 function teile(THREE) {
@@ -115,6 +121,7 @@ export function baueFigur(THREE, opt = {}) {
     const mat = opt.aufnaeherMat || (motivMats.length && Math.random() < 0.6 ? wahl(motivMats).mat : wahl(T.aufnaeher));
     aufnaeher = new THREE.Mesh(T.flicken, mat); aufnaeher.position.set(0, 1.02, 0.212); koerper.add(aufnaeher);
   }
+  let fortschritt = null;
   if (opt.gold) { // seltenes Motiv: goldener Rahmen und Ring am Boden
     const goldMat = new THREE.MeshBasicMaterial({ color: 0xffc83a });
     const rahmen = new THREE.PlaneGeometry(0.27, 0.21); extraGeos.push(rahmen);
@@ -122,6 +129,9 @@ export function baueFigur(THREE, opt = {}) {
     const ringGeo = new THREE.RingGeometry(0.42, 0.52, 28); extraGeos.push(ringGeo);
     const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffc83a, transparent: true, opacity: 0.75, side: THREE.DoubleSide }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; g.add(ring);
+    fortschritt = new THREE.RingGeometry(0.56, 0.7, FORTSCHRITT_TEILE, 1, Math.PI / 2); extraGeos.push(fortschritt); setzeFortschritt(fortschritt, 0);
+    const voll = new THREE.Mesh(fortschritt, new THREE.MeshBasicMaterial({ color: 0x58d26a, transparent: true, opacity: 0.9, side: THREE.DoubleSide }));
+    voll.rotation.x = -Math.PI / 2; voll.position.y = 0.035; g.add(voll);
   }
   const armGeo = fuegeZusammen(THREE, [{ geo: T.arm, farbe: opt.aermel || jacke, matrix: M(0, -0.24, 0) }, { geo: T.hand, farbe: haut, matrix: M(0, -0.5, 0) }]);
   const arme = [-1, 1].map((seite) => {
@@ -134,7 +144,7 @@ export function baueFigur(THREE, opt = {}) {
     const st = new THREE.Mesh(stab, new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.8 })); st.position.y = -0.85; arme[1].add(st);
     const h = new THREE.Mesh(handy, new THREE.MeshStandardMaterial({ color: 0x111111, emissive: 0x6688ff, emissiveIntensity: 0.6 })); h.position.y = -1.2; arme[1].add(h);
   }
-  return { g, koerper, arme, aufnaeher, geos: [rumpf.geometry, armGeo, ...extraGeos] };
+  return { g, koerper, arme, aufnaeher, fortschritt, geos: [rumpf.geometry, armGeo, ...extraGeos] };
 }
 
 /** Plastikbecher mit Bier und Schaum; becherStand setzt die Füllhöhe (0–1). */

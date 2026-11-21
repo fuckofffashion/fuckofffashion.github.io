@@ -60,7 +60,7 @@ function neueRunde(neueAufgaben = true) {
   geplanteWuerfe = [{ art: "plektrum", t: song.wuerfe.plektrum }, { art: "drumstick", t: song.wuerfe.drumstick }];
   if (Math.random() < 0.3) geplanteWuerfe.push({ art: "setliste", t: song.wuerfe.setliste });
   stagedive = { phase: "aus", fertig: false }; mikroAn = false;
-  abguck = { zeit: 0, fertig: false }; schnoesel = null; fascho = null; rufZeit = 0; rufTreffer = 0; saenger = null; geblendetBis = 0; abgeguckt = null; faktor = 1; phase = "aus";
+  abguck = { zeit: 0, fertig: false, erklaertBis: -1 }; schnoesel = null; fascho = null; rufZeit = 0; rufTreffer = 0; saenger = null; geblendetBis = 0; abgeguckt = null; faktor = 1; phase = "aus";
   if (S.band[1]) S.band[1].g.visible = true;
   stats = { reiheImLetztenRefrain: false, gefangen: andenken, mitteSekunden: 0, stagediveBier: null, taktSpruenge: 0, surferTreffer: 0, surferGesehen: 0 };
   if (neueAufgaben || !aufgaben.length) aufgaben = ziehe(L);
@@ -214,7 +214,7 @@ function schritt(dt) {
   mikroAn = zeit >= song.mikro[0] && zeit < song.mikro[1];
   const stagediveBereit = !stagedive.fertig && reiheSeit >= STAGEDIVE_AB;
   $("pogo-stagedive").hidden = !stagediveBereit;
-  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : mikroAn && z === "reihe" ? T.mikro : (T.zonen[z] || "");
+  if (!getragen) $("pogo-hinweis").textContent = phase === "zugabe" ? T.saenger : zeit < abguck.erklaertBis ? T.goldHinweis : mikroAn && z === "reihe" ? T.mikro : (T.zonen[z] || "");
 
   // Würfe von der Bühne
   for (const w of geplanteWuerfe) if (!w.los && zeit >= w.t) {
@@ -316,10 +316,14 @@ function schubseSchnoesel(tr) {
 }
 function extras(dt) {
   const getragen = stagedive.phase === "getragen";
+  if (selten && !abguck.fertig && abguck.erklaertBis < 0 && figuren.has(selten.p) && Math.hypot(selten.p.x - ich.x, selten.p.z - ich.z) < 3) {
+    abguck.erklaertBis = zeit + 5; pop(T.goldPop, "#ffc83a");
+  }
   if (selten && !abguck.fertig && !getragen && figuren.has(selten.p) && istHinter(ich, selten.p)) {
     abguck.zeit += dt;
+    F.setzeFortschritt(figuren.get(selten.p).fortschritt, abguck.zeit / ABGUCKEN_S);
     if (abguck.zeit >= ABGUCKEN_S) {
-      abguck.fertig = true; abgeguckt = selten.nr; punkte += BONUS.abgeguckt; pop(T.abgeguckt, "#ffc83a");
+      abguck.fertig = true; abguck.erklaertBis = 0; abgeguckt = selten.nr; punkte += BONUS.abgeguckt; pop(T.abgeguckt, "#ffc83a");
       kutte = mitMotiv(kutte, selten.nr); schreibeKutte(speicher, kutte);
       const a = figuren.get(ich).aufnaeher, mat = F.motivMaterial(selten.nr); if (a && mat) a.material = mat;
     }

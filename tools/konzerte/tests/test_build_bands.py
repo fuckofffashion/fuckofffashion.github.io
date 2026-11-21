@@ -59,7 +59,7 @@ class Seiten(unittest.TestCase):
         for sp, text in (("de", "POGO zu"), ("en", "POGO to")):
             with self.subTest(sp):
                 aus = bb.ersetze(html, {"bands": [mit, ohne]}, sp)
-                self.assertEqual(aus.count('href="pogo.html?song=xy-song"'), 1)
+                self.assertEqual(aus.count('href="pogo.html?song=xy-song#pogo-spiel"'), 1)
                 self.assertIn(text, aus)
                 self.assertEqual(aus.count("plakat__pogo"), 1)
 
