@@ -1,0 +1,647 @@
+<title>Pogo 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;700;800&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap">
+<style>
+/* Layout: Kopfzeile, darunter die 3D-Bühne (hinter deiner Figur, schräg von oben) mit Anzeigen und Overlays, darunter kurze Erklärung */
+:root {
+  --ink: #0b0a0a;
+  --ink-2: #151110;
+  --paper: #f1ede4;
+  --paper-2: #ddd6c8;
+  --blood: #d4161b;
+  --blood-hot: #ff3b3b;
+  --bier: #f2b632;
+  --font-shout: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-zine: "Courier Prime", "Courier New", monospace;
+  --font-edding: "Permanent Marker", "Comic Sans MS", cursive;
+  color-scheme: dark;
+}
+html, body { background: var(--ink); color: var(--paper); }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+.wrap {
+  max-width: 1040px; margin: 0 auto; padding-block: 18px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px;
+}
+.label { margin: 0; font: 700 .78rem/1.2 var(--font-zine); letter-spacing: .14em; text-transform: uppercase; color: var(--blood-hot); }
+h1 { margin: 0; font: 400 clamp(2.8rem, 9vw, 4.6rem)/.9 var(--font-shout); text-transform: uppercase; }
+.kopf p.satz { margin: 4px 0 0; color: var(--paper-2); max-width: 56ch; }
+
+.spiel {
+  position: relative; margin: 0 auto; background: var(--ink-2); overflow: hidden;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  width: min(100%, calc((100vh - 32px) * .75)); aspect-ratio: 3 / 4;
+  box-shadow: 0 0 0 2px #2a2422, 0 24px 60px rgba(0,0,0,.6);
+}
+@media (min-width: 760px) { .spiel { width: min(100%, calc((100vh - 32px) * 1.5)); aspect-ratio: 3 / 2; } }
+.spiel canvas { display: block; width: 100%; height: 100%; }
+
+.hud { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 12px; pointer-events: none; gap: 10px; }
+.becher { display: flex; align-items: center; gap: 8px; }
+.becher__glas { position: relative; width: 26px; height: 36px; border: 2px solid var(--paper); border-top: 0; clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%); background: rgba(255,255,255,.06); }
+.becher__bier { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bier); transition: height 200ms ease-out; }
+.becher__zahl { font: 400 1.4rem/1 var(--font-shout); font-variant-numeric: tabular-nums; text-shadow: 0 2px 6px #000; }
+.teil { text-align: right; text-shadow: 0 2px 6px #000; }
+.teil b { display: block; font: 400 1.25rem/1 var(--font-shout); letter-spacing: .03em; color: var(--blood-hot); }
+.teil span { font: 700 .75rem/1.2 var(--font-zine); color: var(--paper-2); font-variant-numeric: tabular-nums; }
+.pops { position: absolute; inset: 0; pointer-events: none; }
+.pop { position: absolute; left: 50%; top: 38%; translate: -50% 0; white-space: nowrap; font: 400 clamp(1.4rem, 4.5vw, 2.4rem)/1 var(--font-edding); text-shadow: 0 3px 10px #000; animation: hoch 1.1s ease-out forwards; }
+@keyframes hoch { from { opacity: 1; transform: translateY(0) scale(1.15); } to { opacity: 0; transform: translateY(-50px) scale(1); } }
+.stick { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border: 2px solid rgba(241,237,228,.35); border-radius: 50%; pointer-events: none; }
+.stick i { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(241,237,228,.45); }
+
+.overlay { position: absolute; inset: 0; display: grid; align-content: center; gap: 12px; padding: 22px; background: rgba(11,10,10,.82); overflow: auto; }
+.overlay h2 { margin: 0; font: 400 clamp(2rem, 6vw, 2.8rem)/1 var(--font-shout); text-transform: uppercase; }
+.overlay p { margin: 0; color: var(--paper-2); max-width: 52ch; }
+.laeden { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.laden { appearance: none; text-align: left; cursor: pointer; border: 2px solid var(--paper-2); background: transparent; color: var(--paper); padding: 8px 12px; display: grid; gap: 2px; min-height: 48px; transition: transform 160ms ease-out; }
+.laden b { font: 400 1.15rem/1.1 var(--font-shout); text-transform: uppercase; }
+.laden span { font: 400 .8rem/1.35 var(--font-zine); color: var(--paper-2); }
+.laden[aria-pressed="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.laden[aria-pressed="true"] span { color: #4a4540; }
+.laden:active, .btn:active { transform: scale(.97); }
+.btn { appearance: none; border: 0; cursor: pointer; justify-self: start; min-height: 48px; padding: 0 20px; font: 800 .9rem/1 var(--font-body); letter-spacing: .1em; text-transform: uppercase; background: var(--blood); color: var(--paper); transition: transform 160ms ease-out; }
+.btn--leise { background: transparent; box-shadow: inset 0 0 0 2px var(--paper-2); }
+.btn:focus-visible, .laden:focus-visible { outline: 3px solid var(--blood-hot); outline-offset: 3px; }
+.knoepfe { display: flex; flex-wrap: wrap; gap: 10px; }
+.beispiel { font: 700 .7rem/1 var(--font-zine); letter-spacing: .1em; text-transform: uppercase; color: var(--bier); }
+.ergebnis { font: 400 clamp(3rem, 10vw, 4.4rem)/1 var(--font-shout); color: var(--bier); font-variant-numeric: tabular-nums; }
+.zettel { background: var(--paper); color: var(--ink); padding: 10px 14px; transform: rotate(-1deg); display: grid; gap: 2px; justify-self: start; }
+.zettel .beispiel { color: var(--blood); }
+.zettel b { font: 400 1.25rem/1.1 var(--font-shout); text-transform: uppercase; }
+.zettel span { font: 400 .88rem/1.35 var(--font-zine); }
+.ton { position: absolute; right: 10px; bottom: 10px; }
+.ton .btn { min-height: 40px; padding: 0 12px; font-size: .72rem; }
+.fehler { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--paper-2); }
+.notiz { max-width: 70ch; display: grid; gap: 8px; color: var(--paper-2); font-size: .95rem; }
+.notiz p { margin: 0; }
+.notiz strong { color: var(--paper); }
+@media (prefers-reduced-motion: reduce) { .btn, .laden, .becher__bier { transition: none; } .pop { animation-duration: .01s; } }
+</style>
+
+<div class="wrap">
+  <header class="kopf">
+    <p class="label">Fuck Off Fashion · 3D-Entwurf zum Anspielen</p>
+    <h1>Pogo</h1>
+    <p class="satz">Du bist die Figur mit dem weißen Shirt und dem Becher über dem Kopf. Finger aufs Bild und ziehen, um durch den Pit zu laufen. Am Ende zählt, was noch im Becher ist.</p>
+  </header>
+
+  <div class="spiel" id="spiel">
+    <div class="hud" id="hud" hidden>
+      <div class="becher"><div class="becher__glas"><div class="becher__bier" id="bierStand" style="height:100%"></div></div><span class="becher__zahl" id="bierZahl">100&nbsp;%</span></div>
+      <div class="teil"><b id="teilName">INTRO</b><span id="teilZeit">1:00</span></div>
+    </div>
+    <div class="pops" id="pops"></div>
+    <div class="stick" id="stick" hidden><i id="knauf"></i></div>
+    <div class="ton" id="tonBox" hidden><button class="btn btn--leise" id="ton" type="button" aria-pressed="true">Ton an</button></div>
+
+    <div class="overlay" id="start">
+      <p class="beispiel">Beispiel-Läden, eure echten kommen später rein</p>
+      <h2>Wo pogst du heute?</h2>
+      <div class="laeden" id="laeden" role="group" aria-label="Laden wählen"></div>
+      <p>Musik: eigener Punk-Beat aus dem Browser. Später läuft hier ein freigegebener Song einer Band von der Säule.</p>
+      <button class="btn" id="los" type="button">Rein in den Pit</button>
+    </div>
+
+    <div class="overlay" id="ende" hidden>
+      <p class="label" id="endeLaden"></p>
+      <h2 id="endeTitel"></h2>
+      <div class="ergebnis" id="endeZahl"></div>
+      <p id="endeText"></p>
+      <div class="zettel"><span class="beispiel">Später hier, Beispiel</span><b>Dan Ganove</b><span>Nächstes Konzert: Fr 04.12. · Oberhausen · Zentrum Altenberg</span></div>
+      <div class="knoepfe"><button class="btn" id="nochmal" type="button">Nochmal</button><button class="btn btn--leise" id="anderer" type="button">Anderer Laden</button></div>
+    </div>
+  </div>
+
+  <section class="notiz">
+    <p><strong>Was das ist:</strong> ein Wegwerf-Prototyp in 3D. Figuren, Läden und Beat sind Platzhalter, die Figuren sind bewusst aus einfachen Formen gebaut.</p>
+    <p><strong>Steuerung:</strong> Finger (oder Maus) aufs Bild legen und in die Richtung ziehen, in die du laufen willst. Am Rechner gehen auch die Pfeiltasten oder WASD.</p>
+    <p><strong>Achte auf:</strong> Strophe schubst, Refrain ist Gedränge, im Break kurz Luft holen. Crowdsurfer kommen von der Bühne, Freibier leuchtet am Boden. In der Halle gibt es Circle Pit und Wall of Death.</p>
+  </section>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+
+const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const zufall = (a, b) => a + Math.random() * (b - a);
+const wahl = (arr) => arr[(Math.random() * arr.length) | 0];
+
+/* ---------- Läden (Beispiele), Maße in Metern ---------- */
+const LAEDEN = {
+  keller: { name: "Kellerclub", text: "Eng, Pfeiler mitten im Pit, Decke so tief, dass keiner crowdsurft.", x: 3.3, z: [-4.2, 4.2], leute: 22, pfeiler: { x: 0.2, z: 0.4, r: 0.32 }, decke: 2.75, surfer: false, wall: false, matsch: false, boden: "#24201d", wand: 0x1d1715 },
+  halle: { name: "AJZ-Halle", text: "Viel Platz, die Leute nehmen Anlauf. Im Refrain Circle Pit, danach Wall of Death.", x: 6.2, z: [-5.2, 6], leute: 34, pfeiler: null, decke: null, surfer: true, wall: true, matsch: false, boden: "#2a2420", wand: 0x18120f },
+  wiese: { name: "Festivalwiese", text: "Draußen, Regen, Matsch. Im Schlamm kommt keiner vom Fleck, du auch nicht.", x: 6.2, z: [-5.2, 6], leute: 28, pfeiler: null, decke: null, surfer: true, wall: false, matsch: true, boden: "#2d3020", wand: null },
+};
+let ladenId = "keller";
+
+/* ---------- Songablauf ---------- */
+const DAUER = 60;
+const TEILE = [
+  { bis: 6, name: "INTRO", kraft: 0.25 },
+  { bis: 20, name: "STROPHE", kraft: 0.6 },
+  { bis: 30, name: "REFRAIN!", kraft: 1.0, kreis: true },
+  { bis: 36, name: "BREAK", kraft: 0.18 },
+  { bis: 48, name: "STROPHE", kraft: 0.65 },
+  { bis: 60, name: "LETZTER REFRAIN", kraft: 1.15, kreis: true },
+];
+const teilBei = (t) => TEILE.find((x) => t < x.bis) || TEILE[TEILE.length - 1];
+const BPM = 176, ACHTEL = 60 / BPM / 2;
+
+/* ---------- Renderer, Szene, Kamera ---------- */
+const spielEl = document.getElementById("spiel");
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (e) {
+  spielEl.insertAdjacentHTML("beforeend", '<p class="fehler">Hier läuft kein 3D. Probier es in einem anderen Browser oder am Rechner.</p>');
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.useLegacyLights = true;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+spielEl.prepend(renderer.domElement);
+renderer.domElement.setAttribute("aria-label", "Moshpit in 3D");
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 80);
+function passeAn() {
+  const w = spielEl.clientWidth, h = spielEl.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.fov = camera.aspect < 1 ? 62 : 50; camera.updateProjectionMatrix();
+}
+new ResizeObserver(passeAn).observe(spielEl);
+passeAn();
+
+/* ---------- Texturen aus Canvas ---------- */
+function leinwand(w, h, malen) { const c = document.createElement("canvas"); c.width = w; c.height = h; malen(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const AUFNAEHER = [
+  leinwand(128, 96, (x, w, h) => { x.fillStyle = "#f1ede4"; x.fillRect(0, 0, w, h); x.strokeStyle = "#d4161b"; x.lineWidth = 9; x.beginPath(); x.arc(64, 48, 34, 0, 7); x.stroke(); x.beginPath(); x.moveTo(36, 82); x.lineTo(64, 10); x.lineTo(92, 82); x.moveTo(42, 56); x.lineTo(88, 54); x.stroke(); }),
+  leinwand(128, 96, (x, w, h) => { x.fillStyle = "#d4161b"; x.fillRect(0, 0, w, h); x.fillStyle = "#f1ede4"; x.font = "52px Anton, Impact"; x.textAlign = "center"; x.fillText("OI!", 64, 68); }),
+  leinwand(128, 96, (x, w, h) => { x.fillStyle = "#111"; x.fillRect(0, 0, w, h); x.fillStyle = "#f1ede4"; x.font = "30px Anton, Impact"; x.textAlign = "center"; x.fillText("FUCK OFF", 64, 42); x.fillStyle = "#d4161b"; x.fillText("FASHION", 64, 78); }),
+  leinwand(128, 96, (x, w, h) => { x.fillStyle = "#e9e0cc"; x.fillRect(0, 0, w, h); x.fillStyle = "#111"; x.font = "34px 'Permanent Marker', cursive"; x.textAlign = "center"; x.fillText("DIY", 64, 62); }),
+];
+
+/* ---------- Figuren ---------- */
+const GEO = {
+  bein: new THREE.CapsuleGeometry(0.085, 0.46, 4, 8),
+  rumpf: new THREE.CapsuleGeometry(0.21, 0.4, 4, 12),
+  arm: new THREE.CapsuleGeometry(0.06, 0.42, 4, 8),
+  kopf: new THREE.SphereGeometry(0.15, 18, 14),
+  stachel: new THREE.ConeGeometry(0.03, 0.17, 6),
+  muetze: new THREE.SphereGeometry(0.16, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+  haar: new THREE.SphereGeometry(0.155, 16, 10, 0, Math.PI * 2, 0, Math.PI / 1.7),
+  rucksack: new THREE.BoxGeometry(0.34, 0.42, 0.18),
+  aufnaeher: new THREE.PlaneGeometry(0.22, 0.165),
+  becher: new THREE.CylinderGeometry(0.06, 0.045, 0.15, 16, 1, true),
+  bier: new THREE.CylinderGeometry(0.055, 0.044, 1, 16),
+  schaum: new THREE.CylinderGeometry(0.057, 0.057, 0.025, 16),
+  stiefel: new THREE.BoxGeometry(0.13, 0.1, 0.24),
+};
+const matCache = new Map();
+const mat = (farbe, extra = {}) => {
+  const k = farbe + JSON.stringify(extra);
+  if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({ color: farbe, roughness: 0.75, metalness: 0.05, ...extra }));
+  return matCache.get(k);
+};
+const JACKEN = ["#141212", "#141212", "#2a3a5c", "#3b2a22", "#5a1414", "#262622", "#3a4a2c"];
+const HOSEN = ["#1b1b22", "#2a3550", "#111", "#3a3a3a"];
+const HAUT = ["#e7c4a3", "#c89a74", "#8d5d3e", "#f0d2b8", "#6b4630"];
+const HAARE = [["iro", "#e3262b"], ["iro", "#4fd15f"], ["iro", "#f2b632"], ["iro", "#111"], ["glatze"], ["glatze"], ["muetze", "#111"], ["muetze", "#7a1b1b"], ["kurz", "#2a1d14"], ["lang", "#c9a36a"], ["lang", "#111"]];
+
+function figur(opt = {}) {
+  const g = new THREE.Group(), koerper = new THREE.Group(); g.add(koerper);
+  const jacke = opt.jacke || wahl(JACKEN), haut = wahl(HAUT), hose = wahl(HOSEN);
+  const beine = [];
+  for (const sx of [-0.1, 0.1]) {
+    const b = new THREE.Mesh(GEO.bein, mat(hose)); b.position.set(sx, 0.32, 0); b.castShadow = true; koerper.add(b); beine.push(b);
+    const s = new THREE.Mesh(GEO.stiefel, mat("#0d0d0d")); s.position.set(sx, 0.05, -0.04); koerper.add(s);
+  }
+  const rumpf = new THREE.Mesh(GEO.rumpf, mat(jacke, jacke === "#141212" ? { roughness: 0.45, metalness: 0.2 } : {})); rumpf.position.y = 0.96; rumpf.castShadow = true; koerper.add(rumpf);
+  if (opt.aufnaeher !== false && Math.random() < 0.7) { // Rückenaufnäher, Rücken zeigt zur Kamera (+z)
+    const a = new THREE.Mesh(GEO.aufnaeher, new THREE.MeshStandardMaterial({ map: wahl(AUFNAEHER), roughness: 0.9 })); a.position.set(0, 1.02, 0.212); koerper.add(a);
+  }
+  if (opt.rucksack) { const r = new THREE.Mesh(GEO.rucksack, mat("#3d5a2a")); r.position.set(0, 1.0, 0.27); r.castShadow = true; koerper.add(r); }
+  const arme = [];
+  for (const seite of [-1, 1]) {
+    const schulter = new THREE.Group(); schulter.position.set(0.27 * seite, 1.27, 0); koerper.add(schulter);
+    const arm = new THREE.Mesh(GEO.arm, mat(jacke)); arm.position.y = -0.24; arm.castShadow = true; schulter.add(arm);
+    const hand = new THREE.Mesh(GEO.kopf, mat(haut)); hand.scale.setScalar(0.38); hand.position.y = -0.5; schulter.add(hand);
+    arme.push(schulter);
+  }
+  const kopf = new THREE.Mesh(GEO.kopf, mat(haut)); kopf.position.y = 1.56; kopf.castShadow = true; koerper.add(kopf);
+  const [art, farbe] = opt.haar || wahl(HAARE);
+  if (art === "iro") for (let k = -3; k <= 3; k++) { const s = new THREE.Mesh(GEO.stachel, mat(farbe)); s.position.set(0, 1.56 + Math.cos(k * 0.38) * 0.15, Math.sin(k * 0.38) * 0.15); s.rotation.x = k * 0.38; s.translateY(0.07); koerper.add(s); }
+  else if (art === "muetze") { const m = new THREE.Mesh(GEO.muetze, mat(farbe)); m.position.y = 1.58; koerper.add(m); }
+  else if (art === "kurz" || art === "lang") { const h = new THREE.Mesh(GEO.haar, mat(farbe)); h.position.y = 1.58; if (art === "lang") h.scale.set(1.08, 1.35, 1.08); h.position.y -= art === "lang" ? 0.05 : 0; koerper.add(h); }
+  return { g, koerper, arme, beine, x: 0, z: 0, vx: 0, vz: 0, r: opt.rucksack ? 0.42 : 0.32, masse: opt.rucksack ? 2.2 : 1, rucksack: !!opt.rucksack,
+    phase: zufall(0, 6.28), sprung: zufall(0.22, 0.42), armGrund: Math.random() < 0.5 ? zufall(2.3, 2.9) : zufall(0.2, 0.8), stoss: zufall(0, 1), blick: 0, rand: false, anker: null };
+}
+
+/* Becher für dich */
+function becher() {
+  const g = new THREE.Group();
+  const wand = new THREE.Mesh(GEO.becher, new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, roughness: 0.2, side: THREE.DoubleSide }));
+  const bier = new THREE.Mesh(GEO.bier, new THREE.MeshStandardMaterial({ color: 0xf2b632, emissive: 0x5a3a00, roughness: 0.3, transparent: true, opacity: 0.92 }));
+  const schaum = new THREE.Mesh(GEO.schaum, mat("#fff8e6"));
+  g.add(wand, bier, schaum);
+  g.userData = { bier, schaum };
+  return g;
+}
+function becherStand(b, anteil) {
+  const h = 0.13 * Math.max(0.02, anteil);
+  b.userData.bier.scale.y = h; b.userData.bier.position.y = -0.065 + h / 2;
+  b.userData.schaum.position.y = -0.065 + h + 0.005; b.userData.schaum.visible = anteil > 0.03;
+}
+
+/* ---------- Raum ---------- */
+let raum = null, L, leute = [], ich, meinBecher, band = [], spots = [], regen = null, matsch = [], freibier = null, surfer = null;
+const BUEHNE_Z = () => L.z[0] - 0.2;
+
+function baueRaum() {
+  if (raum) { scene.remove(raum); raum.traverse((o) => { if (o.geometry && !Object.values(GEO).includes(o.geometry)) o.geometry.dispose(); }); }
+  raum = new THREE.Group(); scene.add(raum);
+  L = LAEDEN[ladenId];
+  const draussen = L.matsch;
+  scene.background = new THREE.Color(draussen ? 0x0b1220 : 0x070505);
+  scene.fog = new THREE.FogExp2(draussen ? 0x0e1522 : 0x120c0a, draussen ? 0.05 : 0.07);
+
+  raum.add(new THREE.HemisphereLight(draussen ? 0x4a5a7a : 0x5a3a30, 0x0a0807, draussen ? 0.5 : 0.35));
+  raum.add(new THREE.AmbientLight(0xffffff, 0.08));
+
+  // Boden mit Flecken
+  const bodenTex = leinwand(1024, 1024, (x, w, h) => {
+    x.fillStyle = L.boden; x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i++) { x.fillStyle = Math.random() < 0.5 ? "rgba(0,0,0,.25)" : (draussen ? "rgba(60,45,25,.5)" : "rgba(160,120,40,.12)"); x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, zufall(8, 70), zufall(6, 40), Math.random() * 3, 0, 7); x.fill(); }
+    for (let i = 0; i < 60; i++) { x.fillStyle = Math.random() < 0.5 ? "#cfc8ba" : "#b8261f"; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, zufall(3, 6), 0, 7); x.fill(); }
+  });
+  bodenTex.wrapS = bodenTex.wrapT = THREE.RepeatWrapping; bodenTex.repeat.set(3, 3);
+  const boden = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ map: bodenTex, roughness: draussen ? 0.95 : 0.6, metalness: 0 }));
+  boden.rotation.x = -Math.PI / 2; boden.receiveShadow = true; raum.add(boden);
+
+  matsch = [];
+  if (draussen) for (let i = 0; i < 6; i++) {
+    const m = { x: zufall(-L.x + 1, L.x - 1), z: zufall(L.z[0] + 2, L.z[1] - 1), rx: zufall(0.9, 1.6), rz: zufall(0.6, 1.1) };
+    const fl = new THREE.Mesh(new THREE.CircleGeometry(1, 28), new THREE.MeshStandardMaterial({ color: 0x2b1f12, roughness: 0.35, metalness: 0.1 }));
+    fl.rotation.x = -Math.PI / 2; fl.scale.set(m.rx, m.rz, 1); fl.position.set(m.x, 0.01, m.z); fl.receiveShadow = true; raum.add(fl); matsch.push(m);
+  }
+
+  // Bühne, Boxen, Schlagzeug, Banner
+  const bz = BUEHNE_Z();
+  const buehne = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 2, 0.9, 3), mat("#111")); buehne.position.set(0, 0.45, bz - 1.5); buehne.receiveShadow = true; buehne.castShadow = true; raum.add(buehne);
+  const kante = new THREE.Mesh(new THREE.BoxGeometry(L.x * 2 + 2, 0.06, 0.06), new THREE.MeshStandardMaterial({ color: 0xd4161b, emissive: 0x6a0a0a })); kante.position.set(0, 0.9, bz); raum.add(kante);
+  for (const sx of [-1, 1]) for (let k = 0; k < 2; k++) { const box = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.7), mat("#1a1817")); box.position.set(sx * (L.x - 0.2), 0.9 + 0.45 + k * 0.9, bz - 0.6); box.castShadow = true; raum.add(box); const gitter = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.75), mat("#2b2928")); gitter.position.set(box.position.x, box.position.y, bz - 0.24); raum.add(gitter); }
+  const kessel = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.4, 20), mat("#7a1b1b", { metalness: 0.4, roughness: 0.4 })); kessel.rotation.x = Math.PI / 2; kessel.position.set(0, 1.25, bz - 2.1); raum.add(kessel);
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 1.5, 1.6), new THREE.MeshStandardMaterial({ map: leinwand(1024, 280, (x, w, h) => { x.fillStyle = "#0d0b0b"; x.fillRect(0, 0, w, h); x.fillStyle = "#f1ede4"; x.font = "150px Anton, Impact"; x.textAlign = "center"; x.fillText("POGO", w / 2 - 120, 190); x.fillStyle = "#d4161b"; x.font = "44px 'Courier Prime', monospace"; x.fillText("BAND VON DER SÄULE", w / 2 + 230, 120); x.fillText("FOLGT", w / 2 + 230, 175); }), roughness: 0.9 }));
+  banner.position.set(0, 3.3, bz - 3); raum.add(banner);
+
+  // Band auf der Bühne
+  band = [];
+  for (const [bx, gitarre] of [[-1.6, true], [0, false], [1.6, true]]) {
+    const f = figur({ aufnaeher: false }); f.g.position.set(bx, 0.9, bz - 1.2); f.g.rotation.y = Math.PI; raum.add(f.g); band.push(f);
+    if (gitarre) { const gi = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.75, 0.06), mat("#d4161b", { roughness: 0.3, metalness: 0.3 })); gi.position.set(0.05, 0.95, -0.25); gi.rotation.z = 0.9; f.koerper.add(gi); }
+  }
+
+  // Wände bzw. Absperrung, Decke, Pfeiler
+  if (L.wand) {
+    for (const sx of [-1, 1]) { const w = new THREE.Mesh(new THREE.BoxGeometry(0.3, 5, L.z[1] - L.z[0] + 8), mat("#" + L.wand.toString(16).padStart(6, "0"))); w.position.set(sx * (L.x + 0.45), 2.5, (L.z[0] + L.z[1]) / 2 - 2); w.receiveShadow = true; raum.add(w); }
+  } else {
+    for (const sx of [-1, 1]) { const zaun = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.1, L.z[1] - L.z[0]), mat("#8a8a86", { metalness: 0.6, roughness: 0.4 })); zaun.position.set(sx * (L.x + 0.4), 0.55, (L.z[0] + L.z[1]) / 2); raum.add(zaun); }
+  }
+  if (L.decke) { const d = new THREE.Mesh(new THREE.PlaneGeometry(L.x * 2 + 2, 30), mat("#141010")); d.rotation.x = Math.PI / 2; d.position.set(0, L.decke, 0); raum.add(d); }
+  if (L.pfeiler) { const p = new THREE.Mesh(new THREE.CylinderGeometry(L.pfeiler.r, L.pfeiler.r, L.decke || 4, 20), mat("#3a3330")); p.position.set(L.pfeiler.x, (L.decke || 4) / 2, L.pfeiler.z); p.castShadow = true; p.receiveShadow = true; raum.add(p); }
+
+  // Bühnenlicht
+  spots = [];
+  const farben = [0xff2a1a, 0xfff0d8, 0xff6a20];
+  [-L.x * 0.6, 0, L.x * 0.6].forEach((sx, i) => {
+    const s = new THREE.SpotLight(farben[i], i === 1 ? 2.2 : 1.6, 24, 0.5, 0.6, 1);
+    s.position.set(sx, L.decke ? L.decke - 0.15 : 5.5, bz - 0.5);
+    s.target.position.set(sx * 0.5, 0, 1); raum.add(s, s.target);
+    if (i === 1) { s.castShadow = true; s.shadow.mapSize.set(1024, 1024); s.shadow.bias = -0.0008; }
+    spots.push(s);
+  });
+  const fuell = new THREE.PointLight(0xffd0a0, 0.5, 14); fuell.position.set(0, 3, L.z[1]); raum.add(fuell);
+
+  // Regen
+  regen = null;
+  if (draussen) {
+    const n = 900, pos = new Float32Array(n * 6);
+    for (let i = 0; i < n; i++) { const x = zufall(-9, 9), y = zufall(0, 8), z = zufall(-8, 9); pos.set([x, y, z, x + 0.03, y + 0.35, z], i * 6); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    regen = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x9aaccc, transparent: true, opacity: 0.35 }));
+    raum.add(regen);
+  }
+}
+
+/* ---------- Runde ---------- */
+let bier = 100, zeit = 0, laeuft = false, wall = null, beruehrt = new Map(), tropfen = [], wackeln = 0;
+const tropfenGeo = new THREE.SphereGeometry(0.03, 6, 5), tropfenMat = new THREE.MeshBasicMaterial({ color: 0xf2b632 });
+
+function neueRunde() {
+  baueRaum();
+  leute = [];
+  const zMin = L.z[0] + 0.4, zMax = L.z[1] - 0.4;
+  for (let z = zMin + 0.6; z < zMax; z += 0.75) for (const sx of [-1, 1]) {
+    const f = figur(); f.rand = true; f.x = sx * (L.x - 0.3); f.z = z; f.anker = { x: f.x, z }; leute.push(f);
+  }
+  for (let x = -L.x + 0.9; x < L.x - 0.6; x += 0.75) { const f = figur(); f.rand = true; f.x = x; f.z = zMin; f.anker = { x, z: zMin }; leute.push(f); }
+  for (let i = 0; i < L.leute; i++) { const f = figur({ rucksack: i === 2 }); f.x = zufall(-L.x + 1, L.x - 1); f.z = zufall(zMin + 1, zMax - 1.5); leute.push(f); }
+  ich = figur({ jacke: "#eeeae0", haar: ["iro", "#d4161b"], aufnaeher: true });
+  ich.x = 0; ich.z = zMax - 1.2; ich.ich = true; ich.masse = 1.2; ich.r = 0.3;
+  meinBecher = becher(); meinBecher.scale.setScalar(1.8); meinBecher.position.y = -0.6; ich.arme[1].add(meinBecher);
+  leute.push(ich);
+  for (const f of leute) { f.g.position.set(f.x, 0, f.z); raum.add(f.g); }
+  bier = 100; zeit = 0; wall = null; beruehrt = new Map(); freibier = null; surfer = null; wackeln = 0;
+  for (const d of tropfen) raum.remove(d.m); tropfen = [];
+  becherStand(meinBecher, 1);
+}
+
+/* ---------- Eingabe: virtueller Stick ---------- */
+const stick = document.getElementById("stick"), knauf = document.getElementById("knauf");
+let zeiger = null;
+renderer.domElement.addEventListener("pointerdown", (e) => {
+  if (!laeuft) return;
+  const r = spielEl.getBoundingClientRect();
+  zeiger = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0 };
+  stick.style.left = (e.clientX - r.left) + "px"; stick.style.top = (e.clientY - r.top) + "px"; stick.hidden = false; knauf.style.transform = "";
+  renderer.domElement.setPointerCapture(e.pointerId);
+});
+renderer.domElement.addEventListener("pointermove", (e) => {
+  if (!zeiger || e.pointerId !== zeiger.id) return;
+  let dx = e.clientX - zeiger.x0, dy = e.clientY - zeiger.y0; const d = Math.hypot(dx, dy);
+  if (d > 40) { dx *= 40 / d; dy *= 40 / d; }
+  zeiger.dx = dx / 40; zeiger.dy = dy / 40; knauf.style.transform = `translate(${dx}px, ${dy}px)`;
+});
+const loslassen = () => { zeiger = null; stick.hidden = true; };
+renderer.domElement.addEventListener("pointerup", loslassen);
+renderer.domElement.addEventListener("pointercancel", loslassen);
+const tasten = new Set();
+addEventListener("keydown", (e) => { if (laeuft && /^(Arrow|[wasd]$)/.test(e.key)) { tasten.add(e.key); e.preventDefault(); } });
+addEventListener("keyup", (e) => tasten.delete(e.key));
+
+/* ---------- Anzeigen ---------- */
+const popsEl = document.getElementById("pops");
+function pop(text, farbe = "#f2b632") {
+  const p = document.createElement("div"); p.className = "pop"; p.textContent = text; p.style.color = farbe;
+  p.style.left = (50 + zufall(-14, 14)) + "%"; popsEl.append(p); setTimeout(() => p.remove(), 1200);
+}
+function verschuette(menge, grund, farbe) {
+  if (menge <= 0) return;
+  bier = Math.max(0, bier - menge);
+  const welt = new THREE.Vector3(); meinBecher.getWorldPosition(welt);
+  for (let i = 0; i < Math.min(16, 3 + menge * 1.3); i++) {
+    const m = new THREE.Mesh(tropfenGeo, tropfenMat); m.position.copy(welt); raum.add(m);
+    tropfen.push({ m, v: new THREE.Vector3(zufall(-1.6, 1.6), zufall(0.5, 2.5), zufall(-1.6, 1.6)), t: 0 });
+  }
+  if (grund) pop(grund, farbe);
+  if (!ruhig) wackeln = Math.min(0.25, wackeln + menge * 0.015);
+}
+
+/* ---------- Physik und Animation ---------- */
+function schritt(dt) {
+  zeit += dt;
+  const teil = teilBei(zeit), kraft = laeuft ? teil.kraft : 0.35;
+  const zMin = L.z[0] + 0.4, zMax = L.z[1] - 0.4, mz = (zMin + zMax) / 2 + 0.6;
+
+  if (laeuft && L.wall) {
+    if (zeit > 31 && zeit < 36 && !wall) { wall = { phase: "teilen" }; pop("WALL OF DEATH!", "#ff3b3b"); }
+    if (wall && wall.phase === "teilen" && zeit >= 36) { wall.phase = "rennen"; wall.t = 0; pop("LOS!", "#ff3b3b"); }
+    if (wall && wall.phase === "rennen") { wall.t += dt; if (wall.t > 2.4) wall.phase = "vorbei"; }
+  }
+
+  for (const p of leute) {
+    if (p.ich) continue;
+    if (p.rand) { p.vx += (p.anker.x - p.x) * 6 * dt; p.vz += (p.anker.z - p.z) * 6 * dt; continue; }
+    p.stoss -= dt;
+    if (wall && wall.phase === "teilen") { const seite = p.x < 0 ? -L.x + 1.2 : L.x - 1.2; p.vx += (seite - p.x) * 3 * dt; }
+    else if (wall && wall.phase === "rennen") { if (p.wallZiel == null) p.wallZiel = p.x < 0 ? L.x - 1 : -L.x + 1; p.vx += Math.sign(p.wallZiel - p.x) * 14 * dt; }
+    else {
+      p.wallZiel = null;
+      if (p.stoss <= 0) { const a = zufall(0, 6.28), s = (0.9 + 2.6 * kraft) * zufall(0.6, 1.3) / p.masse; p.vx += Math.cos(a) * s; p.vz += Math.sin(a) * s; p.stoss = zufall(0.25, 0.9) / (0.4 + kraft); }
+      if (teil.kreis && L.wall && laeuft) { const dx = p.x, dz = p.z - mz, d = Math.hypot(dx, dz) || 1; p.vx += (-dz / d) * 6 * dt * kraft; p.vz += (dx / d) * 6 * dt * kraft; p.vx += (-dx / d) * (d - 2.6) * 1.2 * dt; p.vz += (-dz / d) * (d - 2.6) * 1.2 * dt; }
+      p.vx += (0 - p.x) * 0.2 * dt; p.vz += (mz - p.z) * 0.2 * dt;
+    }
+  }
+
+  // Du: Stick oder Tasten (oben = zur Bühne)
+  let sx = 0, sz = 0;
+  if (zeiger) { sx = zeiger.dx; sz = zeiger.dy; }
+  if (tasten.has("ArrowLeft") || tasten.has("a")) sx -= 1; if (tasten.has("ArrowRight") || tasten.has("d")) sx += 1;
+  if (tasten.has("ArrowUp") || tasten.has("w")) sz -= 1; if (tasten.has("ArrowDown") || tasten.has("s")) sz += 1;
+  const sl = Math.hypot(sx, sz);
+  if (laeuft && sl > 0.12) { const f = Math.min(1, sl); ich.vx += (sx / sl) * 22 * f * dt; ich.vz += (sz / sl) * 22 * f * dt; }
+
+  for (const p of leute) {
+    let reib = p.rand ? 10 : (p.ich ? 6 : 3.2);
+    if (L.matsch && matsch.some((m) => ((p.x - m.x) / m.rx) ** 2 + ((p.z - m.z) / m.rz) ** 2 < 1)) reib *= 2.4;
+    const f = Math.exp(-reib * dt); p.vx *= f; p.vz *= f;
+    const vmax = p.ich ? 3.4 : 6.5, v = Math.hypot(p.vx, p.vz);
+    if (v > vmax) { p.vx *= vmax / v; p.vz *= vmax / v; }
+    p.x += p.vx * dt; p.z += p.vz * dt;
+    const lo = -L.x + p.r, hi = L.x - p.r;
+    if (p.x < lo) { p.x = lo; p.vx = Math.abs(p.vx) * 0.4; } if (p.x > hi) { p.x = hi; p.vx = -Math.abs(p.vx) * 0.4; }
+    if (p.z < zMin) { p.z = zMin; p.vz = Math.abs(p.vz) * 0.4; } if (p.z > zMax) { p.z = zMax; p.vz = -Math.abs(p.vz) * 0.4; }
+    if (L.pfeiler) { const q = L.pfeiler, dx = p.x - q.x, dz = p.z - q.z, d = Math.hypot(dx, dz), min = q.r + p.r; if (d < min && d > 0) { p.x = q.x + dx / d * min; p.z = q.z + dz / d * min; const vn = p.vx * dx / d + p.vz * dz / d; if (vn < 0) { p.vx -= 1.4 * vn * dx / d; p.vz -= 1.4 * vn * dz / d; } } }
+  }
+
+  for (let i = 0; i < leute.length; i++) for (let j = i + 1; j < leute.length; j++) {
+    const a = leute[i], b = leute[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), min = a.r + b.r;
+    if (d >= min || d === 0) continue;
+    const nx = dx / d, nz = dz / d, ueber = min - d, ma = a.rand ? 6 : a.masse, mb = b.rand ? 6 : b.masse;
+    a.x -= nx * ueber * mb / (ma + mb); a.z -= nz * ueber * mb / (ma + mb); b.x += nx * ueber * ma / (ma + mb); b.z += nz * ueber * ma / (ma + mb);
+    const rel = (a.vx - b.vx) * nx + (a.vz - b.vz) * nz;
+    if (rel > 0) {
+      const jj = (1.6 * rel) / (1 / ma + 1 / mb);
+      a.vx -= jj / ma * nx; a.vz -= jj / ma * nz; b.vx += jj / mb * nx; b.vz += jj / mb * nz;
+      if (laeuft && (a.ich || b.ich)) {
+        const anderer = a.ich ? b : a, schlag = rel * (anderer.rucksack ? 1.6 : 1), letzte = beruehrt.get(anderer) || 0;
+        if (schlag > 1.6 && zeit - letzte > 0.3) {
+          beruehrt.set(anderer, zeit);
+          const menge = Math.min(14, (schlag - 1.6) * 4.5);
+          verschuette(menge, anderer.rucksack ? "RUCKSACK!" : (menge > 7 ? "PLATSCH!" : menge > 3 ? "schwapp" : null));
+        }
+      }
+    }
+  }
+
+  // Crowdsurfer
+  if (laeuft && L.surfer && !surfer && kraft >= 0.9 && Math.random() < dt * 0.3) {
+    const f = figur(); f.g.rotation.set(-Math.PI / 2, 0, 0); f.arme.forEach((a, k) => (a.rotation.z = k ? 2.9 : -2.9));
+    surfer = { f, x: zufall(-L.x + 1.5, L.x - 1.5), z: zMin, traf: false };
+    f.g.position.set(surfer.x, 2.15, surfer.z); raum.add(f.g); pop("CROWDSURFER!", "#f1ede4");
+  }
+  if (surfer) {
+    surfer.z += 1.5 * dt; surfer.x += Math.sin(zeit * 2) * 0.3 * dt;
+    surfer.f.g.position.set(surfer.x, 2.15 + Math.sin(zeit * 9) * 0.06, surfer.z);
+    if (!surfer.traf && Math.hypot(surfer.x - ich.x, surfer.z - ich.z) < 0.55) { surfer.traf = true; verschuette(14, "STIEFEL IM BIER!", "#f1ede4"); }
+    if (surfer.z > zMax + 1.5) { raum.remove(surfer.f.g); surfer = null; }
+  }
+
+  // Freibier
+  if (laeuft && !freibier && Math.random() < dt * 0.06) {
+    const g = becher(); becherStand(g, 1); g.scale.setScalar(2.4);
+    const licht = new THREE.PointLight(0xffc040, 1.2, 2.5); licht.position.y = 0.4; g.add(licht);
+    freibier = { g, x: zufall(-L.x + 1, L.x - 1), z: zufall(zMin + 1.5, zMax - 0.5), t: 0 };
+    g.position.set(freibier.x, 0.25, freibier.z); raum.add(g);
+  }
+  if (freibier) {
+    freibier.t += dt; freibier.g.rotation.y += dt * 2; freibier.g.position.y = 0.25 + Math.sin(zeit * 4) * 0.05;
+    if (Math.hypot(freibier.x - ich.x, freibier.z - ich.z) < 0.55) { bier = Math.min(100, bier + 25); pop("FREIBIER!", "#58d26a"); raum.remove(freibier.g); freibier = null; }
+    else if (freibier.t > 7) { raum.remove(freibier.g); freibier = null; }
+  }
+
+  // Figuren bewegen: springen im Takt, Arme rudern, Blick zur Bühne
+  const takt = (laeuft ? 1 : 0.5) * (BPM / 60) * Math.PI;
+  for (const p of leute) {
+    p.phase += dt * takt * (0.85 + kraft * 0.3);
+    const hop = p.rand ? 0.05 + kraft * 0.08 : p.sprung * (0.3 + kraft * 0.8);
+    p.g.position.set(p.x, Math.abs(Math.sin(p.phase)) * hop, p.z);
+    const zielBlick = Math.atan2(p.vx, 6) * 0.6; // leicht in Laufrichtung drehen, sonst zur Bühne
+    p.blick += (zielBlick - p.blick) * Math.min(1, dt * 4);
+    p.g.rotation.y = p.ich ? 0 : -p.blick + Math.sin(p.phase * 0.5) * 0.15;
+    if (!p.ich) {
+      p.arme[0].rotation.z = -(p.armGrund + Math.sin(p.phase * 2) * 0.5 * kraft);
+      p.arme[1].rotation.z = p.armGrund * (p.rand ? 0.3 : 1) + Math.cos(p.phase * 2) * 0.5 * kraft;
+    }
+    p.beine[0].rotation.x = Math.sin(p.phase * 2) * 0.25 * kraft; p.beine[1].rotation.x = -Math.sin(p.phase * 2) * 0.25 * kraft;
+  }
+  // dein Arm hoch, Becher bleibt gerade
+  const armWinkel = 2.75 + Math.sin(zeit * 7) * 0.05;
+  ich.arme[1].rotation.z = armWinkel; meinBecher.rotation.z = -armWinkel;
+  ich.arme[0].rotation.z = -0.5 - Math.abs(Math.sin(ich.phase)) * 0.4;
+  becherStand(meinBecher, bier / 100);
+  for (const b of band) { b.phase += dt * takt; b.g.position.y = 0.9 + Math.abs(Math.sin(b.phase)) * 0.12 * (0.4 + kraft); b.arme[1].rotation.z = 0.6 + Math.sin(b.phase * 2) * 0.4; }
+  spots.forEach((s, i) => { s.target.position.x = Math.sin(zeit * (0.7 + i * 0.3) + i) * L.x * 0.7; s.target.position.z = mz + Math.cos(zeit * 0.5 + i) * 2.5; s.intensity = (i === 1 ? 2.2 : 1.6) * (0.7 + 0.5 * kraft) * (1 + 0.25 * Math.max(0, Math.sin(zeit * takt * 2))); });
+
+  for (const d of tropfen) { d.t += dt; d.v.y -= 9.8 * dt; d.m.position.addScaledVector(d.v, dt); }
+  for (const d of tropfen.filter((d) => d.t > 0.8)) raum.remove(d.m);
+  tropfen = tropfen.filter((d) => d.t <= 0.8);
+  if (regen) { regen.position.y -= dt * 9; if (regen.position.y < -4) regen.position.y += 4; }
+  wackeln *= Math.exp(-6 * dt);
+
+  if (laeuft && bier <= 0) ende(true);
+  else if (laeuft && zeit >= DAUER) ende(false);
+}
+
+/* ---------- Kamera hinter dir ---------- */
+const kamZiel = new THREE.Vector3(), blickZiel = new THREE.Vector3();
+function kamera(dt, sofort = false) {
+  const hoch = camera.aspect < 1 ? 3.4 : 2.9, hinten = camera.aspect < 1 ? 4.6 : 4.1;
+  kamZiel.set(ich.x * 0.75, hoch, ich.z + hinten);
+  blickZiel.set(ich.x * 0.85, 1.15, ich.z - 3.2);
+  if (sofort) camera.position.copy(kamZiel); else camera.position.lerp(kamZiel, Math.min(1, dt * 4));
+  camera.lookAt(blickZiel);
+  if (wackeln > 0.002) { camera.position.x += zufall(-wackeln, wackeln); camera.position.y += zufall(-wackeln, wackeln); }
+}
+
+/* ---------- Musik: eigener Punk-Beat ---------- */
+let audio = null, master = null, tonAn = true, naechste = 0, achtel = 0, takt = null, rauschen = null, verzerrer = null;
+const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
+function tonStart() {
+  if (!audio) {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    audio = new AC(); master = audio.createGain(); master.gain.value = tonAn ? 0.45 : 0; master.connect(audio.destination);
+    rauschen = audio.createBuffer(1, audio.sampleRate * 0.5, audio.sampleRate);
+    const d = rauschen.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  audio.resume(); naechste = audio.currentTime + 0.05; achtel = 0;
+  clearInterval(takt); takt = setInterval(plane, 25);
+}
+function tonStopp() { clearInterval(takt); takt = null; }
+function knall(t, frq, dauer, laut) { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.setValueAtTime(frq, t); o.frequency.exponentialRampToValueAtTime(40, t + dauer); g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + dauer); o.connect(g).connect(master); o.start(t); o.stop(t + dauer); }
+function zisch(t, dauer, laut, hoch) { const s = audio.createBufferSource(), f = audio.createBiquadFilter(), g = audio.createGain(); s.buffer = rauschen; f.type = hoch ? "highpass" : "bandpass"; f.frequency.value = hoch ? 7000 : 1800; g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + dauer); s.connect(f).connect(g).connect(master); s.start(t); s.stop(t + dauer); }
+function gitarre(t, frq, laut) {
+  if (!verzerrer) { verzerrer = audio.createWaveShaper(); const k = new Float32Array(1024); for (let i = 0; i < 1024; i++) k[i] = Math.tanh((i / 512 - 1) * 6); verzerrer.curve = k; const lp = audio.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600; verzerrer.connect(lp).connect(master); }
+  const g = audio.createGain(); g.gain.setValueAtTime(laut, t); g.gain.exponentialRampToValueAtTime(0.001, t + ACHTEL * 0.95); g.connect(verzerrer);
+  for (const m of [1, 1.5, 2]) { const o = audio.createOscillator(); o.type = "sawtooth"; o.frequency.value = frq * m; o.connect(g); o.start(t); o.stop(t + ACHTEL); }
+}
+function plane() {
+  if (!audio || !laeuft) return;
+  while (naechste < audio.currentTime + 0.12) {
+    const songZeit = zeit + (naechste - audio.currentTime), teil = teilBei(Math.max(0, songZeit));
+    const i = achtel % 8, akk = AKKORDE[Math.floor(achtel / 8) % AKKORDE.length], t = naechste;
+    if (teil.name === "INTRO") { if (i % 2 === 0) gitarre(t, akk, 0.12); zisch(t, 0.03, 0.05, true); }
+    else if (teil.name === "BREAK") { if (i === 0) knall(t, 110, 0.3, 0.7); zisch(t, 0.03, 0.04, true); if (i % 4 === 0) gitarre(t, akk, 0.07); }
+    else {
+      const refrain = teil.kraft >= 1;
+      if (refrain) { if (i % 2 === 0) knall(t, 120, 0.12, 0.9); else zisch(t, 0.12, 0.45, false); }
+      else { if (i === 0 || i === 3 || i === 5) knall(t, 120, 0.14, 0.9); if (i === 2 || i === 6) zisch(t, 0.14, 0.5, false); }
+      zisch(t, 0.03, refrain ? 0.09 : 0.06, true);
+      if (refrain && achtel % 32 === 0) zisch(t, 0.9, 0.18, true);
+      gitarre(t, akk, refrain ? 0.16 : 0.12);
+    }
+    naechste += ACHTEL; achtel++;
+  }
+}
+
+/* ---------- Ablauf ---------- */
+const startEl = document.getElementById("start"), endeEl = document.getElementById("ende"), hud = document.getElementById("hud"), tonBox = document.getElementById("tonBox");
+const bierStand = document.getElementById("bierStand"), bierZahl = document.getElementById("bierZahl"), teilName = document.getElementById("teilName"), teilZeit = document.getElementById("teilZeit");
+let letzte = performance.now();
+
+function bild(jetzt) {
+  const dt = Math.min(0.05, (jetzt - letzte) / 1000 || 0); letzte = jetzt;
+  if (!document.hidden) {
+    schritt(dt); kamera(dt);
+    renderer.render(scene, camera);
+    if (laeuft) {
+      const b = Math.round(bier); bierStand.style.height = b + "%"; bierZahl.textContent = b + " %";
+      teilName.textContent = teilBei(zeit).name;
+      const rest = Math.max(0, Math.ceil(DAUER - zeit)); teilZeit.textContent = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, "0")}`;
+    }
+  }
+  requestAnimationFrame(bild);
+}
+
+function starte() {
+  neueRunde(); kamera(0, true);
+  startEl.hidden = true; endeEl.hidden = true; hud.hidden = false; tonBox.hidden = false;
+  spielEl.scrollIntoView({ block: "nearest" });
+  laeuft = true; zeit = 0; tonStart();
+}
+function ende(leer) {
+  laeuft = false; tonStopp(); loslassen();
+  const b = Math.round(bier);
+  document.getElementById("endeLaden").textContent = L.name;
+  document.getElementById("endeZahl").textContent = leer ? "0 %" : b + " %";
+  let titel, text;
+  if (leer) { titel = "Becher leer."; text = "Trocken mitten im Song. Ab an die Theke und nochmal rein."; }
+  else if (b >= 80) { titel = "Trocken geblieben. Respekt."; text = "Du hast den Pit überlebt und das Bier auch."; }
+  else if (b >= 50) { titel = "Halb voll, halb Pit."; text = "Ordentlich gepogt, ordentlich gerettet."; }
+  else if (b >= 20) { titel = "Mehr auf dem Shirt als im Becher."; text = "Das Shirt riecht jetzt nach Abend. Gut so."; }
+  else { titel = "Fast trocken."; text = "Ein Schluck ist noch drin. Der zählt."; }
+  document.getElementById("endeTitel").textContent = titel;
+  document.getElementById("endeText").textContent = text;
+  endeEl.hidden = false; hud.hidden = true; tonBox.hidden = true;
+  document.getElementById("nochmal").focus({ preventScroll: true });
+}
+
+const laedenEl = document.getElementById("laeden");
+for (const [id, l] of Object.entries(LAEDEN)) {
+  const b = document.createElement("button"); b.type = "button"; b.className = "laden"; b.id = "laden-" + id;
+  b.setAttribute("aria-pressed", String(id === ladenId));
+  b.innerHTML = "<b></b><span></span>"; b.querySelector("b").textContent = l.name; b.querySelector("span").textContent = l.text;
+  b.addEventListener("click", () => { ladenId = id; laedenEl.querySelectorAll(".laden").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); neueRunde(); kamera(0, true); });
+  laedenEl.append(b);
+}
+document.getElementById("los").addEventListener("click", starte);
+document.getElementById("nochmal").addEventListener("click", starte);
+document.getElementById("anderer").addEventListener("click", () => { endeEl.hidden = true; startEl.hidden = false; });
+const tonKnopf = document.getElementById("ton");
+tonKnopf.addEventListener("click", () => { tonAn = !tonAn; tonKnopf.textContent = tonAn ? "Ton an" : "Ton aus"; tonKnopf.setAttribute("aria-pressed", String(tonAn)); if (master) master.gain.value = tonAn ? 0.45 : 0; });
+document.addEventListener("visibilitychange", () => { if (document.hidden && audio) audio.suspend(); else if (audio && laeuft) audio.resume(); });
+
+document.fonts.ready.then(() => { neueRunde(); kamera(0, true); });
+neueRunde(); kamera(0, true);
+requestAnimationFrame(bild);
+</script>
