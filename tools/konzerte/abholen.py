@@ -13,7 +13,7 @@ import time
 import urllib.request
 from datetime import date, datetime, timedelta
 
-from tools.konzerte import knox, radar
+from tools.konzerte import bands, knox, radar
 from tools.konzerte.eigene import lese_eigene
 from tools.konzerte.merkmale import genres, ist_frei, ist_kommerz, lade_listen
 from tools.konzerte.ortstabelle import Ortstabelle
@@ -33,6 +33,7 @@ QUELLEN = [
     {"id": "fof", "name": "Fuck Off Fashion", "url": "https://fuckofffashion.github.io/konzerte.html"},
 ]
 EIGENE_DATEI = os.path.join(os.path.dirname(__file__), "eigene.json")
+BANDS_LISTE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "bands.json")
 
 
 def log(text):
@@ -152,6 +153,7 @@ def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
     p = argparse.ArgumentParser(prog="abholen")
     p.add_argument("--knox-datei")
     p.add_argument("--eigene-datei", default=EIGENE_DATEI, help="von Hand gepflegte Termine (Quelle fof)")
+    p.add_argument("--bands-liste", default=BANDS_LISTE, help="Bands der Bandseite (tools/bands.json)")
     p.add_argument("--heute")
     p.add_argument("--ohne-nominatim", action="store_true")
     p.add_argument("--ohne-radar", action="store_true")
@@ -267,6 +269,15 @@ def main(argv=None, hole_knox=None, hole_radar=None, uhr=time.monotonic):
                    "ohne_ort_je_quelle": ohne_ort_je}, kompakt=True)
     schreibe_json(status_pfad, neuer_status, kompakt=False)
     log(f"{len(ausgabe)} Termine geschrieben nach {konzerte_pfad}")
+
+    # Bandseite: eigener Fehlerpfad, eine kaputte Bandliste darf die Konzertdaten nicht aufhalten
+    try:
+        zuordnung = bands.ordne_zu(bands.lade_bands(args.bands_liste), ausgabe, heute_s)
+        schreibe_json(os.path.join(args.daten, "bands.json"), {"stand": stand, **zuordnung}, kompakt=True)
+        anzahlen = ", ".join(f"{k} {v['anzahl']}" for k, v in zuordnung["bands"].items())
+        log(f"Bands: {anzahlen}")
+    except (OSError, ValueError) as e:
+        log(f"FEHLER bands: {e} (data/bands.json bleibt, wie sie war)")
 
     for qid, fehler_seit in ausfaelle:
         log(f"FEHLER {qid}: seit {fehler_seit} ohne Daten")

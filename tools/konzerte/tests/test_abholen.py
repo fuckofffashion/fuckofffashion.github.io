@@ -15,10 +15,10 @@ EIGENE_LEER = os.path.join(os.path.dirname(__file__), "fixtures", "eigene-leer.j
 EIGENE = os.path.join(os.path.dirname(__file__), "fixtures", "eigene.json").replace("\\", "/")
 
 
-def lauf(daten, heute="2026-11-01", hole_knox=None, hole_radar=None, eigene=EIGENE_LEER):
+def lauf(daten, heute="2026-11-01", hole_knox=None, hole_radar=None, eigene=EIGENE_LEER, extra=()):
     """Ohne hole_radar läuft Radar nicht (kein Netz in Tests)."""
     argv = ["--ohne-nominatim", "--daten", daten, "--tabelle", TABELLE, "--heute", heute,
-            "--eigene-datei", eigene]
+            "--eigene-datei", eigene, *extra]
     if not hole_radar:
         argv.append("--ohne-radar")
     if not hole_knox:
@@ -151,6 +151,38 @@ class AbholenTest(unittest.TestCase):
         code, _ = lauf(self.daten)
         self.assertEqual(code, 0)
         self.assertEqual(lies(self.daten, "quellen-status.json")["knox"], {"ok_am": "2026-11-01", "fehler_seit": None})
+
+
+class BandsTest(unittest.TestCase):
+    """abholen schreibt zusätzlich data/bands.json für die Bandseite."""
+
+    def setUp(self):
+        self._t = tempfile.TemporaryDirectory()
+        self.daten = self._t.name
+        self.addCleanup(self._t.cleanup)
+
+    def liste(self, inhalt):
+        pfad = os.path.join(self.daten, "liste.json")
+        with open(pfad, "w", encoding="utf-8") as f:
+            f.write(inhalt)
+        return pfad
+
+    def test_schreibt_bands_json(self):
+        lauf(self.daten)  # erster Lauf: einen echten Bandnamen aus dem Fixture holen
+        name = lies(self.daten, "konzerte.json")["termine"][0]["bands"]
+        band = {"id": "test", "name": name, "logo": "x.webp", "logo_quelle": "https://example.org/x", "web": "https://example.org"}
+        code, _ = lauf(self.daten, extra=["--bands-liste", self.liste(json.dumps({"bands": [band]}))])
+        self.assertEqual(code, 0)
+        b = lies(self.daten, "bands.json")
+        self.assertEqual(b["heute"], "2026-11-01")
+        self.assertGreaterEqual(b["bands"]["test"]["anzahl"], 1)
+
+    def test_kaputte_bandliste_haelt_konzerte_nicht_auf(self):
+        code, ausgabe = lauf(self.daten, extra=["--bands-liste", self.liste("{kaputt")])
+        self.assertEqual(code, 0)
+        self.assertTrue(lies(self.daten, "konzerte.json")["termine"])
+        self.assertFalse(os.path.exists(os.path.join(self.daten, "bands.json")))
+        self.assertIn("FEHLER bands", ausgabe)
 
 
 class EigeneTest(unittest.TestCase):
