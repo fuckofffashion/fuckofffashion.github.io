@@ -343,6 +343,11 @@ html:not(.js) .tr__controls { display: none; }
 .join__way { display: grid; gap: var(--sp-3); align-content: start; }
 .join__way p { margin: 0; max-width: 46ch; }
 .join__way h3 { margin: 0; }
+/* Dreck-Shirt in der Foto-Karte: geklebtes Foto, Handnotiz darunter */
+.join__foto { position: relative; margin: var(--sp-1) 0 0; display: grid; gap: .6rem; rotate: -1deg; }
+.join__foto img { display: block; width: 100%; height: auto; box-shadow: 0 22px 34px -20px rgba(0, 0, 0, .8); }
+.join__foto .tape { top: -.9rem; left: 50%; translate: -50% 0; rotate: -4deg; }
+.join__foto figcaption { font: 400 clamp(1.15rem, 1rem + .6vw, 1.5rem)/1.2 var(--font-edding); color: var(--blood-hot); }
 .join__tag { color: var(--blood-hot); text-transform: none; overflow-wrap: anywhere; } /* der Hashtag, an dem sich alle finden */
 .join__way--mail { grid-column: 1 / span 5; padding: var(--sp-5) var(--sp-4); background: var(--ink); color: var(--paper);
   clip-path: polygon(0 1%, 5% 0, 40% 1.2%, 100% 0, 99.4% 50%, 100% 99%, 60% 100%, 3% 98.8%, .6% 55%); }
