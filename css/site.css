@@ -383,6 +383,34 @@ html:not(.js) .tr__controls { display: none; }
 /* Fuß liegt über dem roten Faden (Canvas z-index 55): der Faden verschwindet dahinter statt die Links zu verdecken */
 .foot { position: relative; z-index: 56; background: var(--ink); border-top: 1px solid var(--ink-3); padding: var(--sp-4) var(--edge) var(--sp-5); display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); justify-content: space-between; }
 .foot nav { display: flex; gap: var(--sp-3); }
+/* Easter Egg: Newsletter-Falle (js/eggs.js) – lehnt ab, schickt nichts weg */
+.foot__news { order: 3; flex: 0 0 100%; display: grid; gap: .5rem; } /* eigene Zeile unter Schriftzug und Rechtlichem */
+.foot__news > * { max-width: 26rem; }
+.foot__news-zeile { display: flex; gap: .4rem; }
+.foot__news input { flex: 1; min-width: 0; font: 400 .95rem/1.2 var(--font-body); text-transform: none; letter-spacing: 0; padding: .6rem .7rem; border: 2px solid var(--ink-3); background: var(--ink-2); color: var(--paper); }
+.foot__news-knopf { font: inherit; letter-spacing: inherit; text-transform: inherit; padding: .6rem .8rem; border: 2px solid var(--paper); background: transparent; color: var(--paper); cursor: pointer; min-height: 2.75rem; }
+.foot__news-knopf:hover { background: var(--paper); color: var(--ink); }
+.foot__news-antwort { color: var(--blood-hot); text-transform: none; letter-spacing: .01em; min-height: 1.2em; }
+/* Easter Egg: Black Friday / Kauf-nix-Tag (js/eggs.js) */
+body { padding-bottom: calc(var(--egg-band-h, 0px) + var(--egg-keks-h, 0px)); } /* Band und Banner verdecken nie den Fuß */
+.egg-band { position: fixed; z-index: 80; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: .5rem; background: var(--blood); color: var(--paper);
+  padding: .7rem max(var(--edge), env(safe-area-inset-right, 0px)) calc(.7rem + env(safe-area-inset-bottom, 0px)) max(var(--edge), env(safe-area-inset-left, 0px));
+  animation: egg-rein .5s var(--ease-out) both; }
+.egg-band__text { flex: 1; color: inherit; text-decoration: none; font: 400 clamp(1rem, .8rem + 1vw, 1.5rem)/1.1 var(--font-shout); text-transform: uppercase; }
+.egg-band__pfeil { font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: var(--track-label); white-space: nowrap; }
+.egg-band__zu { flex: none; width: 2.75rem; height: 2.75rem; border: 2px solid var(--paper); background: transparent; color: var(--paper); font: 700 1.3rem/1 var(--font-zine); cursor: pointer; }
+@keyframes egg-rein { from { translate: 0 100%; } }
+/* Easter Egg: ehrlicher Cookie-Banner (js/eggs.js) */
+.egg-keks { position: fixed; z-index: 81; right: max(1rem, env(safe-area-inset-right, 0px)); bottom: calc(1rem + var(--egg-band-h, 0px) + env(safe-area-inset-bottom, 0px));
+  width: min(22rem, calc(100vw - 2rem)); background: var(--paper); color: var(--ink); padding: 1rem 1.1rem; display: grid; gap: .8rem;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, .7); rotate: -1deg; animation: egg-rein .5s var(--ease-out) both; transition: opacity .35s, translate .35s; }
+.egg-keks.is-weg { opacity: 0; translate: 0 1rem; }
+.egg-keks p { margin: 0; font-size: var(--fs-small); line-height: 1.45; text-transform: none; letter-spacing: 0; }
+.egg-keks__knoepfe { display: flex; flex-wrap: wrap; gap: .5rem; }
+.egg-keks__knopf { font: 700 var(--fs-label)/1 var(--font-zine); letter-spacing: .1em; text-transform: uppercase; padding: .7rem .9rem; min-height: 2.75rem; border: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+.egg-keks__knopf:hover { background: var(--ink); color: var(--paper); }
+.egg-keks p.egg-keks__danke { font: 400 1.15rem/1.2 var(--font-edding); color: var(--blood); }
+@media (prefers-reduced-motion: reduce) { .egg-band, .egg-keks { animation: none; } .egg-keks { transition: none; } }
 .foot a { text-decoration: none; }
 
 /* Unterseiten -------------------------------------------- */
