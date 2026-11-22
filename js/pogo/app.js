@@ -2,21 +2,22 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil, nachTonAus,
-} from "./regeln.js?v=46";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=46";
-import { sprache, TEXTE } from "./texte.js?v=46";
-import { LAEDEN } from "./laeden.js?v=46";
-import { erzeugeMusik } from "./musik.js?v=46";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=46";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=46";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=46";
-import { MOTIVE } from "./motive.js?v=46";
+} from "./regeln.js?v=47";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=47";
+import { sprache, TEXTE } from "./texte.js?v=47";
+import { LAEDEN } from "./laeden.js?v=47";
+import { erzeugeMusik } from "./musik.js?v=47";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=47";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=47";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=47";
+import { MOTIVE } from "./motive.js?v=47";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=46";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=46";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=46";
-import { tagDatum } from "../bands/texte.js?v=46";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=46";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=47";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=47";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=47";
+import { tagDatum } from "../bands/texte.js?v=47";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=47";
+import { teilbildBand, zeichneTeilbild } from "./teilbild.js?v=47";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -30,7 +31,7 @@ let kopfVorlage = null, koepfe = []; // Ganove-Kopf aus Marks Ansichten (kopf3d.
 const musik = erzeugeMusik();
 
 /* ---------- Spielzustand ---------- */
-let songId = songAusAdresse(location.search) || SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null;
+let songId = songAusAdresse(location.search) || SONGS[0]?.id || "beat", song = SONGS[0] || BEAT, bandDaten = null, bandDatenLaden = null;
 let speicher = null; try { speicher = globalThis.localStorage; } catch { speicher = null; }
 let kutte = leseKutte(speicher), stats, aufgaben = [], tour = leseTour(speicher);
 let phase = "aus", selten = null, abguck, schnoesel = null, fascho = null, rufZeit = 0, rufTreffer = 0, rufGezaehlt = new Set(), zugabeEnde = 0, saenger = null, geblendetBis = 0, abgeguckt = null, faktor = 1;
@@ -620,6 +621,8 @@ function baueKreisPfeile() {
 function entferneKreis() { for (const m of kreisPfeile) S.raum.remove(m); kreisPfeile = []; }
 
 /* Ergebnis als Bild teilen (Teilen-Menü des Geräts, sonst Download) */
+const bilder = new Map();
+const ladeBild = (src) => { if (!bilder.has(src)) bilder.set(src, new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; })); return bilder.get(src); };
 let teiltGerade = false;
 async function teileErgebnis() {
   const e = letztesErgebnis; if (!e || teiltGerade) return;
@@ -628,27 +631,17 @@ async function teileErgebnis() {
 }
 async function teileBild(e) {
   const c = document.createElement("canvas"); c.width = 1080; c.height = 1350;
-  const x = c.getContext("2d");
   await document.fonts?.ready;
-  x.fillStyle = "#0b0a0a"; x.fillRect(0, 0, 1080, 1350);
-  x.fillStyle = "#d4161b"; x.fillRect(0, 0, 1080, 18); x.fillRect(0, 1332, 1080, 18);
-  x.textAlign = "center"; x.fillStyle = "#f1ede4";
-  x.font = "64px Anton, Impact, sans-serif"; x.fillText("FUCK OFF FASHION", 540, 120);
-  x.font = "220px Anton, Impact, sans-serif"; x.fillText("POGO.", 540, 360);
-  x.font = "bold 46px 'Courier Prime', monospace"; x.fillStyle = "#e3262b"; x.fillText(e.laden.toUpperCase(), 540, 450);
-  x.fillStyle = "#f2b632"; x.font = "260px Anton, Impact, sans-serif"; x.fillText(String(e.erg), 540, 740);
-  x.fillStyle = "#f1ede4"; x.font = "52px 'Permanent Marker', cursive"; x.fillText(e.titel, 540, 830, 980);
-  x.font = "bold 40px 'Courier Prime', monospace"; x.fillStyle = "#cfc8bb"; x.fillText(`${T.rang}: ${e.rang}`, 540, 900);
+  // Konzertdaten kommen beim Start; sind sie noch unterwegs, kurz warten, sonst ohne Konzertzeile
+  if (song.band && !bandDaten) await Promise.race([bandDatenLaden, new Promise((ok) => setTimeout(ok, 1500))]);
+  const band = teilbildBand(song, bandDaten, isoLokal(new Date()), sp);
   const m = e.motiv && MOTIVE.find((v) => v.nr === e.motiv);
-  if (m) {
-    const img = await new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = WURZEL + m.bild; });
-    if (img) { const k = Math.min(300 / img.width, 260 / img.height); x.drawImage(img, 540 - (img.width * k) / 2, 950, img.width * k, img.height * k); }
-  }
-  x.fillStyle = "#f1ede4"; x.font = "bold 38px 'Courier Prime', monospace"; x.fillText("fuckofffashion.github.io/pogo.html", 540, 1275);
+  const [motiv, logo] = await Promise.all([m ? ladeBild(WURZEL + m.bild) : null, band ? ladeBild(WURZEL + band.logo) : null]);
+  zeichneTeilbild(c.getContext("2d"), { ...e, band }, { motiv, logo }, T);
   const blob = await new Promise((ok) => c.toBlob(ok, "image/png"));
   if (!blob) return;
   const datei = new File([blob], "pogo-ergebnis.png", { type: "image/png" });
-  const url = new URL("pogo.html", location.href).href, text = T.teilenText({ erg: e.erg, laden: e.laden });
+  const url = new URL("pogo.html", location.href).href, text = T.teilenText({ erg: e.erg, laden: e.laden, band });
   try {
     if (navigator.canShare?.({ files: [datei] })) { await navigator.share({ files: [datei], title: "Pogo · FUCK OFF FASHION", text, url }); return; }
   } catch (f) { if (f?.name === "AbortError") return; }
@@ -874,6 +867,7 @@ const WURZEL = document.documentElement.dataset.wurzel || "";
 function zeigeBand() {
   const el = $("pogo-ende-band");
   if (!song.band) { el.hidden = true; return; }
+  ladeBild(WURZEL + `assets/img/bands/${song.band}.webp`);
   el.replaceChildren();
   const b = document.createElement("b"); b.textContent = `${song.bandName} · ${song.titel}`; el.append(b, document.createElement("br"));
   const n = naechster(bandDaten?.bands?.[song.band]?.termine, isoLokal(new Date()));
@@ -890,8 +884,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=46").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=46"),
+      import("./szene.js?v=47").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=47"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -931,7 +925,7 @@ async function los() {
   for (const s of SONGS) if (s.outro) musik.lade(WURZEL + s.outro.datei);
   Promise.all(SONGS.map((s, i) => musik.lade(WURZEL + s.datei, (a) => { anteile[i] = a; if (los.disabled) zeigeLaden(); })))
     .finally(() => { los.disabled = false; los.textContent = losText; });
-  fetch(WURZEL + "data/bands.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((d) => { bandDaten = d; }).catch(() => {});
+  bandDatenLaden = fetch(WURZEL + "data/bands.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((d) => { bandDaten = d; }).catch(() => {});
   $("pogo-los").addEventListener("click", starte);
   $("pogo-nochmal").addEventListener("click", starte);
   $("pogo-anderer").addEventListener("click", () => { $("pogo-ende").hidden = true; $("pogo-start").hidden = false; });
