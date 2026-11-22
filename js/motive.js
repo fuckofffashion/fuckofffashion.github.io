@@ -5,7 +5,7 @@
    Beide Leisten sind unabhängig. Nur die Wand-Leiste (data-hash) liest und
    schreibt den teilbaren Link #motive-<gruppe>.
    ========================================================= */
-import { gruppenVon, istSichtbar, gruppeAusHash, urlFuer, ansage } from "./motivfilter.js?v=41";
+import { gruppenVon, istSichtbar, gruppeAusHash, urlFuer, ansage } from "./motivfilter.js?v=42";
 
 const leisten = [...document.querySelectorAll(".js-motivfilter")];
 let refreshGeplant = false;

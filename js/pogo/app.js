@@ -2,21 +2,21 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=41";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=41";
-import { sprache, TEXTE } from "./texte.js?v=41";
-import { LAEDEN } from "./laeden.js?v=41";
-import { erzeugeMusik } from "./musik.js?v=41";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=41";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=41";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=41";
-import { MOTIVE } from "./motive.js?v=41";
+} from "./regeln.js?v=42";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=42";
+import { sprache, TEXTE } from "./texte.js?v=42";
+import { LAEDEN } from "./laeden.js?v=42";
+import { erzeugeMusik } from "./musik.js?v=42";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=42";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=42";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=42";
+import { MOTIVE } from "./motive.js?v=42";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=41";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=41";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=41";
-import { tagDatum } from "../bands/texte.js?v=41";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=41";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=42";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=42";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=42";
+import { tagDatum } from "../bands/texte.js?v=42";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=42";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -183,6 +183,9 @@ function beendeZeiger(e) {
   zeiger = null; stick.hidden = true;
 }
 const tasten = new Set();
+// jedes Tippen und jede Taste holt den Ton zurück, falls der Browser ihn angehalten hat (Anruf, App-Wechsel, abgelehnter Start)
+addEventListener("pointerdown", () => musik.wecke(), true);
+addEventListener("keydown", () => musik.wecke(), true);
 addEventListener("keydown", (e) => {
   if (outro && (e.key === " " || e.key === "Enter" || e.key === "Escape")) { e.preventDefault(); if (outroWegbar()) endeOutro(); return; }
   if (!laeuft) return;
@@ -813,6 +816,8 @@ function starte() {
   spielEl.scrollIntoView({ block: "nearest" });
   laeuft = true; pausiert = false; letzte = performance.now(); phase = "song";
   musik.start(song.datei ? WURZEL + song.datei : null);
+  // läuft der Ton nach dem Start nicht, sagen wir es (statt stumm weiterzuspielen)
+  setTimeout(() => { if (laeuft && !pausiert && !musik.laeuftTon()) pop(T.keinTon, "var(--paper)", true); }, 1500);
 }
 function ende(leer) {
   if (!laeuft) return;
@@ -885,8 +890,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=41").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=41"),
+      import("./szene.js?v=42").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=42"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {

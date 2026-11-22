@@ -7,7 +7,7 @@ export function sprache() {
 export const TEXTE = {
   de: {
     teile: { "INTRO": "INTRO", "STROPHE": "STROPHE", "REFRAIN!": "REFRAIN!", "BREAK": "BREAK", "AUFBAU": "AUFBAU", "LETZTER REFRAIN": "LETZTER REFRAIN" },
-    laedt: "Song lädt …", songFehlt: "Song lädt nicht, Ersatz-Beat läuft.",
+    laedt: "Song lädt …", songFehlt: "Song lädt nicht, Ersatz-Beat läuft.", keinTon: "Kein Ton? Tipp ins Spiel und dreh die Medienlautstärke auf.",
     naechstesKonzert: "Nächstes Konzert", keinKonzert: "Gerade keine Termine.",
     kutte: "Deine Lederjacke", aufgabenTitel: "Aufgaben", aufgabeErledigt: "erledigt",
     outro: ({ band }) => `${band} hat noch was zu sagen … Tippen: weiter`,
@@ -53,7 +53,7 @@ export const TEXTE = {
   },
   en: {
     teile: { "INTRO": "INTRO", "STROPHE": "VERSE", "REFRAIN!": "CHORUS!", "BREAK": "BREAK", "AUFBAU": "BUILD-UP", "LETZTER REFRAIN": "LAST CHORUS" },
-    laedt: "Loading song …", songFehlt: "Song didn't load, backup beat is playing.",
+    laedt: "Loading song …", songFehlt: "Song didn't load, backup beat is playing.", keinTon: "No sound? Tap the game and turn up the media volume.",
     naechstesKonzert: "Next gig", keinKonzert: "No gigs right now.",
     kutte: "Your leather jacket", aufgabenTitel: "Tasks", aufgabeErledigt: "done",
     outro: ({ band }) => `${band} has something to say … Tap: continue`,

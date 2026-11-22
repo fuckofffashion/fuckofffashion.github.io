@@ -1,13 +1,40 @@
 // Musik für Pogo: freigegebener Song aus einer Datei oder eigener Punk-Beat per WebAudio.
 // Ohne AudioContext läuft das Spiel stumm weiter.
-import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=41";
+import { teilBei, VIERTEL, songZeit, rasterAb } from "./regeln.js?v=42";
 
 const ACHTEL = VIERTEL / 2;
+
+/** Stille als WAV-Datei (8 Bit mono) in einer data-URI; für den Lautlos-Trick auf älteren iPhones. */
+export function stilleWav(sekunden = 0.5, rate = 8000) {
+  const n = Math.round(sekunden * rate), b = new Uint8Array(44 + n), v = new DataView(b.buffer);
+  const txt = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+  txt(0, "RIFF"); v.setUint32(4, 36 + n, true); txt(8, "WAVE"); txt(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  txt(36, "data"); v.setUint32(40, n, true); b.fill(128, 44);
+  let s = ""; for (const x of b) s += String.fromCharCode(x);
+  return "data:audio/wav;base64," + btoa(s);
+}
+
+/**
+ * Auf dem iPhone schaltet der Lautlos-Schalter Web Audio stumm. Ab iOS 17 hebt die Audio Session
+ * („playback“) das auf; ältere Geräte bekommen ein stummes <audio> in Schleife, das die Wiedergabe
+ * ebenfalls auf „Medien“ umstellt. Muss im Tippen laufen.
+ */
+export function lautlosUmgehen(nav = globalThis.navigator, AudioEl = globalThis.Audio) {
+  try {
+    if (nav?.audioSession && "type" in nav.audioSession) { nav.audioSession.type = "playback"; return { art: "sitzung", el: null }; }
+    if (!AudioEl) return { art: "nichts", el: null };
+    const el = new AudioEl(stilleWav()); el.loop = true; el.play()?.catch?.(() => {});
+    return { art: "audio", el };
+  } catch { return { art: "nichts", el: null }; }
+}
 const AKKORDE = [82.41, 82.41, 130.81, 146.83, 110, 110, 98, 123.47];
 
 export function erzeugeMusik() {
   let audio = null, master = null, tonAn = true, naechste = 0, start = 0, achtel = 0, takt = null, rauschen = null, verzerrer = null;
   let quelle = null, einmal = null, pegelMesser = null, pegelDaten = null, modus = "beat", klatschBpm = 120; const puffer = new Map();
+  let lautlos = null; // Ergebnis von lautlosUmgehen, einmal beim ersten Start
   const kontext = () => {
     if (audio) return audio;
     const AC = globalThis.AudioContext || globalThis.webkitAudioContext; if (!AC) return null;
@@ -71,6 +98,7 @@ export function erzeugeMusik() {
       try {
         const ctx = kontext(); if (!ctx) return;
         ctx.resume()?.catch?.(() => {});
+        lautlos ??= lautlosUmgehen();
         this.stopp();
         const t0 = ctx.currentTime + 0.05; start = t0 - versatz; modus = "beat";
         const r = rasterAb(versatz, ACHTEL); achtel = r.k; naechste = start + r.zeit;
@@ -108,9 +136,18 @@ export function erzeugeMusik() {
         takt = setInterval(klatsche, 25);
       } catch { audio = null; }
     },
-    pause() { if (!quelle) { clearInterval(takt); takt = null; } audio?.suspend(); },
+    pause() { if (!quelle) { clearInterval(takt); takt = null; } audio?.suspend(); lautlos?.el?.pause?.(); },
+    /** Bei jedem Tippen: hat der Browser den Ton angehalten (Anruf, App-Wechsel, Start abgelehnt), wieder an. */
+    wecke() {
+      if (!audio) return;
+      if (audio.state !== "running") audio.resume()?.catch?.(() => {});
+      if (lautlos?.el?.paused) lautlos.el.play()?.catch?.(() => {});
+    },
+    /** Läuft der Ton wirklich? (false: Browser hat ihn angehalten oder es gibt keinen) */
+    laeuftTon() { return audio?.state === "running"; },
+    _kontext() { return audio; },
     // die Audiouhr steht während der Pause still, das Raster läuft danach nahtlos weiter
-    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(modus === "klatschen" ? klatsche : plane, 25); } },
+    weiter() { if (!audio) return; audio.resume()?.catch?.(() => {}); lautlos?.el?.play?.()?.catch?.(() => {}); if (!quelle) { clearInterval(takt); takt = setInterval(modus === "klatschen" ? klatsche : plane, 25); } },
     /** Songzeit nach der Audiouhr, oder null ohne Ton (dann zählt die normale Uhr). */
     uhr() { return audio && audio.state === "running" ? songZeit(audio.currentTime, start, audio.outputLatency || audio.baseLatency || 0) : null; },
     setzeTon(an) { tonAn = an; if (master) master.gain.value = an ? 0.45 : 0; },
