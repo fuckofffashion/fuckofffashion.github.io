@@ -83,7 +83,24 @@ function keksBanner(T) {
   beob.observe(fuss);
 }
 
+/** Der Zähler rollt einmal hoch, wenn er ins Bild kommt, und bleibt bei 000001 stehen. */
+function zaehlerRollen() {
+  const ziffern = [...document.querySelectorAll(".js-ziffern .foot__ziffer")];
+  if (!ziffern.length || !("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ziel = ziffern.map((z) => z.textContent);
+  const beob = new IntersectionObserver((e) => {
+    if (!e.some((x) => x.isIntersecting)) return;
+    beob.disconnect(); let n = 0;
+    const t = setInterval(() => {
+      ziffern.forEach((z, i) => { z.textContent = n > 8 + i * 4 ? ziel[i] : String(Math.floor(Math.random() * 10)); });
+      if (++n > 34) { clearInterval(t); ziffern.forEach((z, i) => (z.textContent = ziel[i])); }
+    }, 45);
+  }, { threshold: 0.8 });
+  beob.observe(ziffern[0].parentElement);
+}
+
 if (typeof document !== "undefined") {
+  zaehlerRollen();
   const T = EGG_TEXTE[document.documentElement.lang === "en" ? "en" : "de"];
   const welcher = kaufNixTag(new Date());
   if (welcher) bandZeigen(T, welcher);

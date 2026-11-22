@@ -391,6 +391,14 @@ html:not(.js) .tr__controls { display: none; }
 .foot__news-knopf { font: inherit; letter-spacing: inherit; text-transform: inherit; padding: .6rem .8rem; border: 2px solid var(--paper); background: transparent; color: var(--paper); cursor: pointer; min-height: 2.75rem; }
 .foot__news-knopf:hover { background: var(--paper); color: var(--ink); }
 .foot__news-antwort { color: var(--blood-hot); text-transform: none; letter-spacing: .01em; min-height: 1.2em; }
+/* Easter Egg: Oldschool-Besucherzähler – zeigt immer Nr. 1, zählt nichts */
+.foot__zaehler { order: 4; display: grid; gap: .45rem; justify-items: center; justify-self: start; background: #000; padding: .8rem 1rem; border: 3px ridge #6d6760; }
+.foot__zaehler p { margin: 0; }
+.foot__zaehler-wer, .foot__zaehler-wie { font: 700 .7rem/1.2 var(--font-zine); letter-spacing: .12em; text-transform: uppercase; color: #ffe600; }
+.foot__zaehler-wie { color: var(--ash); text-transform: none; letter-spacing: .02em; font-weight: 400; }
+.foot__ziffern { display: flex; gap: 3px; }
+.foot__ziffer { width: 1.6rem; height: 2.3rem; display: grid; place-items: center; background: linear-gradient(#222, #000 50%, #1a1a1a 50%, #000); border: 1px solid #333;
+  color: var(--blood-hot); font: 700 1.5rem/1 var(--font-zine); text-shadow: 0 0 6px rgba(255, 59, 59, .7); }
 /* Easter Egg: Black Friday / Kauf-nix-Tag (js/eggs.js) */
 body { padding-bottom: calc(var(--egg-band-h, 0px) + var(--egg-keks-h, 0px)); } /* Band und Banner verdecken nie den Fuß */
 .egg-band { position: fixed; z-index: 80; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: .5rem; background: var(--blood); color: var(--paper);

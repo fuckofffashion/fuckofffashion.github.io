@@ -58,3 +58,20 @@ for (const s of SEITEN) {
     assert.ok(html.includes('<script type="module" src="') && /src="(\.\.\/)?js\/eggs\.js\?v=\d+"/.test(html), "eggs.js eingebunden");
   });
 }
+
+test("Fuß auf allen Seiten: keine Cookies, kein Tracking, kein Shop, keine Saison", () => {
+  const de = ["index.html", "404.html", "bands.html", "datenschutz.html", "impressum.html", "konzerte.html", "pogo.html"];
+  const en = ["en/index.html", "en/bands.html", "en/konzerte.html", "en/pogo.html"];
+  for (const d of de) assert.ok(lies(d).includes("<span>Fuck Off Fashion · keine Cookies, kein Tracking, kein Shop, keine Saison</span>"), d);
+  for (const d of en) assert.ok(lies(d).includes("<span>Fuck Off Fashion · no cookies, no tracking, no shop, no season</span>"), d);
+});
+
+test("Besucherzähler: immer Nr. 000001, zählt nichts, lädt nichts", () => {
+  for (const [d, wer, wie] of [["index.html", "Du bist Besucher Nr.", "Wie alle. Wir zählen nicht."], ["en/index.html", "You are visitor no.", "Like everyone. We don't count."]]) {
+    const html = lies(d), fuss = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+    const z = fuss.slice(fuss.indexOf('class="foot__zaehler'), fuss.indexOf("</p>", fuss.indexOf("foot__zaehler-wie")));
+    assert.ok(z.includes(wer) && z.includes(wie), d);
+    assert.equal([...z.matchAll(/<span class="foot__ziffer">(\d)<\/span>/g)].map((m) => m[1]).join(""), "000001", d);
+    assert.ok(!/https?:|<img|<script/.test(z), `${d}: kein fremder Dienst`);
+  }
+});

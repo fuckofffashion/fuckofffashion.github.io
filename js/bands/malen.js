@@ -1,6 +1,6 @@
 // Gemalte Texturen der 3D-Säule (Canvas 2D). Vorlage: docs/superpowers/specs/2026-11-21-saeule-3d-entwurf.html.
 // Beim Import kein Zugriff auf document: die reinen Helfer oben laufen auch in Node (tests/js/bands.test.mjs).
-import { TEXTE, tagDatum } from "./texte.js?v=45";
+import { TEXTE, tagDatum } from "./texte.js?v=46";
 
 /* ---------- reine Helfer ---------- */
 

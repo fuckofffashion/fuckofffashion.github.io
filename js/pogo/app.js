@@ -2,21 +2,21 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil, nachTonAus,
-} from "./regeln.js?v=45";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=45";
-import { sprache, TEXTE } from "./texte.js?v=45";
-import { LAEDEN } from "./laeden.js?v=45";
-import { erzeugeMusik } from "./musik.js?v=45";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=45";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=45";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=45";
-import { MOTIVE } from "./motive.js?v=45";
+} from "./regeln.js?v=46";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=46";
+import { sprache, TEXTE } from "./texte.js?v=46";
+import { LAEDEN } from "./laeden.js?v=46";
+import { erzeugeMusik } from "./musik.js?v=46";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=46";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=46";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=46";
+import { MOTIVE } from "./motive.js?v=46";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=45";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=45";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=45";
-import { tagDatum } from "../bands/texte.js?v=45";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=45";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=46";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=46";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=46";
+import { tagDatum } from "../bands/texte.js?v=46";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=46";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -890,8 +890,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=45").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=45"),
+      import("./szene.js?v=46").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=46"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
