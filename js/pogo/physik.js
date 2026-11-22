@@ -1,6 +1,6 @@
 // Physik der Menge, ohne three.js und DOM (Node-Tests: tests/js/pogo-physik.test.mjs).
 // Personen bewegen sich in der Ebene x/z; z wächst von der Bühne nach hinten.
-import { zone } from "./regeln.js?v=47";
+import { zone } from "./regeln.js?v=48";
 
 /** Neue Person; Rand-Leute bekommen ihren Platz als Anker. */
 export function person({ x = 0, z = 0, ich = false, rand = false, rucksack = false } = {}) {

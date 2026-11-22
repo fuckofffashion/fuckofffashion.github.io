@@ -1,6 +1,6 @@
 // Szene von Pogo: Renderer, Licht, Laden mit Bühne, Band, Gitter und Ordner, Kamera hinter dir.
 // three.js wird hereingereicht (app.js lädt es aus assets/vendor/). Vorlage: docs/superpowers/specs/2026-11-21-pogo-3d-entwurf.html.
-import { baueFigur } from "./figuren.js?v=47";
+import { baueFigur } from "./figuren.js?v=48";
 
 const zufall = (a, b) => a + Math.random() * (b - a);
 

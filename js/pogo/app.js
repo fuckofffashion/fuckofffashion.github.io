@@ -2,22 +2,22 @@
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
   sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil, nachTonAus,
-} from "./regeln.js?v=47";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=47";
-import { sprache, TEXTE } from "./texte.js?v=47";
-import { LAEDEN } from "./laeden.js?v=47";
-import { erzeugeMusik } from "./musik.js?v=47";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=47";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=47";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=47";
-import { MOTIVE } from "./motive.js?v=47";
+} from "./regeln.js?v=48";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=48";
+import { sprache, TEXTE } from "./texte.js?v=48";
+import { LAEDEN } from "./laeden.js?v=48";
+import { erzeugeMusik } from "./musik.js?v=48";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=48";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=48";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=48";
+import { MOTIVE } from "./motive.js?v=48";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=47";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=47";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=47";
-import { tagDatum } from "../bands/texte.js?v=47";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=47";
-import { teilbildBand, zeichneTeilbild } from "./teilbild.js?v=47";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=48";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=48";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=48";
+import { tagDatum } from "../bands/texte.js?v=48";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=48";
+import { teilbildBand, zeichneTeilbild } from "./teilbild.js?v=48";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -884,8 +884,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=47").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=47"),
+      import("./szene.js?v=48").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=48"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {

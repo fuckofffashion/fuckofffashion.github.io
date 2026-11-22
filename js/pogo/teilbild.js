@@ -1,7 +1,7 @@
 // Pogo-Ergebnis als Bild zum Teilen (1080 × 1350). Mit Band: unten ein angeklebtes Konzertplakat
 // mit Bandlogo, Lied und nächstem Termin (Variante B, von Mark gewählt 2026-11-22). Ohne Band: das bisherige Bild.
-import { naechster } from "../bands/saeulen.js?v=47";
-import { tagDatum } from "../bands/texte.js?v=47";
+import { naechster } from "../bands/saeulen.js?v=48";
+import { tagDatum } from "../bands/texte.js?v=48";
 
 /** Band, Lied, Logo und nächstes Konzert des Songs, oder null beim reinen Beat. */
 export function teilbildBand(song, bandDaten, heuteIso, sp) {

@@ -1,16 +1,17 @@
 // Umkreisstufen und Anfahrt in "Platten" (Szene-Einheit: eine Platte = 40 Minuten Anfahrt).
-import { sprache } from "./texte.js?v=47";
+import { sprache } from "./texte.js?v=48";
 
 // Stufen für den Umkreis-Schalter, km ist die Obergrenze
 export const STUFEN = [
   { id: "lauf", km: 5, label: "Laufweite" },
   { id: "rad", km: 25, label: "Fahrradweite" },
+  { id: "mofa", km: 50, label: "Mofaweite" },
   { id: "bahn", km: 100, label: "Bahnweite" },
   { id: "bus", km: 300, label: "Bandbus-Weite" },
 ];
 
 // Englische Namen der Stufen (die deutschen stehen in STUFEN)
-export const STUFEN_EN = { lauf: "Walking distance", rad: "Cycling distance", bahn: "Train distance", bus: "Tour-van distance" };
+export const STUFEN_EN = { lauf: "Walking distance", rad: "Cycling distance", mofa: "Moped distance", bahn: "Train distance", bus: "Tour-van distance" };
 
 // Name einer Stufe in der Sprache der Seite
 export function stufenName(stufe, sp = sprache()) {

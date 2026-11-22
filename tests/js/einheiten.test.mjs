@@ -3,10 +3,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { STUFEN, STUFEN_EN, anfahrt, stufenName } from "../../js/konzerte/einheiten.js";
 
-test("Umkreisstufen sind Laufweite, Fahrradweite, Bahnweite, Bandbus-Weite", () => {
+test("Umkreisstufen sind Laufweite, Fahrradweite, Mofaweite, Bahnweite, Bandbus-Weite", () => {
   assert.deepEqual(STUFEN, [
     { id: "lauf", km: 5, label: "Laufweite" },
     { id: "rad", km: 25, label: "Fahrradweite" },
+    { id: "mofa", km: 50, label: "Mofaweite" },
     { id: "bahn", km: 100, label: "Bahnweite" },
     { id: "bus", km: 300, label: "Bandbus-Weite" },
   ]);
@@ -51,11 +52,11 @@ test("angezeigte km sind gerundet", () => {
 
 test("ohne Dokument ist Deutsch der Standard", () => {
   assert.equal(anfahrt(47), anfahrt(47, "de"));
-  assert.equal(stufenName(STUFEN[2]), "Bahnweite");
+  assert.equal(stufenName(STUFEN[3]), "Bahnweite");
 });
 
 test("englische Stufennamen für alle Stufen", () => {
-  assert.deepEqual(STUFEN.map((s) => stufenName(s, "en")), ["Walking distance", "Cycling distance", "Train distance", "Tour-van distance"]);
+  assert.deepEqual(STUFEN.map((s) => stufenName(s, "en")), ["Walking distance", "Cycling distance", "Moped distance", "Train distance", "Tour-van distance"]);
   assert.deepEqual(Object.keys(STUFEN_EN), STUFEN.map((s) => s.id));
 });
 
@@ -67,4 +68,13 @@ test("Anfahrt auf Englisch", () => {
   assert.equal(anfahrt(1, "en"), "1 km · half an LP on foot");
   assert.equal(anfahrt(15, "en"), "15 km · one and a half LPs by bike");
   assert.match(anfahrt(46.6, "en"), /^47 km ·/);
+});
+
+test("Mofaweite auf Englisch, Start der Seite bleibt Bahnweite 100 km", async () => {
+  assert.equal(stufenName(STUFEN[2], "en"), "Moped distance");
+  const { readFileSync } = await import("node:fs");
+  for (const d of ["konzerte.html", "en/konzerte.html"]) {
+    const html = readFileSync(new URL("../../" + d, import.meta.url), "utf8");
+    assert.match(html, /id="kz-umkreis" type="range" min="0" max="4" step="1" value="3"/, d);
+  }
 });
