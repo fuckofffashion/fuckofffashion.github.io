@@ -4474,5 +4474,13 @@
   "lat": 48.8133294,
   "lon": 9.2014959,
   "land": "DE"
+ },
+ "|es bilbao|bizkaia arena": {
+  "nicht_gefunden": "2026-11-22"
+ },
+ "DE|grimma|alte spitzenfabrik": {
+  "lat": 51.2423654,
+  "lon": 12.7365038,
+  "land": "DE"
  }
 }
