@@ -45,6 +45,9 @@ export const SPRUNG = { bonus: 15, daneben: 3 };
 export const GEDRAENGE = 0.75; // halbiert nach Spieletest 2: Bier ist Ressource, kein Countdown
 export const STAGEDIVE_AB = 4;
 export const BONUS = { duDa: 150, plektrum: 100, drumstick: 150, setliste: 300, oi: 150, stagedive: 600 };
+/** Lautlos gibt es beim Pogo nicht: wer „Ton aus“ drückt, zahlt, und die Musik läuft weiter. */
+export const TON_AUS_STRAFE = 100;
+export const nachTonAus = (punkte) => Math.max(0, punkte - TON_AUS_STRAFE);
 
 /** Verschüttetes Bier in Prozent für einen Rempler mit Aufprallgeschwindigkeit `schlag` (m/s). */
 export function verschuettet(schlag, { rucksack = false, inLuft = false } = {}) {

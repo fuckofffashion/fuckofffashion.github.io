@@ -1,6 +1,6 @@
 // Mechaniken aus Etappe 5 (reine Regeln, ohne three.js): Combo, Stimmung, Mitgrölen, Wall of Death,
 // Circle Pit, Auf die Schultern, Aufheben. Tests: tests/js/pogo-pit.test.mjs. Werte siehe Spec „Etappe 5“.
-import { ZUGABE, teilBei } from "./regeln.js?v=42";
+import { ZUGABE, teilBei } from "./regeln.js?v=43";
 
 /* ---------- Pogo-Combo ---------- */
 export const COMBO = { proStufe: 4, max: 4, luecke: 2 };

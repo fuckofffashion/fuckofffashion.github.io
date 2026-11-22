@@ -206,3 +206,17 @@ test("Outro: Song mit Outro hat die Datei, kurz genug zum Abwarten", async () =>
     assert.ok(statSync(wurzel + s.outro.datei).size < 300_000, "Outro klein halten");
   }
 });
+
+test("Ton aus gibt es nicht: der Knopf kostet 100 Punkte, nie unter 0", async () => {
+  const { TON_AUS_STRAFE, nachTonAus } = await import("../../js/pogo/regeln.js");
+  assert.equal(TON_AUS_STRAFE, 100);
+  assert.equal(nachTonAus(450), 350);
+  assert.equal(nachTonAus(60), 0);
+  assert.equal(nachTonAus(0), 0);
+});
+
+test("Ton-aus-Pop: deutsch und englisch", async () => {
+  const { TEXTE } = await import("../../js/pogo/texte.js");
+  assert.equal(TEXTE.de.tonAusStrafe, "FUCK OFF −100 Punkte");
+  assert.equal(TEXTE.en.tonAusStrafe, "FUCK OFF −100 points");
+});

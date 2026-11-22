@@ -35,7 +35,7 @@ export const TEXTE = {
     getragen: "Du wirst getragen! Schlag die Hände weg: tipp auf ihre Seite.", hand: "HAND!", abgewehrt: "weg da!",
     bierdusche: "BIERDUSCHE!", gelandet: "GELANDET!", gelandetOhne: "GELANDET, aber zu wenig Bier für den Bonus", bewegDich: "Beweg dich! Rumstehen gibt nur halbe Punkte.", zaehltAls: ({ n }) => `zählt als ${n} %`,
     punkte: "Punkte", bier: "Bier", ergebnis: "Ergebnis", andenken: "Gefangen",
-    keineAndenken: "Nichts gefangen. Nach vorn!", tonAn: "Ton an", tonAus: "Ton aus",
+    keineAndenken: "Nichts gefangen. Nach vorn!", tonAn: "Ton an", tonAus: "Ton aus", tonAusStrafe: "FUCK OFF −100 Punkte",
     titel: {
       leer: "Becher leer.",
       randSteher: "Rand-Steher mit vollem Becher. Peinlich.",
@@ -81,7 +81,7 @@ export const TEXTE = {
     getragen: "You're crowdsurfing! Slap the hands away: tap their side.", hand: "HAND!", abgewehrt: "back off!",
     bierdusche: "BEER SHOWER!", gelandet: "LANDED!", gelandetOhne: "LANDED, but too little beer for the bonus", bewegDich: "Move! Standing still only gets half points.", zaehltAls: ({ n }) => `counts as ${n}%`,
     punkte: "Points", bier: "Beer", ergebnis: "Score", andenken: "Caught",
-    keineAndenken: "Caught nothing. Get to the front!", tonAn: "Sound on", tonAus: "Sound off",
+    keineAndenken: "Caught nothing. Get to the front!", tonAn: "Sound on", tonAus: "Sound off", tonAusStrafe: "FUCK OFF −100 points",
     titel: {
       leer: "Cup's empty.",
       randSteher: "Wallflower with a full cup. Embarrassing.",

@@ -1,22 +1,22 @@
 // Pogo: Spielablauf, Eingabe und Anzeigen. Regeln in regeln.js, Menge in physik.js, Bild in szene.js.
 import {
   DAUER, teilBei, zone, punkteProSekunde, imTakt, verschuettet, ergebnis, titelSchluessel, geste,
-  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil,
-} from "./regeln.js?v=42";
-import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=42";
-import { sprache, TEXTE } from "./texte.js?v=42";
-import { LAEDEN } from "./laeden.js?v=42";
-import { erzeugeMusik } from "./musik.js?v=42";
-import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=42";
-import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=42";
-import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=42";
-import { MOTIVE } from "./motive.js?v=42";
+  sprungWertung, GEDRAENGE, STAGEDIVE_AB, BONUS, STAGEDIVE, landeZ, istHinter, ABGUCKEN_S, ZUGABE, schurkenZeiten, zugabeZeiten, rufTipp, stagediveBonus, stillFaktor, BIER_MIN, sprungDauer, wilderTeil, nachTonAus,
+} from "./regeln.js?v=43";
+import { person, bewegeMenge, randSchubs, integriere, stoesse } from "./physik.js?v=43";
+import { sprache, TEXTE } from "./texte.js?v=43";
+import { LAEDEN } from "./laeden.js?v=43";
+import { erzeugeMusik } from "./musik.js?v=43";
+import { SONGS, BEAT, songAusAdresse } from "./songs.js?v=43";
+import { leseKutte, schreibeKutte, mitFang, mitMotiv, kutteText } from "./andenken.js?v=43";
+import { TOUR, ZIELE, leseTour, schreibeTour, mitErgebnis, geschafft, fehlt, rang, kraftFaktor } from "./tour.js?v=43";
+import { MOTIVE } from "./motive.js?v=43";
 import { COMBO, comboStufe, comboTakt, comboLuecke, STIMMUNG, mitStimmung, stimmungAbfall, zugabeTreffer, groelWort, WALL, wallWertung,
-  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=42";
-import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=42";
-import { isoLokal, naechster } from "../bands/saeulen.js?v=42";
-import { tagDatum } from "../bands/texte.js?v=42";
-import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=42";
+  kreisZeit, kreisTangente, stromWertung, SCHULTERN, wackle, runtergefallen, AUFHEBEN } from "./pit.js?v=43";
+import { ziehe, AUFGABE_PUNKTE } from "./aufgaben.js?v=43";
+import { isoLokal, naechster } from "../bands/saeulen.js?v=43";
+import { tagDatum } from "../bands/texte.js?v=43";
+import { KOPF_ATLAS, baueKopfVorlage } from "./kopf3d.js?v=43";
 
 const sp = sprache(), T = TEXTE[sp];
 const ruhig = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -890,8 +890,8 @@ async function los() {
   try {
     [THREE, { baueSzene: S }, F] = await Promise.all([
       import("../../assets/vendor/three.module.min.js"),
-      import("./szene.js?v=42").then((m) => ({ baueSzene: m.baueSzene })),
-      import("./figuren.js?v=42"),
+      import("./szene.js?v=43").then((m) => ({ baueSzene: m.baueSzene })),
+      import("./figuren.js?v=43"),
     ]);
     S = S(THREE, { container: spielEl, ruhig });
   } catch (fehler) {
@@ -937,8 +937,8 @@ async function los() {
   $("pogo-anderer").addEventListener("click", () => { $("pogo-ende").hidden = true; $("pogo-start").hidden = false; });
   $("pogo-stagedive").addEventListener("click", starteStagedive);
   $("pogo-teilen").addEventListener("click", teileErgebnis);
-  let tonAn = true;
-  $("pogo-ton").addEventListener("click", (e) => { tonAn = !tonAn; musik.setzeTon(tonAn); e.currentTarget.textContent = tonAn ? T.tonAn : T.tonAus; e.currentTarget.setAttribute("aria-pressed", String(tonAn)); });
+  // Lautlos gibt es nicht: der Knopf kostet Punkte, die Musik läuft weiter (leiser nur über die Lautstärketasten)
+  $("pogo-ton").addEventListener("click", () => { if (!laeuft) return; punkte = nachTonAus(punkte); pop(T.tonAusStrafe, "var(--blood-hot)", true); });
   $("pogo-start").hidden = false;
   neueRunde();
   requestAnimationFrame(bild);
