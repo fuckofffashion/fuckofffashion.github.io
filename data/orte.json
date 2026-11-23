@@ -4482,5 +4482,14 @@
   "lat": 51.2423654,
   "lon": 12.7365038,
   "land": "DE"
+ },
+ "DE|magdeburg|stern bard": {
+  "nicht_gefunden": "2026-11-23"
+ },
+ "|es barcelona|poble espanyol": {
+  "nicht_gefunden": "2026-11-23"
+ },
+ "DE|visbek|benediktschule": {
+  "nicht_gefunden": "2026-11-23"
  }
 }
