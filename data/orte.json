@@ -4491,5 +4491,21 @@
  },
  "DE|visbek|benediktschule": {
   "nicht_gefunden": "2026-11-23"
+ },
+ "DE|stuttgart|juha west": {
+  "nicht_gefunden": "2026-11-24"
+ },
+ "DE|stuttgart|club zentral": {
+  "lat": 48.7772573,
+  "lon": 9.1700312,
+  "land": "DE"
+ },
+ "DE|gelsenkirchen|amphitheater": {
+  "lat": 51.5224105,
+  "lon": 7.0339473,
+  "land": "DE"
+ },
+ "DE|hannover|indiego glocksee": {
+  "nicht_gefunden": "2026-11-24"
  }
 }
