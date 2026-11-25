@@ -4507,5 +4507,10 @@
  },
  "DE|hannover|indiego glocksee": {
   "nicht_gefunden": "2026-11-24"
+ },
+ "DE|freiburg|kulturraum freiburg": {
+  "lat": 47.9849043,
+  "lon": 7.8363539,
+  "land": "DE"
  }
 }
