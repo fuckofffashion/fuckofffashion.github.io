@@ -4512,5 +4512,80 @@
   "lat": 47.9849043,
   "lon": 7.8363539,
   "land": "DE"
+ },
+ "radar|993d8dc2-20bc-4921-b5f1-69737f84384f": {
+  "lat": null,
+  "lon": null,
+  "plz": "10245",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Neue Zukunft",
+  "geholt": "2026-11-26"
+ },
+ "radar|6d907956-a173-4258-a102-287bca6a0609": {
+  "lat": 52.5422403,
+  "lon": 13.6173176,
+  "plz": "12627",
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": " New Casa, Wurzener Straße 6–8, Hellersdorf  Berlin Deutschland"
+ },
+ "radar|f375b895-d798-4749-9747-f1546109dd7f": {
+  "lat": null,
+  "lon": null,
+  "plz": null,
+  "stadt": "Berlin",
+  "land": "DE",
+  "laden": "Remise der Wilma19",
+  "geholt": "2026-11-26"
+ },
+ "DE|greifswald|ikuwo": {
+  "lat": 54.0925124,
+  "lon": 13.3814588,
+  "land": "DE"
+ },
+ "DE|hamburg|gangeviertel": {
+  "lat": 53.5552553,
+  "lon": 9.9834617,
+  "land": "DE"
+ },
+ "DE|frankfurt am main|raumstationt": {
+  "nicht_gefunden": "2026-11-26"
+ },
+ "DE|berlin|remise der wilma19": {
+  "nicht_gefunden": "2026-11-26"
+ },
+ "DE|munster|green hell": {
+  "lat": 51.9612829,
+  "lon": 7.6334665,
+  "land": "DE"
+ },
+ "DE|hamburg|michelle records": {
+  "lat": 53.5525883,
+  "lon": 10.0012176,
+  "land": "DE"
+ },
+ "DE|berlin friedrichshain kreuzberg|il ritrovo": {
+  "lat": 52.5095667,
+  "lon": 13.4580847,
+  "land": "DE"
+ },
+ "DE|berlin|coretex records": {
+  "lat": 52.4996646,
+  "lon": 13.4256678,
+  "land": "DE"
+ },
+ "DE|freiburg im breisgau|flight 13": {
+  "lat": 47.9953928,
+  "lon": 7.8363218,
+  "land": "DE"
+ },
+ "DE|burglengenfeld|juz": {
+  "nicht_gefunden": "2026-11-26"
+ },
+ "NL|tilburg|hall of fame": {
+  "lat": 51.5609452,
+  "lon": 5.0897344,
+  "land": "NL"
  }
 }
