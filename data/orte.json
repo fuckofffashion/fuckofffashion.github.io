@@ -4587,5 +4587,16 @@
   "lat": 51.5609452,
   "lon": 5.0897344,
   "land": "NL"
+ },
+ "DE|hannover|sturmglocke": {
+  "lat": 52.3877767,
+  "lon": 9.7185364,
+  "land": "DE"
+ },
+ "DE|limburg diez|kakadu (kalkwerk)": {
+  "nicht_gefunden": "2026-11-27"
+ },
+ "BE|ghent|club wintercircus": {
+  "nicht_gefunden": "2026-11-27"
  }
 }
