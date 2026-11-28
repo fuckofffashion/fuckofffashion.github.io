@@ -4598,5 +4598,49 @@
  },
  "BE|ghent|club wintercircus": {
   "nicht_gefunden": "2026-11-27"
+ },
+ "DE|stuttgart|trude": {
+  "lat": 48.7737009,
+  "lon": 9.1781755,
+  "land": "DE"
+ },
+ "DE|freiburg im breisgau|flamingo": {
+  "lat": 47.9885468,
+  "lon": 7.8618873,
+  "land": "DE"
+ },
+ "|es – valencia|– 16 toneladas": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|es – madrid|– wurlitzer ballroom": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|es – andoain|– gaztetxe": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|es – barcelona|– ckud – festival": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|it – torino|– margot": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|it – bologna|– freakout club": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|nl – dordrecht|– bibelot": {
+  "lat": 51.815649,
+  "lon": 4.6800958,
+  "land": "NL"
+ },
+ "|be – kortrijk|– mosh": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "|ir – dublin|– whelans": {
+  "nicht_gefunden": "2026-11-28"
+ },
+ "BE|brussel|– ing arena": {
+  "lat": 50.9011203,
+  "lon": 4.3423147,
+  "land": "BE"
  }
 }
